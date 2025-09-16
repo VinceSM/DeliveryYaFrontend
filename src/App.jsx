@@ -1,8 +1,7 @@
-// src/App.jsx
-import RegisterScreen from "./screens/Auth/RegisterScreen";
+import AppRouter from './navigation/AppRouter';
 
 function App() {
-  return <RegisterScreen />;
+  return <AppRouter />;
 }
 
 export default App;

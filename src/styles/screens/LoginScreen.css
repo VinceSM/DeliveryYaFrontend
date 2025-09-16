@@ -1,0 +1,210 @@
+/* src/styles/screens/LoginScreen.css */
+.login-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #FF4D4D 0%, #FFC947 100%);
+  padding: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-card {
+  background-color: #FFFFFF;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(51, 51, 51, 0.2);
+  padding: 30px;
+  width: 100%;
+  max-width: 400px;
+  box-sizing: border-box;
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.login-logo {
+  max-width: 150px;
+  height: auto;
+  margin-bottom: 15px;
+}
+
+.login-title {
+  color: #FF4D4D;
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+}
+
+.login-subtitle {
+  color: #666;
+  font-size: 14px;
+  margin: 0;
+}
+
+.login-form {
+  margin-bottom: 20px;
+}
+
+.login-input-group {
+  margin-bottom: 18px;
+}
+
+.login-form-label {
+  display: block;
+  font-size: 13px;
+  color: #333333;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.login-form-input {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.3s;
+  color: #333333;
+  background-color: #FFFFFF;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.login-form-input:focus {
+  outline: none;
+  border-color: #FF4D4D;
+  box-shadow: 0 0 0 3px rgba(255, 77, 77, 0.2);
+}
+
+.login-form-input::placeholder {
+  color: #999;
+  font-size: 13px;
+}
+
+.login-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  font-size: 13px;
+}
+
+.login-remember {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  color: #333;
+}
+
+.login-remember input {
+  display: none;
+}
+
+.login-checkmark {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #e0e0e0;
+  border-radius: 4px;
+  margin-right: 8px;
+  position: relative;
+  transition: all 0.3s;
+}
+
+.login-remember input:checked + .login-checkmark {
+  background-color: #FF4D4D;
+  border-color: #FF4D4D;
+}
+
+.login-remember input:checked + .login-checkmark::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 5px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.login-forgot {
+  color: #FF4D4D;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s;
+}
+
+.login-forgot:hover {
+  color: #FF3333;
+  text-decoration: underline;
+}
+
+.login-button {
+  width: 100%;
+  padding: 14px;
+  background-color: #FF4D4D;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin-bottom: 15px;
+}
+
+.login-button:hover:not(:disabled) {
+  background-color: #FF3333;
+}
+
+.login-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.login-footer {
+  text-align: center;
+  padding-top: 15px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.login-register-text {
+  color: #666;
+  font-size: 14px;
+  margin: 0;
+}
+
+.login-register-link {
+  color: #FF4D4D;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.3s;
+}
+
+.login-register-link:hover {
+  color: #FF3333;
+  text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .login-container {
+    padding: 15px;
+  }
+  
+  .login-card {
+    padding: 20px;
+  }
+  
+  .login-options {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .login-forgot {
+    margin-left: 26px;
+  }
+}

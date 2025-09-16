@@ -29,3 +29,27 @@ export async function registerComercio(data) {
   return { Message: "Comercio registrado exitosamente (simulado)" };
 }
 
+export async function loginComercio(data) {
+  // Simulamos un delay
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+
+  // Simulamos éxito o error
+  if (!data.email || !data.password) {
+    throw new Error("Email y contraseña son requeridos");
+  }
+
+  // Simulamos credenciales incorrectas
+  if (data.password.length < 6) {
+    throw new Error("Credenciales inválidas");
+  }
+
+  return { 
+    Message: "Inicio de sesión exitoso (simulado)",
+    Token: "simulated-jwt-token",
+    Comercio: {
+      id: 1,
+      nombre: "Mi Comercio Ejemplo",
+      email: data.email
+    }
+  };
+}

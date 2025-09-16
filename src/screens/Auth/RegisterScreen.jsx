@@ -1,5 +1,6 @@
 // src/screens/Auth/RegisterScreen.jsx
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { registerComercio } from "../../api/auth";
 import LogoDeliveryYa from "../../assets/LogoDeliveryYa.png";
 import "../../styles/screens/RegisterScreen.css";
@@ -36,7 +37,8 @@ export default function RegisterScreen() {
     try {
       const response = await registerComercio(form);
       alert("✅ " + response.Message);
-      window.location.href = "/login"; 
+      // Redirigir al login después del registro exitoso
+      window.location.href = "/auth/login";
     } catch (error) {
       alert("❌ " + error.message);
     }
@@ -56,6 +58,17 @@ export default function RegisterScreen() {
     <div className="register-container">
       <div className="register-header">
         <img src={LogoDeliveryYa} alt="Logo DeliveryYa" className="register-logo" />
+        
+        {/* Enlace para volver al login */}
+        <div style={{textAlign: 'right', marginBottom: '10px'}}>
+          <Link 
+            to="/auth/login"
+            style={{color: '#fff', textDecoration: 'none', fontSize: '14px'}}
+          >
+            ← Volver al Login
+          </Link>
+        </div>
+        
         <h1 className="register-title">Registro de Comercio</h1>
         
         {/* Indicador de progreso mejorado */}
