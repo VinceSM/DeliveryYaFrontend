@@ -1,0 +1,408 @@
+/* src/styles/screens/RegisterScreen.css */
+.register-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #FF4D4D 0%, #FFC947 100%);
+  padding: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.register-header {
+  text-align: center;
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.register-logo {
+  max-width: 200px;
+  height: auto;
+  margin-bottom: 15px;
+}
+
+.register-title {
+  color: #FFFFFF;
+  font-size: 28px;
+  font-weight: 700;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+  margin: 0 0 15px 0;
+}
+
+/* Indicador de progreso - MEJORADO */
+.register-progress-indicator {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 15px 0 25px 0;
+  gap: 50px;
+  width: 100%;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.register-progress-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  flex: 1;
+  min-width: 80px;
+}
+
+.register-progress-step::before,
+.register-progress-step::after {
+  content: '';
+  position: absolute;
+  top: 20px;
+  height: 2px;
+  background-color: #FFFFFF;
+  opacity: 0.3;
+}
+
+.register-progress-step::before {
+  left: 0;
+  right: 50%;
+}
+
+.register-progress-step::after {
+  left: 50%;
+  right: 0;
+}
+
+.register-progress-step:first-child::before {
+  display: none;
+}
+
+.register-progress-step:last-child::after {
+  display: none;
+}
+
+.register-step-number {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.3);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  margin-bottom: 8px;
+  transition: all 0.3s;
+  z-index: 2;
+}
+
+.register-progress-step.register-active .register-step-number {
+  background-color: #FFC947;
+  color: #333333;
+  transform: scale(1.1);
+  box-shadow: 0 0 0 3px rgba(255, 201, 71, 0.3);
+}
+
+.register-progress-step.register-completed .register-step-number {
+  background-color: #4CAF50;
+  color: #FFFFFF;
+}
+
+.register-step-title {
+  color: #FFFFFF;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.register-progress-step.register-active .register-step-title {
+  font-weight: 700;
+  color: #FFC947;
+}
+
+.register-form {
+  background-color: #FFFFFF;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(51, 51, 51, 0.2);
+  padding: 25px;
+  max-width: 900px;
+  width: 100%;
+  box-sizing: border-box;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.register-form-section {
+  margin-bottom: 15px;
+}
+
+.register-section-title {
+  color: #FF4D4D;
+  margin-bottom: 20px;
+  font-size: 22px;
+  font-weight: 700;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #FFC947;
+  text-align: center;
+}
+
+.register-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.register-input-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.register-form-label {
+  font-size: 13px;
+  color: #333333;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.register-form-input {
+  padding: 10px;
+  border: 2px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.3s;
+  color: #333333;
+  background-color: #FFFFFF;
+  width: 100%;
+  box-sizing: border-box;
+  font-family: inherit;
+  height: 42px;
+}
+
+.register-form-input:focus {
+  outline: none;
+  border-color: #FF4D4D;
+  box-shadow: 0 0 0 3px rgba(255, 77, 77, 0.2);
+}
+
+.register-form-input::placeholder {
+  color: #999;
+  font-size: 13px;
+}
+
+.register-contract-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  margin: 20px 0;
+}
+
+.register-contract-option {
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 20px;
+  transition: all 0.3s;
+  box-sizing: border-box;
+}
+
+.register-contract-option.register-highlighted {
+  border-color: #FFC947;
+  background-color: #FFF9E6;
+  box-shadow: 0 5px 15px rgba(255, 201, 71, 0.2);
+}
+
+.register-option-header {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.register-option-header h3 {
+  color: #333333;
+  font-size: 18px;
+  margin-bottom: 2px;
+}
+
+.register-price {
+  color: #FF4D4D;
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.register-price span {
+  font-size: 14px;
+  color: #666;
+  font-weight: normal;
+}
+
+.register-features-list {
+  list-style: none;
+  margin-bottom: 20px;
+  padding: 0;
+  font-size: 14px;
+}
+
+.register-features-list li {
+  padding: 6px 0;
+  color: #333333;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.register-features-list li:last-child {
+  border-bottom: none;
+}
+
+.register-radio-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.register-radio-label {
+  font-size: 14px;
+  color: #333333;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+input[type="radio"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #FF4D4D;
+  cursor: pointer;
+}
+
+/* Botones de navegación */
+.register-navigation-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+  gap: 12px;
+}
+
+.register-nav-button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  min-width: 120px;
+}
+
+.register-prev-button {
+  background-color: #f0f0f0;
+  color: #333333;
+}
+
+.register-prev-button:hover {
+  background-color: #e0e0e0;
+}
+
+.register-next-button {
+  background-color: #FFC947;
+  color: #333333;
+}
+
+.register-next-button:hover {
+  background-color: #FFB800;
+}
+
+.register-register-button {
+  padding: 12px 24px;
+  background-color: #FF4D4D;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  min-width: 160px;
+}
+
+.register-register-button:hover {
+  background-color: #FF3333;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .register-container {
+    padding: 15px;
+    justify-content: flex-start;
+  }
+  
+  .register-form {
+    padding: 20px 15px;
+    max-height: none;
+    overflow-y: visible;
+  }
+  
+  .register-progress-indicator {
+    gap: 30px;
+  }
+  
+  .register-progress-step {
+    min-width: 60px;
+  }
+  
+  .register-step-number {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+  
+  .register-step-title {
+    font-size: 12px;
+  }
+  
+  .register-form-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .register-contract-options {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  
+  .register-logo {
+    max-width: 150px;
+  }
+  
+  .register-title {
+    font-size: 24px;
+  }
+  
+  .register-section-title {
+    font-size: 20px;
+  }
+  
+  .register-navigation-buttons {
+    flex-direction: column;
+  }
+  
+  .register-nav-button, .register-register-button {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .register-progress-indicator {
+    gap: 20px;
+  }
+  
+  .register-progress-step {
+    min-width: 50px;
+  }
+  
+  .register-step-title {
+    font-size: 11px;
+  }
+  
+  .register-title {
+    font-size: 22px;
+  }
+}
