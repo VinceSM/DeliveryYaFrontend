@@ -1,6 +1,6 @@
 // src/screens/Auth/LoginScreen.jsx
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { loginComercio } from "../../api/auth";
 import LogoDeliveryYa from "../../assets/LogoDeliveryYa.png";
 import "../../styles/screens/LoginScreen.css";
@@ -11,6 +11,7 @@ export default function LoginScreen() {
     password: "",
   });
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate(); // 👈 Hook de navegación
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -26,9 +27,15 @@ export default function LoginScreen() {
     
     try {
       const response = await loginComercio(form);
+
+      // Guardamos token y comercio simulado en localStorage
+      localStorage.setItem("token", response.Token);
+      localStorage.setItem("comercio", JSON.stringify(response.Comercio));
+
       alert("✅ " + response.Message);
-      // Aquí normalmente redirigiríamos al dashboard
-      // navigate("/dashboard");
+
+      // Redirigir al dashboard
+      navigate("/dashboard");
     } catch (error) {
       alert("❌ " + error.message);
     } finally {
