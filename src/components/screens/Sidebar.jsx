@@ -16,6 +16,22 @@ export default function Sidebar() {
 
   const getActiveItem = () => {
     const currentPath = location.pathname;
+    
+    // Verificar rutas específicas primero
+    if (currentPath.startsWith('/productos')) {
+      return "productos";
+    }
+    if (currentPath.startsWith('/pedidos')) {
+      return "pedidos";
+    }
+    if (currentPath.startsWith('/horarios')) {
+      return "horarios";
+    }
+    if (currentPath.startsWith('/perfil')) {
+      return "perfil";
+    }
+    
+    // Buscar coincidencia exacta
     const item = menuItems.find(item => item.path === currentPath);
     return item ? item.id : "home";
   };
@@ -50,7 +66,7 @@ export default function Sidebar() {
       {/* Navegación Principal */}
       <nav className="sidebar-nav">
         <div className="nav-section">
-          <h3 className="section-title">Navegación Principal</h3>
+          <h3 className="sidebar-section-title">Navegación Principal</h3>
           <div className="nav-items">
             {menuItems.map((item) => (
               <button
