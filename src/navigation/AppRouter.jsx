@@ -1,4 +1,5 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 import AuthRouter from './AuthRouter';
 import DashboardScreen from '../screens/Dashboard/DashboardScreen';
 import PedidosScreen from '../screens/Pedidos/PedidosScreen';
@@ -8,32 +9,46 @@ import HorariosScreen from '../screens/Horarios/HorariosScreen';
 import PerfilScreen from '../screens/Perfil/PerfilScreen';
 
 function AppRouter() {
+  const { isAuthenticated, loading } = useAuth();
+
+  // Mostrar loading mientras se verifica la autenticación
+  if (loading) {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh' 
+      }}>
+        <div>Cargando...</div>
+      </div>
+    );
+  }
+
   return (
-    <Router>
-      <Routes>
-        {/* Rutas de autenticación */}
-        <Route path="/auth/*" element={<AuthRouter />} />
+    <Routes>
+      {/* Rutas de autenticación (siempre accesibles) */}
+      <Route path="/auth/*" element={<AuthRouter />} />
 
-        {/* Ruta del Dashboard del comercio */}
-        <Route path="/dashboard" element={<DashboardScreen />} />
-
-        {/* Rutas de Productos */}
-        <Route path="/productos" element={<ProductosScreen />} />
-        <Route path="/productos/nuevo" element={<EditarProductoScreen />} />
-        <Route path="/productos/editar/:id" element={<EditarProductoScreen />} />
-
-        {/* Otras rutas */}
-        <Route path="/pedidos" element={<PedidosScreen />} />
-        <Route path="/horarios" element={<HorariosScreen />} />
-        <Route path="/perfil" element={<PerfilScreen />} />
-
-        {/* Ruta por defecto redirige a login */}
-        <Route path="/" element={<Navigate to="/auth/login" replace />} />
-
-        {/* Ruta para cualquier otra dirección no definida */}
+      {/* Rutas protegidas - solo accesibles si está autenticado */}
+      {isAuthenticated ? (
+        <>
+          <Route path="/dashboard" element={<DashboardScreen />} />
+          <Route path="/productos" element={<ProductosScreen />} />
+          <Route path="/productos/nuevo" element={<EditarProductoScreen />} />
+          <Route path="/productos/editar/:id" element={<EditarProductoScreen />} />
+          <Route path="/pedidos" element={<PedidosScreen />} />
+          <Route path="/horarios" element={<HorariosScreen />} />
+          <Route path="/perfil" element={<PerfilScreen />} />
+          
+          {/* Redirigir raíz a dashboard si está autenticado */}
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        </>
+      ) : (
+        // Si no está autenticado, redirigir todo a login
         <Route path="*" element={<Navigate to="/auth/login" replace />} />
-      </Routes>
-    </Router>
+      )}
+    </Routes>
   );
 }
 

@@ -1,55 +1,58 @@
-// src/api/auth.js
-// export async function registerComercio(data) {
-//   const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/comercio/register`, {
-//     method: "POST",
-//     headers: {
-//       "Content-Type": "application/json"
-//     },
-//     body: JSON.stringify(data)
-//   });
+import { API_CONFIG } from '../config/config.js';
 
-//   if (!response.ok) {
-//     const errorText = await response.text();
-//     throw new Error(errorText || "Error en el registro");
-//   }
-
-//   return response.json();
-// }
-
-// Sin backend real, simulamos la función:
 export async function registerComercio(data) {
-  // Simulamos un delay
-  await new Promise((resolve) => setTimeout(resolve, 500));
+  const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.AUTH.REGISTER}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(data)
+  });
 
-  // Simulamos éxito o error
-  if (!data.nombreComercio || !data.email || !data.password) {
-    throw new Error("Faltan campos obligatorios");
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(errorText || "Error en el registro");
   }
 
-  return { Message: "Comercio registrado exitosamente (simulado)" };
+  return response.json();
 }
 
 export async function loginComercio(data) {
-  // Simulamos un delay
-  await new Promise((resolve) => setTimeout(resolve, 1000));
+  const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.AUTH.LOGIN}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(data)
+  });
 
-  // Simulamos éxito o error
-  if (!data.email || !data.password) {
-    throw new Error("Email y contraseña son requeridos");
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(errorText || "Error en el inicio de sesión");
   }
 
-  // Simulamos credenciales incorrectas
-  if (data.password.length < 6) {
-    throw new Error("Credenciales inválidas");
-  }
+  return response.json();
+}
 
-  return { 
-    Message: "Inicio de sesión exitoso (simulado)",
-    Token: "simulated-jwt-token",
-    Comercio: {
-      id: 1,
-      nombre: "Mi Comercio Ejemplo",
-      email: data.email
-    }
-  };
+// Función para cerrar sesión
+export function logoutComercio() {
+  localStorage.removeItem("token");
+  localStorage.removeItem("comercio");
+}
+
+// Función para verificar si está autenticado
+export function isAuthenticated() {
+  const token = localStorage.getItem("token");
+  return !!token && token !== "simulated-jwt-token";
+}
+
+// Función para obtener el token
+export function getToken() {
+  return localStorage.getItem("token");
+}
+
+// Función para obtener los datos del comercio
+export function getComercio() {
+  const comercio = localStorage.getItem("comercio");
+  return comercio ? JSON.parse(comercio) : null;
 }
