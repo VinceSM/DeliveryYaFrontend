@@ -1,5 +1,5 @@
 import { API_CONFIG } from '../config/config.js';
-import { getToken } from './auth.js';
+import { getToken } from './auth.js'; // Ahora existe
 
 // Función para hacer requests autenticados
 async function authFetch(url, options = {}) {

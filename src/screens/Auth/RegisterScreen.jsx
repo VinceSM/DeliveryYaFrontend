@@ -7,17 +7,21 @@ import "../../styles/screens/RegisterScreen.css";
 
 export default function RegisterScreen() {
   const [currentSection, setCurrentSection] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [formErrors, setFormErrors] = useState({});
+  
+  // Estado con valores por defecto
   const [form, setForm] = useState({
     nombreComercio: "",
     email: "",
     password: "",
     fotoPortada: "",
     celular: "",
-    ciudad: "",
+    ciudad: "Miramar",
     calle: "",
     numero: "",
-    latitud: "",
-    longitud: "",
+    latitud: "-34.6037",
+    longitud: "-58.3816",
     encargado: "",
     cvu: "",
     alias: "",
@@ -30,26 +34,113 @@ export default function RegisterScreen() {
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await registerComercio(form);
-      alert("✅ " + response.Message);
-      // Redirigir al login después del registro exitoso
-      window.location.href = "/auth/login";
-    } catch (error) {
-      alert("❌ " + error.message);
+    
+    // Limpiar error del campo cuando el usuario empiece a escribir
+    if (formErrors[name]) {
+      setFormErrors(prev => ({
+        ...prev,
+        [name]: ""
+      }));
     }
   };
 
+  const validateSection = (section) => {
+    const errors = {};
+    
+    if (section === 0) {
+      if (!form.nombreComercio?.trim()) errors.nombreComercio = "El nombre del comercio es requerido";
+      if (!form.email?.trim()) errors.email = "El email es requerido";
+      else if (!/\S+@\S+\.\S+/.test(form.email)) errors.email = "El email no es válido";
+      if (!form.password) errors.password = "La contraseña es requerida";
+      else if (form.password.length < 6) errors.password = "La contraseña debe tener al menos 6 caracteres";
+      if (!form.encargado?.trim()) errors.encargado = "El encargado es requerido";
+      if (!form.celular?.trim()) errors.celular = "El celular es requerido";
+      if (!form.cvu?.trim()) errors.cvu = "El CVU es requerido";
+      if (!form.alias?.trim()) errors.alias = "El alias es requerido";
+    }
+    
+    if (section === 1) {
+      if (!form.ciudad?.trim()) errors.ciudad = "La ciudad es requerida";
+      if (!form.calle?.trim()) errors.calle = "La calle es requerida";
+      if (!form.numero?.trim()) errors.numero = "El número es requerido";
+      else if (isNaN(form.numero)) errors.numero = "El número debe ser un valor numérico";
+      if (!form.latitud) errors.latitud = "La latitud es requerida";
+      else if (isNaN(form.latitud)) errors.latitud = "La latitud debe ser un número";
+      if (!form.longitud) errors.longitud = "La longitud es requerida";
+      else if (isNaN(form.longitud)) errors.longitud = "La longitud debe ser un número";
+    }
+    
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const nextSection = () => {
-    setCurrentSection(prev => prev + 1);
+    if (validateSection(currentSection)) {
+      setCurrentSection(prev => prev + 1);
+    }
   };
 
   const prevSection = () => {
     setCurrentSection(prev => prev - 1);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    // Validar la sección actual
+    if (!validateSection(currentSection)) {
+      alert("❌ Por favor corrige los errores en el formulario");
+      return;
+    }
+
+    setIsLoading(true);
+    
+    try {
+      // Preparar datos con conversión explícita de tipos
+      const comercioData = {
+        NombreComercio: String(form.nombreComercio || ""),
+        Email: String(form.email || ""),
+        Password: String(form.password || ""),
+        FotoPortada: String(form.fotoPortada || ""),
+        Celular: String(form.celular || ""),
+        Ciudad: String(form.ciudad || ""),
+        Calle: String(form.calle || ""),
+        Numero: Number(form.numero) || 0,
+        Latitud: Number(form.latitud) || 0,
+        Longitud: Number(form.longitud) || 0,
+        Encargado: String(form.encargado || ""),
+        Cvu: String(form.cvu || ""),
+        Alias: String(form.alias || ""),
+        Destacado: Boolean(form.destacado)
+      };
+
+      console.log('📤 Estado del formulario:', form);
+      console.log('📤 Datos procesados para enviar:', comercioData);
+      
+      const response = await registerComercio(comercioData);
+      console.log('✅ Registro exitoso:', response);
+      
+      alert("✅ Comercio registrado exitosamente");
+      window.location.href = "/auth/login";
+    } catch (error) {
+      console.error("❌ Error en registro:", error);
+      
+      // Mostrar error más amigable
+      let errorMessage = "Error al registrar el comercio";
+      try {
+        const errorData = JSON.parse(error.message);
+        if (errorData.errors) {
+          const errorList = Object.values(errorData.errors).flat().join(', ');
+          errorMessage = `Errores de validación: ${errorList}`;
+        }
+      } catch {
+        errorMessage = error.message;
+      }
+      
+      alert("❌ " + errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const sectionTitles = ["Información", "Dirección", "Contrato"];
@@ -59,19 +150,14 @@ export default function RegisterScreen() {
       <div className="register-header">
         <img src={LogoDeliveryYa} alt="Logo DeliveryYa" className="register-logo" />
         
-        {/* Enlace para volver al login */}
         <div style={{textAlign: 'right', marginBottom: '10px'}}>
-          <Link 
-            to="/auth/login"
-            style={{color: '#fff', textDecoration: 'none', fontSize: '14px'}}
-          >
+          <Link to="/auth/login" style={{color: '#fff', textDecoration: 'none', fontSize: '14px'}}>
             ← Volver al Login
           </Link>
         </div>
         
         <h1 className="register-title">Registro de Comercio</h1>
         
-        {/* Indicador de progreso mejorado */}
         <div className="register-progress-indicator">
           {sectionTitles.map((title, index) => (
             <div key={index} className={`register-progress-step ${index === currentSection ? 'register-active' : ''} ${index < currentSection ? 'register-completed' : ''}`}>
@@ -91,59 +177,96 @@ export default function RegisterScreen() {
               <div className="register-input-group">
                 <label className="register-form-label">Nombre del comercio *</label>
                 <input 
-                  className="register-form-input"
+                  className={`register-form-input ${formErrors.nombreComercio ? 'error' : ''}`}
                   name="nombreComercio" 
                   value={form.nombreComercio}
                   placeholder="Ej: Mi Restaurante" 
                   onChange={handleChange} 
-                  required
                 />
+                {formErrors.nombreComercio && <span className="error-message">{formErrors.nombreComercio}</span>}
               </div>
               
               <div className="register-input-group">
                 <label className="register-form-label">Email *</label>
                 <input 
-                  className="register-form-input"
+                  className={`register-form-input ${formErrors.email ? 'error' : ''}`}
                   name="email" 
                   type="email" 
                   value={form.email}
                   placeholder="ejemplo@correo.com" 
                   onChange={handleChange} 
-                  required
                 />
+                {formErrors.email && <span className="error-message">{formErrors.email}</span>}
               </div>
               
               <div className="register-input-group">
                 <label className="register-form-label">Contraseña *</label>
                 <input 
-                  className="register-form-input"
+                  className={`register-form-input ${formErrors.password ? 'error' : ''}`}
                   name="password" 
                   type="password" 
                   value={form.password}
-                  placeholder="Mínimo 8 caracteres" 
+                  placeholder="Mínimo 6 caracteres" 
                   onChange={handleChange} 
-                  required
                 />
+                {formErrors.password && <span className="error-message">{formErrors.password}</span>}
               </div>
               
               <div className="register-input-group">
-                <label className="register-form-label">Encargado</label>
+                <label className="register-form-label">Encargado *</label>
                 <input 
-                  className="register-form-input"
+                  className={`register-form-input ${formErrors.encargado ? 'error' : ''}`}
                   name="encargado" 
                   value={form.encargado}
                   placeholder="Nombre del encargado" 
                   onChange={handleChange} 
                 />
+                {formErrors.encargado && <span className="error-message">{formErrors.encargado}</span>}
               </div>
               
               <div className="register-input-group">
-                <label className="register-form-label">Celular</label>
+                <label className="register-form-label">Celular *</label>
                 <input 
-                  className="register-form-input"
+                  className={`register-form-input ${formErrors.celular ? 'error' : ''}`}
                   name="celular" 
                   value={form.celular}
                   placeholder="+54 9 11 1234-5678" 
+                  onChange={handleChange} 
+                />
+                {formErrors.celular && <span className="error-message">{formErrors.celular}</span>}
+              </div>
+
+              <div className="register-input-group">
+                <label className="register-form-label">CVU *</label>
+                <input 
+                  className={`register-form-input ${formErrors.cvu ? 'error' : ''}`}
+                  name="cvu" 
+                  value={form.cvu}
+                  placeholder="CVU bancario (22 dígitos)" 
+                  onChange={handleChange} 
+                />
+                {formErrors.cvu && <span className="error-message">{formErrors.cvu}</span>}
+              </div>
+
+              <div className="register-input-group">
+                <label className="register-form-label">Alias *</label>
+                <input 
+                  className={`register-form-input ${formErrors.alias ? 'error' : ''}`}
+                  name="alias" 
+                  value={form.alias}
+                  placeholder="Alias bancario" 
+                  onChange={handleChange} 
+                />
+                {formErrors.alias && <span className="error-message">{formErrors.alias}</span>}
+              </div>
+
+              <div className="register-input-group">
+                <label className="register-form-label">Foto de portada (URL)</label>
+                <input 
+                  className="register-form-input"
+                  name="fotoPortada" 
+                  value={form.fotoPortada}
+                  placeholder="https://ejemplo.com/imagen.jpg" 
                   onChange={handleChange} 
                 />
               </div>
@@ -165,43 +288,43 @@ export default function RegisterScreen() {
               <div className="register-input-group">
                 <label className="register-form-label">Ciudad *</label>
                 <input 
-                  className="register-form-input"
+                  className={`register-form-input ${formErrors.ciudad ? 'error' : ''}`}
                   name="ciudad" 
                   value={form.ciudad}
                   placeholder="Ciudad" 
                   onChange={handleChange} 
-                  required
                 />
+                {formErrors.ciudad && <span className="error-message">{formErrors.ciudad}</span>}
               </div>
               
               <div className="register-input-group">
                 <label className="register-form-label">Calle *</label>
                 <input 
-                  className="register-form-input"
+                  className={`register-form-input ${formErrors.calle ? 'error' : ''}`}
                   name="calle" 
                   value={form.calle}
                   placeholder="Calle" 
                   onChange={handleChange} 
-                  required
                 />
+                {formErrors.calle && <span className="error-message">{formErrors.calle}</span>}
               </div>
               
               <div className="register-input-group">
                 <label className="register-form-label">Número *</label>
                 <input 
-                  className="register-form-input"
+                  className={`register-form-input ${formErrors.numero ? 'error' : ''}`}
                   name="numero" 
                   value={form.numero}
                   placeholder="Número" 
                   onChange={handleChange} 
-                  required
                 />
+                {formErrors.numero && <span className="error-message">{formErrors.numero}</span>}
               </div>
               
               <div className="register-input-group">
-                <label className="register-form-label">Latitud</label>
+                <label className="register-form-label">Latitud *</label>
                 <input 
-                  className="register-form-input"
+                  className={`register-form-input ${formErrors.latitud ? 'error' : ''}`}
                   name="latitud" 
                   type="number" 
                   step="any"
@@ -209,12 +332,13 @@ export default function RegisterScreen() {
                   placeholder="Ej: -34.603722" 
                   onChange={handleChange} 
                 />
+                {formErrors.latitud && <span className="error-message">{formErrors.latitud}</span>}
               </div>
               
               <div className="register-input-group">
-                <label className="register-form-label">Longitud</label>
+                <label className="register-form-label">Longitud *</label>
                 <input 
-                  className="register-form-input"
+                  className={`register-form-input ${formErrors.longitud ? 'error' : ''}`}
                   name="longitud" 
                   type="number" 
                   step="any"
@@ -222,6 +346,7 @@ export default function RegisterScreen() {
                   placeholder="Ej: -58.381592" 
                   onChange={handleChange} 
                 />
+                {formErrors.longitud && <span className="error-message">{formErrors.longitud}</span>}
               </div>
             </div>
             
@@ -298,8 +423,12 @@ export default function RegisterScreen() {
               <button type="button" className="register-nav-button register-prev-button" onClick={prevSection}>
                 ← Anterior
               </button>
-              <button type="submit" className="register-register-button">
-                Registrar Comercio
+              <button 
+                type="submit" 
+                className="register-register-button"
+                disabled={isLoading}
+              >
+                {isLoading ? "Registrando..." : "Registrar Comercio"}
               </button>
             </div>
           </div>

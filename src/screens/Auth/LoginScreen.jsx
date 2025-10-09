@@ -10,8 +10,9 @@ export default function LoginScreen() {
     password: "",
   });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, error: authError, clearError } = useAuth();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -19,22 +20,37 @@ export default function LoginScreen() {
       ...prev,
       [name]: value,
     }));
+    
+    // Limpiar errores cuando el usuario empiece a escribir
+    if (error || authError) {
+      setError("");
+      clearError?.();
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError("");
+    clearError?.();
     
     try {
-      const result = await login(form.email, form.password);
+      console.log('🔐 Intentando login con:', { email: form.email });
       
-      if (result.success) {
-        alert("✅ Inicio de sesión exitoso");
-        navigate("/dashboard");
-      } else {
-        alert("❌ " + result.error);
-      }
+      // El hook useAuth maneja el login
+      await login({
+        email: form.email,
+        password: form.password
+      });
+      
+      // Si llegamos aquí, el login fue exitoso
+      console.log('✅ Login exitoso, redirigiendo...');
+      alert("✅ Inicio de sesión exitoso");
+      navigate("/dashboard");
+      
     } catch (error) {
+      console.error('❌ Error en login:', error);
+      setError(error.message);
       alert("❌ Error: " + error.message);
     } finally {
       setLoading(false);
@@ -50,6 +66,13 @@ export default function LoginScreen() {
           <p className="login-subtitle">Accede a tu panel de comercio</p>
         </div>
         
+        {/* Mostrar errores */}
+        {(error || authError) && (
+          <div className="login-error">
+            {error || authError}
+          </div>
+        )}
+        
         <form onSubmit={handleSubmit} className="login-form">
           <div className="login-input-group">
             <label className="login-form-label">Email</label>
@@ -61,6 +84,7 @@ export default function LoginScreen() {
               placeholder="ejemplo@correo.com" 
               onChange={handleChange} 
               required
+              disabled={loading}
             />
           </div>
           
@@ -74,12 +98,13 @@ export default function LoginScreen() {
               placeholder="Ingresa tu contraseña" 
               onChange={handleChange} 
               required
+              disabled={loading}
             />
           </div>
           
           <div className="login-options">
             <label className="login-remember">
-              <input type="checkbox" />
+              <input type="checkbox" disabled={loading} />
               <span className="login-checkmark"></span>
               Recordarme
             </label>

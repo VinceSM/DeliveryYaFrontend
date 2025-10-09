@@ -1,83 +1,90 @@
 import { useState, useEffect, createContext, useContext } from 'react';
 import { 
-  loginComercio as apiLogin, 
-  logoutComercio as apiLogout, 
-  getComercio, 
-  isAuthenticated,
-  getToken
+  loginComercio, 
+  logoutComercio, 
+  getToken, 
+  isAuthenticated, 
+  getComercioData,
+  validateToken 
 } from '../api/auth';
 
+// Crear contexto de autenticación
 const AuthContext = createContext();
 
-export function useAuth() {
-  return useContext(AuthContext);
-}
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth debe ser usado dentro de un AuthProvider');
+  }
+  return context;
+};
 
-export function AuthProvider({ children }) {
-  const [comercio, setComercio] = useState(null);
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [isAuthChecked, setIsAuthChecked] = useState(false);
+  const [error, setError] = useState(null);
 
+  // Verificar autenticación al cargar
   useEffect(() => {
-    // Verificar si hay una sesión activa al cargar la app
-    const checkAuth = async () => {
-      try {
-        if (isAuthenticated()) {
-          const comercioData = getComercio();
-          // Verificar que el token no sea el simulado o esté expirado
-          const token = getToken();
-          if (token && token !== "simulated-jwt-token") {
-            setComercio(comercioData);
-          } else {
-            // Token inválido, limpiar
-            apiLogout();
-          }
-        }
-      } catch (error) {
-        console.error("Error verificando autenticación:", error);
-        apiLogout();
-      } finally {
-        setLoading(false);
-        setIsAuthChecked(true);
-      }
-    };
-
     checkAuth();
   }, []);
 
-  const login = async (email, password) => {
+  const checkAuth = async () => {
     try {
-      const response = await apiLogin({ email, password });
+      setLoading(true);
+      const authenticated = isAuthenticated();
       
-      // Ajusta según la estructura de respuesta de tu backend
-      if (response.Token || response.token) {
-        const token = response.Token || response.token;
-        const comercioData = response.Comercio || response.comercio;
-        
-        localStorage.setItem("token", token);
-        localStorage.setItem("comercio", JSON.stringify(comercioData));
-        setComercio(comercioData);
-        return { success: true };
+      if (authenticated) {
+        const comercioData = getComercioData();
+        setUser(comercioData);
       } else {
-        throw new Error("No se recibió token del servidor");
+        setUser(null);
       }
     } catch (error) {
-      return { success: false, error: error.message };
+      console.error('Error verificando autenticación:', error);
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const login = async (credentials) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const result = await loginComercio(credentials);
+      setUser(result.comercio || result);
+      
+      return result;
+    } catch (error) {
+      setError(error.message);
+      throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
   const logout = () => {
-    apiLogout();
-    setComercio(null);
+    try {
+      logoutComercio();
+      setUser(null);
+      setError(null);
+      return true;
+    } catch (error) {
+      setError(error.message);
+      return false;
+    }
   };
 
   const value = {
-    comercio,
+    user,
+    loading,
+    error,
     login,
     logout,
-    isAuthenticated: !!comercio,
-    getToken,
-    loading: loading || !isAuthChecked
+    isAuthenticated: !!user,
+    clearError: () => setError(null)
   };
 
   return (
@@ -85,4 +92,6 @@ export function AuthProvider({ children }) {
       {children}
     </AuthContext.Provider>
   );
-}
+};
+
+export default useAuth;

@@ -1,58 +1,207 @@
 import { API_CONFIG } from '../config/config.js';
 
-export async function registerComercio(data) {
-  const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.AUTH.REGISTER}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(data)
-  });
+// Función para registrar comercio
+export const registerComercio = async (comercioData) => {
+  try {
+    // DEBUG: Ver qué está llegando
+    console.log('📥 Datos recibidos en auth.js:', comercioData);
+    
+    // El RegisterScreen ya envía los datos con los nombres correctos
+    // Solo necesitamos asegurar los tipos
+    const requestData = {
+      NombreComercio: String(comercioData.NombreComercio || ""),
+      Email: String(comercioData.Email || ""),
+      Password: String(comercioData.Password || ""),
+      FotoPortada: String(comercioData.FotoPortada || ""),
+      Celular: String(comercioData.Celular || ""),
+      Ciudad: String(comercioData.Ciudad || ""),
+      Calle: String(comercioData.Calle || ""),
+      Numero: Number(comercioData.Numero) || 0,
+      Latitud: Number(comercioData.Latitud) || 0,
+      Longitud: Number(comercioData.Longitud) || 0,
+      Encargado: String(comercioData.Encargado || ""),
+      Cvu: String(comercioData.Cvu || ""),
+      Alias: String(comercioData.Alias || ""),
+      Destacado: Boolean(comercioData.Destacado)
+    };
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || "Error en el registro");
+    console.log('📤 Datos procesados para enviar:', requestData);
+    console.log('🔗 URL:', `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.COMERCIOS.BASE}`);
+
+    const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.COMERCIOS.BASE}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestData),
+    });
+
+    console.log('📥 Status de respuesta:', response.status);
+    console.log('📥 OK:', response.ok);
+
+    if (!response.ok) {
+      let errorText;
+      try {
+        errorText = await response.text();
+        console.error('❌ Error del servidor (text):', errorText);
+        
+        // Intentar parsear como JSON para mejor formato
+        try {
+          const errorJson = JSON.parse(errorText);
+          console.error('❌ Error del servidor (JSON):', errorJson);
+          errorText = JSON.stringify(errorJson, null, 2);
+        } catch {
+          // Mantener como texto si no es JSON
+        }
+      } catch (e) {
+        errorText = `Error ${response.status}: ${response.statusText}`;
+      }
+      
+      throw new Error(errorText || `Error ${response.status}: ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    console.log('✅ Registro exitoso:', result);
+    return result;
+
+  } catch (error) {
+    console.error('💥 Error en registerComercio:', error);
+    
+    if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+      throw new Error('No se pudo conectar con el servidor. Verifica que el backend esté ejecutándose.');
+    }
+    
+    // Mejorar el mensaje de error para validaciones
+    if (error.message.includes('400') || error.message.includes('validation')) {
+      try {
+        const errorData = JSON.parse(error.message);
+        if (errorData.errors) {
+          const errorList = Object.entries(errorData.errors)
+            .map(([field, errors]) => `${field}: ${errors.join(', ')}`)
+            .join('\n');
+          throw new Error(`Errores de validación:\n${errorList}`);
+        }
+      } catch {
+        // Si no se puede parsear, mantener el error original
+      }
+    }
+    
+    throw new Error(error.message || 'Error de conexión con el servidor');
   }
+};
 
-  return response.json();
-}
-
-export async function loginComercio(data) {
-  const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.AUTH.LOGIN}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(data)
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || "Error en el inicio de sesión");
+// Función para verificar conexión con el backend
+export const checkBackendConnection = async () => {
+  try {
+    console.log('🔍 Verificando conexión con el backend...');
+    const response = await fetch(`${API_CONFIG.BASE_URL}/api/Comercios`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    const isConnected = response.ok;
+    console.log('🔍 Backend conectado:', isConnected);
+    return isConnected;
+  } catch (error) {
+    console.error('🔍 Backend no disponible:', error);
+    return false;
   }
+};
 
-  return response.json();
-}
+// Función para login de comercio
+export const loginComercio = async (credentials) => {
+  try {
+    console.log('🔐 Intentando login...');
+    
+    const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.AUTH.LOGIN}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(credentials),
+    });
 
-// Función para cerrar sesión
-export function logoutComercio() {
-  localStorage.removeItem("token");
-  localStorage.removeItem("comercio");
-}
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('❌ Error en login:', errorText);
+      throw new Error(errorText || 'Credenciales inválidas');
+    }
+
+    const data = await response.json();
+    console.log('✅ Login exitoso:', data);
+    
+    // Guardar token en localStorage si existe
+    if (data.token) {
+      localStorage.setItem('authToken', data.token);
+      localStorage.setItem('comercioData', JSON.stringify(data.comercio));
+      console.log('🔐 Token guardado en localStorage');
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('💥 Error en loginComercio:', error);
+    throw new Error(error.message || 'Error de conexión');
+  }
+};
+
+// Función para logout
+export const logoutComercio = () => {
+  try {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('comercioData');
+    console.log('🔐 Logout exitoso');
+    return true;
+  } catch (error) {
+    console.error('💥 Error en logout:', error);
+    return false;
+  }
+};
+
+// Función para obtener token
+export const getToken = () => {
+  const token = localStorage.getItem('authToken');
+  console.log('🔐 Token obtenido:', !!token);
+  return token;
+};
 
 // Función para verificar si está autenticado
-export function isAuthenticated() {
-  const token = localStorage.getItem("token");
-  return !!token && token !== "simulated-jwt-token";
-}
+export const isAuthenticated = () => {
+  const token = getToken();
+  const isAuth = !!token;
+  console.log('🔐 Usuario autenticado:', isAuth);
+  return isAuth;
+};
 
-// Función para obtener el token
-export function getToken() {
-  return localStorage.getItem("token");
-}
+// Función para obtener datos del comercio
+export const getComercioData = () => {
+  try {
+    const comercioData = localStorage.getItem('comercioData');
+    const data = comercioData ? JSON.parse(comercioData) : null;
+    console.log('🔐 Datos del comercio obtenidos:', !!data);
+    return data;
+  } catch (error) {
+    console.error('💥 Error obteniendo datos del comercio:', error);
+    return null;
+  }
+};
 
-// Función para obtener los datos del comercio
-export function getComercio() {
-  const comercio = localStorage.getItem("comercio");
-  return comercio ? JSON.parse(comercio) : null;
-}
+// Función para validar token (opcional)
+export const validateToken = async () => {
+  try {
+    const token = getToken();
+    if (!token) {
+      console.log('🔐 No hay token para validar');
+      return false;
+    }
+
+    // Aquí puedes hacer una petición para validar el token
+    // Por ahora, simplemente retornamos true si existe el token
+    console.log('🔐 Token válido (verificación básica)');
+    return true;
+  } catch (error) {
+    console.error('💥 Error validando token:', error);
+    return false;
+  }
+};
