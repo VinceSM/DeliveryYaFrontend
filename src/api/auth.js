@@ -113,7 +113,7 @@ export const checkBackendConnection = async () => {
 // Función para login de comercio
 export const loginComercio = async (credentials) => {
   try {
-    console.log('🔐 Intentando login...');
+    console.log('🔐 Intentando login...', credentials);
     
     const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.AUTH.LOGIN}`, {
       method: 'POST',
@@ -123,26 +123,66 @@ export const loginComercio = async (credentials) => {
       body: JSON.stringify(credentials),
     });
 
+    console.log('📥 Status de respuesta:', response.status);
+    
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('❌ Error en login:', errorText);
+      let errorText;
+      try {
+        errorText = await response.text();
+        console.error('❌ Error en login:', errorText);
+        
+        // Intentar parsear como JSON
+        try {
+          const errorJson = JSON.parse(errorText);
+          errorText = errorJson.message || JSON.stringify(errorJson);
+        } catch {
+          // Mantener como texto si no es JSON
+        }
+      } catch (e) {
+        errorText = `Error ${response.status}: ${response.statusText}`;
+      }
+      
       throw new Error(errorText || 'Credenciales inválidas');
     }
 
     const data = await response.json();
-    console.log('✅ Login exitoso:', data);
+    console.log('✅ Respuesta del login:', data);
+    
+    // CORRECCIÓN: El backend envía las propiedades directamente, no dentro de "comercio"
+    // Crear estructura que espera el frontend
+    const loginResponse = {
+      token: data.token,
+      comercio: {
+        idComercio: data.idComercio,
+        NombreComercio: data.NombreComercio,
+        Email: data.Email,
+        Encargado: data.Encargado,
+        Celular: data.Celular,
+        Direccion: data.Direccion,
+        Latitud: data.Latitud,
+        Longitud: data.Longitud,
+        CVU: data.CVU,
+        Alias: data.Alias,
+        Destacado: data.Destacado
+      }
+    };
     
     // Guardar token en localStorage si existe
-    if (data.token) {
-      localStorage.setItem('authToken', data.token);
-      localStorage.setItem('comercioData', JSON.stringify(data.comercio));
-      console.log('🔐 Token guardado en localStorage');
+    if (loginResponse.token) {
+      localStorage.setItem('authToken', loginResponse.token);
+      localStorage.setItem('comercioData', JSON.stringify(loginResponse.comercio));
+      console.log('🔐 Token y datos guardados en localStorage');
     }
     
-    return data;
+    return loginResponse;
   } catch (error) {
     console.error('💥 Error en loginComercio:', error);
-    throw new Error(error.message || 'Error de conexión');
+    
+    if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+      throw new Error('No se pudo conectar con el servidor. Verifica que el backend esté ejecutándose.');
+    }
+    
+    throw new Error(error.message || 'Error de conexión con el servidor');
   }
 };
 

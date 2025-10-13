@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
+import { checkBackendConnection } from "../../api/auth"; // ✅ AGREGAR ESTA IMPORTACIÓN
 import LogoDeliveryYa from "../../assets/LogoDeliveryYa.png";
 import "../../styles/screens/LoginScreen.css";
 
@@ -37,19 +38,24 @@ export default function LoginScreen() {
     try {
       console.log('🔐 Intentando login con:', { email: form.email });
       
+      // Verificar conexión primero
+      const isConnected = await checkBackendConnection();
+      if (!isConnected) {
+        throw new Error('No se puede conectar con el servidor. Verifica que el backend esté ejecutándose.');
+      }
+      
       // El hook useAuth maneja el login
-      await login({
+      const result = await login({
         email: form.email,
         password: form.password
       });
       
-      // Si llegamos aquí, el login fue exitoso
-      console.log('✅ Login exitoso, redirigiendo...');
+      console.log('✅ Login exitoso, respuesta completa:', result);
       alert("✅ Inicio de sesión exitoso");
       navigate("/dashboard");
       
     } catch (error) {
-      console.error('❌ Error en login:', error);
+      console.error('❌ Error completo en login:', error);
       setError(error.message);
       alert("❌ Error: " + error.message);
     } finally {

@@ -50,29 +50,26 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const login = async (credentials) => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      console.log('🔐 Iniciando proceso de login...');
-      const result = await loginComercio(credentials);
-      
-      // Actualizar estado del usuario
-      const userData = result.comercio || result;
-      setUser(userData);
-      
-      console.log('✅ Login exitoso, usuario:', userData);
-      return result;
-      
-    } catch (error) {
-      console.error('❌ Error en login:', error);
-      setError(error.message);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
+// En tu hook useAuth
+const login = async (credentials) => {
+  try {
+    setLoading(true);
+    setError(null);
+    
+    const response = await loginComercio(credentials);
+    
+    // Ahora response debería tener la estructura correcta
+    setUser(response.comercio);
+    setToken(response.token);
+    
+    return response;
+  } catch (error) {
+    setError(error.message);
+    throw error;
+  } finally {
+    setLoading(false);
+  }
+};
 
   const logout = () => {
     try {
