@@ -1,6 +1,7 @@
 import { Home, Package, ShoppingCart, Clock, Settings, LogOut, Store, ChevronRight } from "lucide-react";
 import "../../styles/components/Sidebar.css";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../../hooks/useAuth"; // ✅ Importar useAuth
 
 const menuItems = [
   { id: "home", label: "Inicio", icon: <Home size={20} />, path: "/dashboard" },
@@ -13,6 +14,7 @@ const menuItems = [
 export default function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user, logout } = useAuth(); // ✅ Obtener user y logout del hook
 
   const getActiveItem = () => {
     const currentPath = location.pathname;
@@ -42,10 +44,58 @@ export default function Sidebar() {
     navigate(path);
   };
 
-  const handleLogout = () => {
-    // Aquí iría la lógica de logout
-    console.log("Cerrando sesión...");
-    navigate("/auth/login");
+  const handleLogout = async () => {
+    try {
+      console.log("🔐 Cerrando sesión...");
+      
+      // Mostrar confirmación
+      const confirmLogout = window.confirm("¿Estás seguro de que quieres cerrar sesión?");
+      if (!confirmLogout) return;
+      
+      // Ejecutar logout
+      const success = await logout();
+      
+      if (success) {
+        console.log("✅ Sesión cerrada exitosamente");
+        alert("Sesión cerrada exitosamente");
+        navigate("/auth/login");
+      } else {
+        console.error("❌ Error al cerrar sesión");
+        alert("Error al cerrar sesión");
+      }
+    } catch (error) {
+      console.error("💥 Error en logout:", error);
+      alert("Error al cerrar sesión: " + error.message);
+    }
+  };
+
+  // Obtener iniciales para el avatar
+  const getUserInitials = () => {
+    if (user && user.NombreComercio) {
+      return user.NombreComercio
+        .split(' ')
+        .map(word => word.charAt(0))
+        .join('')
+        .toUpperCase()
+        .substring(0, 2);
+    }
+    return "MC";
+  };
+
+  // Obtener nombre del comercio o usuario
+  const getUserName = () => {
+    if (user && user.NombreComercio) {
+      return user.NombreComercio;
+    }
+    return "Administrador";
+  };
+
+  // Obtener email del usuario
+  const getUserEmail = () => {
+    if (user && user.Email) {
+      return user.Email;
+    }
+    return "Mi Comercio";
   };
 
   return (
@@ -94,12 +144,12 @@ export default function Sidebar() {
         <div className="user-info">
           <div className="user-avatar">
             <div className="avatar-placeholder">
-              <span>MC</span>
+              <span>{getUserInitials()}</span>
             </div>
           </div>
           <div className="user-details">
-            <p className="user-name">Administrador</p>
-            <p className="user-role">Mi Comercio</p>
+            <p className="user-name">{getUserName()}</p>
+            <p className="user-role">{getUserEmail()}</p>
           </div>
         </div>
         

@@ -50,7 +50,8 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-// En tu hook useAuth
+  // CORRECCIÓN: Función login sin setToken
+  // En tu hook useAuth - así debería estar:
 const login = async (credentials) => {
   try {
     setLoading(true);
@@ -58,10 +59,10 @@ const login = async (credentials) => {
     
     const response = await loginComercio(credentials);
     
-    // Ahora response debería tener la estructura correcta
+    // Solo actualizar el usuario, el token ya se guardó en localStorage
     setUser(response.comercio);
-    setToken(response.token);
     
+    console.log('✅ Login exitoso en useAuth:', response.comercio);
     return response;
   } catch (error) {
     setError(error.message);
@@ -71,18 +72,18 @@ const login = async (credentials) => {
   }
 };
 
-  const logout = () => {
-    try {
-      logoutComercio();
-      setUser(null);
-      setError(null);
-      console.log('🔐 Logout exitoso');
-      return true;
-    } catch (error) {
-      setError(error.message);
-      return false;
-    }
-  };
+const logout = () => {
+  try {
+    logoutComercio(); // Esta función de auth.js limpia localStorage
+    setUser(null);
+    setError(null);
+    console.log('🔐 Logout exitoso');
+    return true; // Retorna true para indicar éxito
+  } catch (error) {
+    setError(error.message);
+    return false; // Retorna false para indicar error
+  }
+};
 
   const clearError = () => {
     setError(null);

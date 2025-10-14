@@ -131,7 +131,6 @@ export const loginComercio = async (credentials) => {
         errorText = await response.text();
         console.error('❌ Error en login:', errorText);
         
-        // Intentar parsear como JSON
         try {
           const errorJson = JSON.parse(errorText);
           errorText = errorJson.message || JSON.stringify(errorJson);
@@ -147,34 +146,55 @@ export const loginComercio = async (credentials) => {
 
     const data = await response.json();
     console.log('✅ Respuesta del login:', data);
-    
-    // CORRECCIÓN: El backend envía las propiedades directamente, no dentro de "comercio"
-    // Crear estructura que espera el frontend
-    const loginResponse = {
-      token: data.token,
-      comercio: {
-        idComercio: data.idComercio,
-        NombreComercio: data.NombreComercio,
-        Email: data.Email,
-        Encargado: data.Encargado,
-        Celular: data.Celular,
-        Direccion: data.Direccion,
-        Latitud: data.Latitud,
-        Longitud: data.Longitud,
-        CVU: data.CVU,
-        Alias: data.Alias,
-        Destacado: data.Destacado
+
+    // EL BACKEND SOLO RETORNA { token } - NECESITAMOS OBTENER LOS DATOS DEL COMERCIO
+    if (data.token && !data.idComercio) {
+      console.log('🔍 Backend solo retornó token, obteniendo datos del comercio...');
+      
+      // Obtener datos del comercio por separado
+      const comercioData = await obtenerDatosComercioPorEmail(credentials.email);
+      
+      const loginResponse = {
+        token: data.token,
+        comercio: comercioData
+      };
+      
+      // Guardar en localStorage
+      if (loginResponse.token) {
+        localStorage.setItem('authToken', loginResponse.token);
+        localStorage.setItem('comercioData', JSON.stringify(loginResponse.comercio));
+        console.log('🔐 Token y datos guardados en localStorage');
       }
-    };
-    
-    // Guardar token en localStorage si existe
-    if (loginResponse.token) {
-      localStorage.setItem('authToken', loginResponse.token);
-      localStorage.setItem('comercioData', JSON.stringify(loginResponse.comercio));
-      console.log('🔐 Token y datos guardados en localStorage');
+      
+      return loginResponse;
+    } else {
+      // Si el backend algún día retorna todos los datos (para futuro)
+      const loginResponse = {
+        token: data.token,
+        comercio: {
+          idComercio: data.idComercio,
+          NombreComercio: data.NombreComercio,
+          Email: data.Email,
+          Encargado: data.Encargado,
+          Celular: data.Celular,
+          Direccion: data.Direccion,
+          Latitud: data.Latitud,
+          Longitud: data.Longitud,
+          CVU: data.CVU,
+          Alias: data.Alias,
+          Destacado: data.Destacado
+        }
+      };
+      
+      // Guardar en localStorage
+      if (loginResponse.token) {
+        localStorage.setItem('authToken', loginResponse.token);
+        localStorage.setItem('comercioData', JSON.stringify(loginResponse.comercio));
+        console.log('🔐 Token y datos guardados en localStorage');
+      }
+      
+      return loginResponse;
     }
-    
-    return loginResponse;
   } catch (error) {
     console.error('💥 Error en loginComercio:', error);
     
@@ -183,6 +203,50 @@ export const loginComercio = async (credentials) => {
     }
     
     throw new Error(error.message || 'Error de conexión con el servidor');
+  }
+};
+
+// Función auxiliar para obtener datos del comercio por email
+const obtenerDatosComercioPorEmail = async (email) => {
+  try {
+    console.log('🔍 Buscando datos del comercio por email:', email);
+    
+    // Primero obtener todos los comercios
+    const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.COMERCIOS.BASE}`);
+    
+    if (!response.ok) {
+      throw new Error('No se pudieron obtener los datos del comercio');
+    }
+    
+    const comercios = await response.json();
+    
+    // Buscar el comercio por email
+    const comercio = comercios.find(c => c.email === email);
+    
+    if (!comercio) {
+      throw new Error('No se encontraron datos del comercio');
+    }
+    
+    console.log('✅ Datos del comercio obtenidos:', comercio);
+    
+    // Mapear los datos a la estructura que espera el frontend
+    return {
+      idComercio: comercio.idComercio || comercio.IdComercio,
+      NombreComercio: comercio.nombreComercio || comercio.NombreComercio,
+      Email: comercio.email || comercio.Email,
+      Encargado: comercio.encargado || comercio.Encargado,
+      Celular: comercio.celular || comercio.Celular,
+      Direccion: `${comercio.calle || comercio.Calle} ${comercio.numero || comercio.Numero}, ${comercio.ciudad || comercio.Ciudad}`,
+      Latitud: comercio.latitud || comercio.Latitud,
+      Longitud: comercio.longitud || comercio.Longitud,
+      CVU: comercio.cvu || comercio.CVU,
+      Alias: comercio.alias || comercio.Alias,
+      Destacado: comercio.destacado || comercio.Destacado
+    };
+    
+  } catch (error) {
+    console.error('💥 Error obteniendo datos del comercio:', error);
+    throw new Error('No se pudieron obtener los datos del usuario después del login');
   }
 };
 

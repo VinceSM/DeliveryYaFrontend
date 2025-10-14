@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "../../styles/screens/PerfilScreen.css";
 import Sidebar from "../../components/screens/Sidebar";
 import { 
@@ -16,23 +16,30 @@ import {
   Save,
   Edit3
 } from "lucide-react";
+import { useAuth } from "../../hooks/useAuth"; // ✅ Importar useAuth
+import { getComercioData } from "../../api/auth"; // ✅ Importar función para obtener datos
 
 export default function PerfilScreen() {
   const [seccionActiva, setSeccionActiva] = useState("informacion");
   const [editando, setEditando] = useState(false);
   const [guardando, setGuardando] = useState(false);
+  const { user } = useAuth(); // ✅ Obtener usuario del contexto
 
-  // Datos del comercio
+  // Datos del comercio - ahora con datos reales
   const [comercio, setComercio] = useState({
-    nombre: "Mi Comercio Delicioso",
+    nombre: "",
     descripcion: "Restaurante especializado en comida rápida y delivery",
-    email: "contacto@micomercio.com",
-    telefono: "+54 11 1234-5678",
-    direccion: "Av. Principal 1234, Buenos Aires",
+    email: "",
+    telefono: "",
+    direccion: "",
     horarioAtencion: "Lunes a Domingo: 9:00 - 23:00",
     categoria: "Restaurante",
     tiempoEntrega: "30-45 min",
-    costoEnvio: 5.00
+    costoEnvio: 5.00,
+    encargado: "",
+    cvu: "",
+    alias: "",
+    destacado: false
   });
 
   // Configuración
@@ -45,6 +52,51 @@ export default function PerfilScreen() {
     modoMantenimiento: false,
     pedidosAutomaticos: true
   });
+
+  // ✅ Cargar datos reales cuando el componente se monta
+  useEffect(() => {
+    cargarDatosReales();
+  }, []);
+
+  const cargarDatosReales = () => {
+    try {
+      // Obtener datos del localStorage o del contexto
+      const datosReales = getComercioData();
+      
+      if (datosReales) {
+        console.log("📊 Datos reales del comercio:", datosReales);
+        
+        setComercio(prev => ({
+          ...prev,
+          nombre: datosReales.NombreComercio || "",
+          email: datosReales.Email || "",
+          telefono: datosReales.Celular || "",
+          direccion: datosReales.Direccion || "",
+          encargado: datosReales.Encargado || "",
+          cvu: datosReales.CVU || "",
+          alias: datosReales.Alias || "",
+          destacado: datosReales.Destacado || false
+        }));
+      } else if (user) {
+        // Si hay usuario en el contexto pero no en localStorage
+        console.log("📊 Usando datos del contexto:", user);
+        
+        setComercio(prev => ({
+          ...prev,
+          nombre: user.NombreComercio || "",
+          email: user.Email || "",
+          telefono: user.Celular || "",
+          direccion: user.Direccion || "",
+          encargado: user.Encargado || "",
+          cvu: user.CVU || "",
+          alias: user.Alias || "",
+          destacado: user.Destacado || false
+        }));
+      }
+    } catch (error) {
+      console.error("💥 Error cargando datos reales:", error);
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -63,18 +115,107 @@ export default function PerfilScreen() {
 
   const handleGuardar = async () => {
     setGuardando(true);
-    // Simular guardado en API
-    setTimeout(() => {
+    
+    try {
+      // Aquí iría la llamada real a la API para actualizar
+      console.log("💾 Guardando datos:", comercio);
+      
+      // Simular llamada a API
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Actualizar localStorage con los nuevos datos
+      const datosActualizados = {
+        ...getComercioData(),
+        NombreComercio: comercio.nombre,
+        Email: comercio.email,
+        Celular: comercio.telefono,
+        Encargado: comercio.encargado,
+        CVU: comercio.cvu,
+        Alias: comercio.alias,
+        Destacado: comercio.destacado
+      };
+      
+      localStorage.setItem('comercioData', JSON.stringify(datosActualizados));
+      
+      console.log("✅ Datos guardados exitosamente");
+      alert("✅ Perfil actualizado correctamente");
+      
+    } catch (error) {
+      console.error("❌ Error guardando datos:", error);
+      alert("❌ Error al guardar los cambios");
+    } finally {
       setGuardando(false);
       setEditando(false);
-      console.log("Datos guardados:", comercio);
-    }, 1500);
+    }
   };
 
   const handleCancelar = () => {
     setEditando(false);
-    // Aquí podrías resetear los datos desde la API
+    // Recargar datos originales
+    cargarDatosReales();
   };
+
+  // ✅ Sección de información bancaria
+  const renderInformacionBancaria = () => (
+    <div className="form-seccion-bancaria">
+      <h4 className="seccion-subtitulo">Información Bancaria</h4>
+      <div className="form-grid">
+        <div className="form-group-perfil">
+          <label className="form-label-perfil">CVU</label>
+          <input
+            type="text"
+            name="cvu"
+            value={comercio.cvu}
+            onChange={handleInputChange}
+            className="form-input-perfil"
+            disabled={!editando}
+            placeholder="0000003100001234567890"
+          />
+        </div>
+
+        <div className="form-group-perfil">
+          <label className="form-label-perfil">Alias</label>
+          <input
+            type="text"
+            name="alias"
+            value={comercio.alias}
+            onChange={handleInputChange}
+            className="form-input-perfil"
+            disabled={!editando}
+            placeholder="mi.comercio.mp"
+          />
+        </div>
+
+        <div className="form-group-perfil">
+          <label className="form-label-perfil">Encargado</label>
+          <input
+            type="text"
+            name="encargado"
+            value={comercio.encargado}
+            onChange={handleInputChange}
+            className="form-input-perfil"
+            disabled={!editando}
+            placeholder="Nombre del encargado"
+          />
+        </div>
+
+        <div className="form-group-perfil">
+          <label className="form-label-perfil">Destacado</label>
+          <div className="checkbox-container">
+            <input
+              type="checkbox"
+              name="destacado"
+              checked={comercio.destacado}
+              onChange={(e) => setComercio(prev => ({ ...prev, destacado: e.target.checked }))}
+              className="form-checkbox-perfil"
+              disabled={!editando}
+            />
+            <span className="checkbox-label">Marcar como comercio destacado</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
   const renderSeccionInformacion = () => (
     <div className="seccion-contenido">
@@ -102,6 +243,7 @@ export default function PerfilScreen() {
               onChange={handleInputChange}
               className="form-input-perfil"
               disabled={!editando}
+              placeholder="Ingresa el nombre de tu comercio"
             />
           </div>
 
@@ -132,6 +274,7 @@ export default function PerfilScreen() {
               className="form-textarea-perfil"
               disabled={!editando}
               rows="3"
+              placeholder="Describe tu comercio..."
             />
           </div>
 
@@ -146,6 +289,7 @@ export default function PerfilScreen() {
                 onChange={handleInputChange}
                 className="form-input-perfil"
                 disabled={!editando}
+                placeholder="correo@ejemplo.com"
               />
             </div>
           </div>
@@ -161,6 +305,7 @@ export default function PerfilScreen() {
                 onChange={handleInputChange}
                 className="form-input-perfil"
                 disabled={!editando}
+                placeholder="+54 11 1234-5678"
               />
             </div>
           </div>
@@ -176,6 +321,7 @@ export default function PerfilScreen() {
                 onChange={handleInputChange}
                 className="form-input-perfil"
                 disabled={!editando}
+                placeholder="Av. Principal 1234, Ciudad"
               />
             </div>
           </div>
@@ -191,6 +337,7 @@ export default function PerfilScreen() {
                 onChange={handleInputChange}
                 className="form-input-perfil"
                 disabled={!editando}
+                placeholder="Lunes a Domingo: 9:00 - 23:00"
               />
             </div>
           </div>
@@ -204,6 +351,7 @@ export default function PerfilScreen() {
               onChange={handleInputChange}
               className="form-input-perfil"
               disabled={!editando}
+              placeholder="30-45 min"
             />
           </div>
 
@@ -218,9 +366,13 @@ export default function PerfilScreen() {
               disabled={!editando}
               step="0.01"
               min="0"
+              placeholder="5.00"
             />
           </div>
         </div>
+
+        {/* ✅ Nueva sección de información bancaria */}
+        {renderInformacionBancaria()}
 
         {editando && (
           <div className="acciones-perfil">
@@ -458,8 +610,24 @@ export default function PerfilScreen() {
                   <div className="avatar-imagen">
                     <Store size={40} />
                   </div>
-                  <h3 className="avatar-nombre">{comercio.nombre}</h3>
+                  <h3 className="avatar-nombre">{comercio.nombre || "Mi Comercio"}</h3>
                   <p className="avatar-categoria">{comercio.categoria}</p>
+                  
+                  <div className="info-adicional">
+                    <div className="info-item">
+                      <Mail size={14} />
+                      <span>{comercio.email || "No especificado"}</span>
+                    </div>
+                    <div className="info-item">
+                      <Phone size={14} />
+                      <span>{comercio.telefono || "No especificado"}</span>
+                    </div>
+                    {comercio.destacado && (
+                      <div className="badge-destacado">
+                        ⭐ Comercio Destacado
+                      </div>
+                    )}
+                  </div>
                   
                   <div className="avatar-acciones">
                     <button className="btn-avatar">Cambiar Logo</button>

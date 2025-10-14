@@ -2,7 +2,7 @@ export const API_CONFIG = {
   BASE_URL: import.meta.env.VITE_API_URL || "http://localhost:5189",
   ENDPOINTS: {
     AUTH: {
-      LOGIN: "/api/Comercios/login",
+      LOGIN: "/api/Auth/login-comercio",
       REGISTER: "/api/Comercios"
     },
     COMERCIOS: {
