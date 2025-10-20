@@ -3,6 +3,7 @@ export const API_CONFIG = {
   ENDPOINTS: {
     AUTH: {
       LOGIN: "/api/Auth/login-comercio",
+      LOGIN_ADMIN: "/api/Auth/login-admin", // ✅ NUEVO
       REGISTER: "/api/Comercios"
     },
     COMERCIOS: {
@@ -13,7 +14,8 @@ export const API_CONFIG = {
       CATEGORIAS: "/api/Comercios/{id}/categorias"
     },
     ADMINS: {
-      BASE: "/api/Admins"
+      BASE: "/api/Admins",
+      LOGIN: "/api/Auth/login-admin" // ✅ NUEVO
     },
     HORARIOS: "/api/Horarios"
   }
