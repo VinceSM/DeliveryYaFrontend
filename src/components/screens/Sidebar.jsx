@@ -1,11 +1,12 @@
-import { Home, Package, ShoppingCart, Clock, Settings, LogOut, Store, ChevronRight } from "lucide-react";
+import { Home, Package, ShoppingCart, Clock, Settings, LogOut, Store, ChevronRight, Tag } from "lucide-react";
 import "../../styles/components/Sidebar.css";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "../../hooks/useAuth"; // ✅ Importar useAuth
+import { useAuth } from "../../hooks/useAuth";
 
 const menuItems = [
   { id: "home", label: "Inicio", icon: <Home size={20} />, path: "/dashboard" },
   { id: "productos", label: "Productos", icon: <Package size={20} />, path: "/productos" },
+  { id: "categorias", label: "Categorías", icon: <Tag size={20} />, path: "/categorias" }, // ✅ NUEVO
   { id: "pedidos", label: "Pedidos", icon: <ShoppingCart size={20} />, path: "/pedidos" },
   { id: "horarios", label: "Horarios", icon: <Clock size={20} />, path: "/horarios" },
   { id: "perfil", label: "Perfil", icon: <Settings size={20} />, path: "/perfil" },
@@ -14,7 +15,7 @@ const menuItems = [
 export default function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, logout } = useAuth(); // ✅ Obtener user y logout del hook
+  const { user, logout } = useAuth();
 
   const getActiveItem = () => {
     const currentPath = location.pathname;
@@ -22,6 +23,9 @@ export default function Sidebar() {
     // Verificar rutas específicas primero
     if (currentPath.startsWith('/productos')) {
       return "productos";
+    }
+    if (currentPath.startsWith('/categorias')) { // ✅ NUEVO
+      return "categorias";
     }
     if (currentPath.startsWith('/pedidos')) {
       return "pedidos";
@@ -116,7 +120,7 @@ export default function Sidebar() {
       {/* Navegación Principal */}
       <nav className="sidebar-nav">
         <div className="nav-section">
-          <h3 className="sidebar-section-title">Navegación Principal</h3>
+          <h3 className="sidebar-section-title">Gestión</h3> {/* ✅ ACTUALIZADO: Cambié el título */}
           <div className="nav-items">
             {menuItems.map((item) => (
               <button

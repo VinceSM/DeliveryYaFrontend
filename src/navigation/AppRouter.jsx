@@ -3,10 +3,11 @@ import { useAuth } from '../hooks/useAuth';
 import { useAdminAuth } from '../hooks/useAdminAuth'; // ✅ NUEVO
 import AuthRouter from './AuthRouter';
 import AdminRouter from './AdminRouter'; // ✅ NUEVO - Lo crearemos después
+import GestionCategoriasScreen from '../screens/Categorias/GestionCategoriasScreen.jsx';
 import DashboardScreen from '../screens/Dashboard/DashboardScreen';
 import PedidosScreen from '../screens/Pedidos/PedidosScreen';
-import ProductosScreen from '../screens/Productos/ProductosScreen';
-import EditarProductoScreen from '../screens/Productos/EditarProductoScreen';
+import ProductosScreen from '../screens/Productos/ProductosScreen.jsx';
+import EditarProductoScreen from '../screens/Productos/EditarProductoScreen.jsx';
 import HorariosScreen from '../screens/Horarios/HorariosScreen';
 import PerfilScreen from '../screens/Perfil/PerfilScreen';
 
@@ -46,6 +47,7 @@ function AppRouter() {
           <Route path="/pedidos" element={<PedidosScreen />} />
           <Route path="/horarios" element={<HorariosScreen />} />
           <Route path="/perfil" element={<PerfilScreen />} />
+          <Route path="/categorias" element={<GestionCategoriasScreen />} />
           
           {/* Redirigir raíz a dashboard si está autenticado como comercio */}
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
