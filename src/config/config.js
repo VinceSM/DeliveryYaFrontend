@@ -15,26 +15,30 @@ export const API_CONFIG = {
       CATEGORIAS: "/api/Comercios/{id}/categorias"
     },
     PRODUCTOS: {
-      BASE: "/api/Productos",
-      BY_ID: "/api/Productos/{id}",
-      BY_CATEGORIA: "/api/Productos/categoria/{categoriaId}",
-      BY_NOMBRE: "/api/Productos/nombre/{nombre}",
-      OFERTA: "/api/Productos/oferta",
-      STOCK: "/api/Productos/{id}/stock"
+      BASE: "/api/Producto/list",
+      BY_ID: "/api/Producto/{id}",
+      CREATE: "/api/Producto/create",
+      UPDATE: "/api/Producto/update/{id}",
+      DELETE: "/api/Producto/delete/{id}",
+      BY_CATEGORIA: "/api/Producto/byCategoria/{categoriaId}",
+      BY_NOMBRE: "/api/Producto/search",
+      OFERTA: "/api/Producto/oferta"
     },
     STOCK: {
       BASE: "/api/Stock",
       BY_PRODUCTO: "/api/Stock/producto/{productoId}"
     },
-    CATEGORIAS: { // ✅ NUEVO: Endpoints de categorías
-      BASE: "/api/Categorias",
-      BY_ID: "/api/Categorias/{id}",
-      PRODUCTOS: "/api/Categorias/{id}/productos",
-      COMERCIOS: "/api/Categorias/{id}/comercios"
+    CATEGORIAS: { // ✅ CORREGIDO: Coincide con backend
+      BASE: "/api/Categoria", // ← CAMBIADO: Singular
+      BY_ID: "/api/Categoria/{id}", // ← CAMBIADO: Singular
+      PRODUCTOS: "/api/Categoria/{id}/productos", // ← CAMBIADO: Singular
+      CREATE: "/api/Categoria", // ← NUEVO
+      UPDATE: "/api/Categoria/{id}", // ← NUEVO
+      DELETE: "/api/Categoria/{id}" // ← NUEVO
     },
     ADMINS: {
       BASE: "/api/Admins",
-      LOGIN: "/api/Auth/login-admin" // ✅ CORREGIDO: Quité el doble /api
+      LOGIN: "/api/Auth/login-admin"
     },
     DASHBOARD: {
       ESTADISTICAS: "/api/Dashboard/estadisticas",
@@ -46,24 +50,5 @@ export const API_CONFIG = {
       HOY: "/api/Pedidos/hoy"
     },
     HORARIOS: "/api/Horarios"
-  }
-};
-
-// Función para verificar conexión con el backend
-export const checkBackendConnection = async () => {
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
-    
-    const response = await fetch(`${API_CONFIG.BASE_URL}/api/Comercios`, {
-      method: 'GET',
-      signal: controller.signal
-    });
-    
-    clearTimeout(timeoutId);
-    return response.ok;
-  } catch (error) {
-    console.error('Backend no disponible:', error);
-    return false;
   }
 };

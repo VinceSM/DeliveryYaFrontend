@@ -1,11 +1,20 @@
-// src/api/categorias.js
+// src/api/categorias.js (VERSIÓN CORREGIDA)
 import { API_CONFIG } from '../config/config.js';
 import { getToken } from './auth.js';
 
-// Función para mapear datos del backend al frontend
+// Función para construir URLs
+const buildUrl = (endpoint, params = {}) => {
+  let url = `${API_CONFIG.BASE_URL}${endpoint}`;
+  Object.keys(params).forEach(key => {
+    url = url.replace(`{${key}}`, encodeURIComponent(params[key]));
+  });
+  return url;
+};
+
+// Mapear datos del backend al frontend
 const mapearCategoriaDesdeBackend = (categoriaData) => {
   return {
-    idCategoria: categoriaData.id || categoriaData.idcategoria || categoriaData.idCategoria, // ✅ Múltiples opciones
+    idCategoria: categoriaData.id || categoriaData.idcategoria || categoriaData.idCategoria,
     nombre: categoriaData.nombre,
     cantidadProductos: categoriaData.cantidadProductos || 0,
     createdAt: categoriaData.createdAt,
@@ -13,7 +22,7 @@ const mapearCategoriaDesdeBackend = (categoriaData) => {
   };
 };
 
-// Obtener todas las categorías
+// Obtener todas las categorías (CORREGIDO)
 export const getCategorias = async () => {
   try {
     const token = getToken();
@@ -22,9 +31,11 @@ export const getCategorias = async () => {
       throw new Error('No hay token de autenticación');
     }
 
-    console.log('📂 Obteniendo categorías desde backend...');
+    // ✅ CORREGIDO: Usar /api/Categoria (singular) en lugar de /api/Categorias (plural)
+    const url = `${API_CONFIG.BASE_URL}/api/Categoria`;
+    console.log('📂 Obteniendo categorías desde:', url);
     
-    const response = await fetch(`${API_CONFIG.BASE_URL}/api/Categorias`, {
+    const response = await fetch(url, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -43,7 +54,6 @@ export const getCategorias = async () => {
     const data = await response.json();
     console.log('✅ Categorías obtenidas del backend:', data);
     
-    // Mapear los datos al formato del frontend
     const categoriasMapeadas = Array.isArray(data) 
       ? data.map(mapearCategoriaDesdeBackend)
       : [];
@@ -56,7 +66,7 @@ export const getCategorias = async () => {
   }
 };
 
-// Crear una nueva categoría
+// Crear una nueva categoría (CORREGIDO)
 export const crearCategoria = async (categoriaData) => {
   try {
     const token = getToken();
@@ -71,7 +81,8 @@ export const crearCategoria = async (categoriaData) => {
       Nombre: categoriaData.nombre
     };
     
-    const response = await fetch(`${API_CONFIG.BASE_URL}/api/Categorias`, {
+    // ✅ CORREGIDO: Usar /api/Categoria (singular)
+    const response = await fetch(`${API_CONFIG.BASE_URL}/api/Categoria`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -105,7 +116,7 @@ export const crearCategoria = async (categoriaData) => {
   }
 };
 
-// Actualizar una categoría
+// Actualizar una categoría (CORREGIDO)
 export const actualizarCategoria = async (idCategoria, categoriaData) => {
   try {
     const token = getToken();
@@ -117,11 +128,11 @@ export const actualizarCategoria = async (idCategoria, categoriaData) => {
     console.log('✏️ Actualizando categoría...', { idCategoria, categoriaData });
     
     const requestBody = {
-      Id: idCategoria,
       Nombre: categoriaData.nombre
     };
     
-    const response = await fetch(`${API_CONFIG.BASE_URL}/api/Categorias/${idCategoria}`, {
+    // ✅ CORREGIDO: Usar /api/Categoria/{id} (singular)
+    const response = await fetch(`${API_CONFIG.BASE_URL}/api/Categoria/${idCategoria}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -153,7 +164,7 @@ export const actualizarCategoria = async (idCategoria, categoriaData) => {
   }
 };
 
-// Eliminar una categoría
+// Eliminar una categoría (CORREGIDO)
 export const eliminarCategoria = async (idCategoria) => {
   try {
     const token = getToken();
@@ -164,7 +175,8 @@ export const eliminarCategoria = async (idCategoria) => {
 
     console.log('🗑️ Eliminando categoría...', { idCategoria });
     
-    const response = await fetch(`${API_CONFIG.BASE_URL}/api/Categorias/${idCategoria}`, {
+    // ✅ CORREGIDO: Usar /api/Categoria/{id} (singular)
+    const response = await fetch(`${API_CONFIG.BASE_URL}/api/Categoria/${idCategoria}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
@@ -195,7 +207,7 @@ export const eliminarCategoria = async (idCategoria) => {
   }
 };
 
-// Obtener productos por categoría
+// Obtener productos por categoría (CORREGIDO)
 export const getProductosPorCategoria = async (idCategoria) => {
   try {
     const token = getToken();
@@ -206,7 +218,8 @@ export const getProductosPorCategoria = async (idCategoria) => {
 
     console.log('📦 Obteniendo productos por categoría...', { idCategoria });
     
-    const response = await fetch(`${API_CONFIG.BASE_URL}/api/Categorias/${idCategoria}/productos`, {
+    // ✅ CORREGIDO: Usar /api/Categoria/{id}/productos (singular)
+    const response = await fetch(`${API_CONFIG.BASE_URL}/api/Categoria/${idCategoria}/productos`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

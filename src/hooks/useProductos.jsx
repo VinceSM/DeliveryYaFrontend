@@ -1,4 +1,4 @@
-// src/hooks/useProductos.jsx
+// src/hooks/useProductos.jsx (VERSIÓN COMPLETA)
 import { useState, useEffect } from 'react';
 import { 
   getProductosComercio, 
@@ -14,99 +14,112 @@ export const useProductos = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Estadísticas
+  const estadisticas = {
+    totalProductos: productos.length,
+    productosActivos: productos.filter(p => p.estado === 'activo').length,
+    productosAgotados: productos.filter(p => p.estado === 'agotado').length,
+    categoriasCount: [...new Set(productos.map(p => p.categoria))].length
+  };
+
+  // Cargar productos y categorías
   const cargarProductos = async () => {
     try {
       setLoading(true);
       setError(null);
-
+      
       console.log('🔄 Cargando productos y categorías...');
-
-      // Cargar productos y categorías
-      const productosData = await getProductosComercio();
       
-      // Cargar categorías por separado
-      let categoriasData = [];
-      try {
-        categoriasData = await getCategoriasComercio();
-      } catch (catError) {
-        console.warn('⚠️ Error cargando categorías:', catError);
-        // Si hay error, usar categorías por defecto
-        categoriasData = ['Hamburguesas', 'Pizzas', 'Ensaladas', 'Sushi', 'Bebidas', 'Mexicana', 'Postres', 'Aperitivos'];
-      }
-
-      setProductos(productosData || []);
-      setCategorias(categoriasData || []);
+      // Cargar productos y categorías en paralelo
+      const [productosData, categoriasData] = await Promise.all([
+        getProductosComercio(),
+        getCategoriasComercio()
+      ]);
       
-      console.log('✅ Datos cargados:', {
-        productos: productosData?.length || 0,
-        categorias: categoriasData?.length || 0
-      });
-
-    } catch (error) {
-      console.error('❌ Error general cargando datos:', error);
-      setError(error.message);
-      setProductos([]);
+      setProductos(productosData);
+      setCategorias(categoriasData);
+      
+      console.log('✅ Datos cargados exitosamente');
+      
+    } catch (err) {
+      console.error('❌ Error cargando datos:', err);
+      setError(err.message);
+      
+      // Cargar categorías por defecto si hay error
       setCategorias(['Hamburguesas', 'Pizzas', 'Ensaladas', 'Sushi', 'Bebidas', 'Mexicana', 'Postres', 'Aperitivos']);
     } finally {
       setLoading(false);
     }
   };
 
+  // Crear nuevo producto
   const agregarProducto = async (productoData) => {
     try {
       setError(null);
+      console.log('🆕 Creando producto:', productoData);
+      
       const nuevoProducto = await crearProducto(productoData);
+      
+      // Actualizar lista local
       setProductos(prev => [...prev, nuevoProducto]);
+      
+      console.log('✅ Producto creado exitosamente');
       return nuevoProducto;
-    } catch (error) {
-      setError(error.message);
-      throw error;
+      
+    } catch (err) {
+      console.error('❌ Error creando producto:', err);
+      setError(err.message);
+      throw err;
     }
   };
 
-  const editarProducto = async (idProducto, productoData) => {
+  // Editar producto existente
+  const editarProducto = async (id, productoData) => {
     try {
       setError(null);
-      const productoActualizado = await actualizarProducto(idProducto, productoData);
+      console.log('✏️ Editando producto:', id, productoData);
+      
+      const productoActualizado = await actualizarProducto(id, productoData);
+      
+      // Actualizar lista local
       setProductos(prev => 
-        prev.map(producto => 
-          producto.idProducto === idProducto ? productoActualizado : producto
-        )
+        prev.map(p => p.idProducto === id ? productoActualizado : p)
       );
+      
+      console.log('✅ Producto actualizado exitosamente');
       return productoActualizado;
-    } catch (error) {
-      setError(error.message);
-      throw error;
+      
+    } catch (err) {
+      console.error('❌ Error editando producto:', err);
+      setError(err.message);
+      throw err;
     }
   };
 
-  const borrarProducto = async (idProducto) => {
+  // Eliminar producto
+  const borrarProducto = async (id) => {
     try {
       setError(null);
-      await eliminarProducto(idProducto);
-      setProductos(prev => prev.filter(producto => producto.idProducto !== idProducto));
-      return true;
-    } catch (error) {
-      setError(error.message);
-      throw error;
+      console.log('🗑️ Eliminando producto:', id);
+      
+      await eliminarProducto(id);
+      
+      // Actualizar lista local
+      setProductos(prev => prev.filter(p => p.idProducto !== id));
+      
+      console.log('✅ Producto eliminado exitosamente');
+      
+    } catch (err) {
+      console.error('❌ Error eliminando producto:', err);
+      setError(err.message);
+      throw err;
     }
   };
 
+  // Cargar datos al montar el componente
   useEffect(() => {
     cargarProductos();
   }, []);
-
-  const recargarProductos = () => {
-    cargarProductos();
-  };
-
-  // Calcular estadísticas
-  const estadisticas = {
-    totalProductos: productos.length,
-    productosActivos: productos.filter(p => p.estado === "activo" || p.stock > 0).length,
-    productosAgotados: productos.filter(p => p.estado === "agotado" || p.stock === 0).length,
-    categoriasCount: new Set(productos.map(p => p.categoria)).size
-  };
 
   return {
     productos,
@@ -117,6 +130,6 @@ export const useProductos = () => {
     agregarProducto,
     editarProducto,
     borrarProducto,
-    recargarProductos
+    recargarProductos: cargarProductos
   };
 };

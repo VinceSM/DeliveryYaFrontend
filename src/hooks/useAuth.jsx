@@ -1,3 +1,4 @@
+// src/hooks/useAuth.jsx
 import { useState, useEffect, createContext, useContext } from 'react';
 import { 
   loginComercio, 
@@ -8,8 +9,8 @@ import {
   validateToken 
 } from '../api/auth';
 
-// Crear contexto de autenticación
-const AuthContext = createContext();
+// Crear contexto de autenticación y EXPORTARLO
+export const AuthContext = createContext(); // ✅ Agregar export aquí
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -50,40 +51,38 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // CORRECCIÓN: Función login sin setToken
-  // En tu hook useAuth - así debería estar:
-const login = async (credentials) => {
-  try {
-    setLoading(true);
-    setError(null);
-    
-    const response = await loginComercio(credentials);
-    
-    // Solo actualizar el usuario, el token ya se guardó en localStorage
-    setUser(response.comercio);
-    
-    console.log('✅ Login exitoso en useAuth:', response.comercio);
-    return response;
-  } catch (error) {
-    setError(error.message);
-    throw error;
-  } finally {
-    setLoading(false);
-  }
-};
+  const login = async (credentials) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await loginComercio(credentials);
+      
+      // Solo actualizar el usuario, el token ya se guardó en localStorage
+      setUser(response.comercio);
+      
+      console.log('✅ Login exitoso en useAuth:', response.comercio);
+      return response;
+    } catch (error) {
+      setError(error.message);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
 
-const logout = () => {
-  try {
-    logoutComercio(); // Esta función de auth.js limpia localStorage
-    setUser(null);
-    setError(null);
-    console.log('🔐 Logout exitoso');
-    return true; // Retorna true para indicar éxito
-  } catch (error) {
-    setError(error.message);
-    return false; // Retorna false para indicar error
-  }
-};
+  const logout = () => {
+    try {
+      logoutComercio(); // Esta función de auth.js limpia localStorage
+      setUser(null);
+      setError(null);
+      console.log('🔐 Logout exitoso');
+      return true; // Retorna true para indicar éxito
+    } catch (error) {
+      setError(error.message);
+      return false; // Retorna false para indicar error
+    }
+  };
 
   const clearError = () => {
     setError(null);
@@ -105,5 +104,3 @@ const logout = () => {
     </AuthContext.Provider>
   );
 };
-
-export default useAuth;
