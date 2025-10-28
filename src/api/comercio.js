@@ -24,7 +24,16 @@ async function authFetch(url, options = {}) {
     throw new Error(errorText || 'Error en la petición');
   }
 
-  return response.json();
+  // ✅ Manejar respuestas que pueden ser texto plano o JSON
+  const contentType = response.headers.get('content-type');
+  if (contentType && contentType.includes('application/json')) {
+    return response.json();
+  } else {
+    // Si no es JSON, devolver el texto de la respuesta
+    const textResponse = await response.text();
+    console.log('📄 Respuesta del servidor (texto):', textResponse);
+    return { message: textResponse, success: true };
+  }
 }
 
 // Servicios para comercios
@@ -63,9 +72,27 @@ export const comerciosService = {
   
   // Obtener categorías de un comercio
   getCategorias: (id) => authFetch(`${API_CONFIG.ENDPOINTS.COMERCIOS.BASE}/${id}/categorias`),
+
+    getMiPerfil: () => authFetch(API_CONFIG.ENDPOINTS.COMERCIOS.MI_PERFIL),
+  
+  // Actualizar perfil del comercio actual
+  updateMiPerfil: (data) => authFetch(API_CONFIG.ENDPOINTS.COMERCIOS.MI_PERFIL, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  }),
+  
+  // Obtener comercio por ID (si necesitas específico)
+  getById: (id) => authFetch(`${API_CONFIG.ENDPOINTS.COMERCIOS.BASE}/${id}`),
+  
+  // Actualizar comercio por ID
+  update: (id, data) => authFetch(`${API_CONFIG.ENDPOINTS.COMERCIOS.BASE}/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  }),
 };
 
 // Servicios para horarios
 export const horariosService = {
   getAll: () => authFetch(API_CONFIG.ENDPOINTS.HORARIOS),
 };
+

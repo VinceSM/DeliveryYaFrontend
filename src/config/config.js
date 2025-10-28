@@ -49,6 +49,11 @@ export const API_CONFIG = {
       POR_COMERCIO: "/api/Pedidos/comercio",
       HOY: "/api/Pedidos/hoy"
     },
-    HORARIOS: "/api/Horarios"
+      HORARIOS: {
+      BASE: "/api/Horarios",
+      BY_COMERCIO: "/api/Horarios/comercio/{comercioId}",
+      CHECK_ABIERTO: "/api/Horarios/comercio/{comercioId}/abierto",
+      ADD_TO_COMERCIO: "/api/Horarios/comercio/{comercioId}/horario/{horarioId}"
+    },
   }
 };

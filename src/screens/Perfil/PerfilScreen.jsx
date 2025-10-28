@@ -16,14 +16,15 @@ import {
   Save,
   Edit3
 } from "lucide-react";
-import { useAuth } from "../../hooks/useAuth"; // ✅ Importar useAuth
-import { getComercioData } from "../../api/auth"; // ✅ Importar función para obtener datos
+import { useAuth } from "../../hooks/useAuth";
+import { getComercioData } from "../../api/auth";
+import { comerciosService } from "../../api/comercio"; // ✅ IMPORTACIÓN AGREGADA
 
 export default function PerfilScreen() {
   const [seccionActiva, setSeccionActiva] = useState("informacion");
   const [editando, setEditando] = useState(false);
   const [guardando, setGuardando] = useState(false);
-  const { user } = useAuth(); // ✅ Obtener usuario del contexto
+  const { user } = useAuth();
 
   // Datos del comercio - ahora con datos reales
   const [comercio, setComercio] = useState({
@@ -78,7 +79,6 @@ export default function PerfilScreen() {
           destacado: datosReales.Destacado || false
         }));
       } else if (user) {
-        // Si hay usuario en el contexto pero no en localStorage
         console.log("📊 Usando datos del contexto:", user);
         
         setComercio(prev => ({
@@ -117,32 +117,109 @@ export default function PerfilScreen() {
     setGuardando(true);
     
     try {
-      // Aquí iría la llamada real a la API para actualizar
       console.log("💾 Guardando datos:", comercio);
       
-      // Simular llamada a API
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Obtener todos los datos del comercio
+      const datosReales = getComercioData();
+      console.log("📋 Datos reales completos:", datosReales);
+      
+      // Buscar el ID en diferentes propiedades posibles
+      let comercioId = datosReales?.idcomercio || datosReales?.Id || datosReales?.id || datosReales?.ID;
+      
+      console.log("🔍 ID del comercio encontrado:", comercioId);
+
+      if (!comercioId) {
+        console.log("🔍 Buscando ID en todas las propiedades:", Object.keys(datosReales));
+        
+        // SOLUCIÓN: Obtener el ID desde la API buscando por email
+        console.warn("⚠️ No se encontró ID, buscando en la API...");
+        
+        const todosComercios = await comerciosService.getAll();
+        const comercioEncontrado = todosComercios.find(c => 
+          c.email === comercio.email || c.Email === comercio.email
+        );
+        
+        if (comercioEncontrado) {
+          comercioId = comercioEncontrado.idcomercio || comercioEncontrado.Id || comercioEncontrado.id;
+          console.log("✅ ID encontrado por email:", comercioId);
+          
+          // Guardar el ID en localStorage para futuras actualizaciones
+          const datosActualizados = {
+            ...datosReales,
+            idcomercio: comercioId
+          };
+          localStorage.setItem('comercioData', JSON.stringify(datosActualizados));
+        } else {
+          throw new Error("No se pudo encontrar el comercio en la API");
+        }
+      }
+
+      // Parsear la dirección para obtener calle, número y ciudad
+      const direccionCompleta = comercio.direccion || "";
+      let calle = "26";
+      let numero = 472;
+      let ciudad = "Miramar";
+
+      if (direccionCompleta) {
+        const partes = direccionCompleta.split(',');
+        if (partes.length > 1) {
+          ciudad = partes[1].trim();
+        }
+        
+        const direccionPartes = partes[0].trim().split(' ');
+        if (direccionPartes.length >= 2) {
+          calle = direccionPartes[0];
+          numero = parseInt(direccionPartes[1]) || 472;
+        }
+      }
+
+      // Preparar datos para la API
+      const datosParaAPI = {
+        Id: comercioId,
+        NombreComercio: comercio.nombre,
+        Email: comercio.email,
+        Celular: comercio.telefono,
+        Ciudad: ciudad,
+        Calle: calle,
+        Numero: numero,
+        Latitud: datosReales.Latitud || -34.6037,
+        Longitud: datosReales.Longitud || -58.3816,
+        Encargado: comercio.encargado,
+        Cvu: comercio.cvu,
+        Alias: comercio.alias,
+        Destacado: comercio.destacado,
+        FotoPortada: datosReales.FotoPortada || "",
+        Password: ""
+      };
+
+      console.log("📤 Enviando datos a la API:", datosParaAPI);
+
+      // ✅ Llamar a la API real para actualizar
+      const resultado = await comerciosService.update(comercioId, datosParaAPI);
+      
+      console.log("✅ Datos guardados exitosamente:", resultado);
       
       // Actualizar localStorage con los nuevos datos
       const datosActualizados = {
-        ...getComercioData(),
+        ...datosReales,
+        idcomercio: comercioId,
         NombreComercio: comercio.nombre,
         Email: comercio.email,
         Celular: comercio.telefono,
         Encargado: comercio.encargado,
         CVU: comercio.cvu,
         Alias: comercio.alias,
-        Destacado: comercio.destacado
+        Destacado: comercio.destacado,
+        Direccion: comercio.direccion
       };
       
       localStorage.setItem('comercioData', JSON.stringify(datosActualizados));
       
-      console.log("✅ Datos guardados exitosamente");
       alert("✅ Perfil actualizado correctamente");
       
     } catch (error) {
       console.error("❌ Error guardando datos:", error);
-      alert("❌ Error al guardar los cambios");
+      alert("❌ Error al guardar los cambios: " + error.message);
     } finally {
       setGuardando(false);
       setEditando(false);
