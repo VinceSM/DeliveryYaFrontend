@@ -1,5 +1,136 @@
-/* Agrega esto a tu RegisterScreen.css */
+/* Estilos para el contenedor de archivo seleccionado */
+.file-selected-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  background: #f8f9fa;
+}
 
+.file-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.file-icon {
+  font-size: 24px;
+}
+
+.file-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.file-name {
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+}
+
+.file-status {
+  font-size: 12px;
+  color: #28a745;
+}
+
+/* Botón de eliminar (X) */
+.remove-file-btn {
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.remove-file-btn:hover {
+  background: #c82333;
+  transform: scale(1.1);
+}
+
+/* Área de upload */
+.image-upload-area {
+  text-align: center;
+}
+
+.image-file-input {
+  display: none; /* Esto oculta el input file real */
+}
+
+.image-upload-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+  cursor: pointer;
+  border: 2px dashed #e0e0e0;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.image-upload-label:hover {
+  border-color: #007bff;
+  background: #f0f8ff;
+}
+
+.upload-icon {
+  font-size: 48px;
+  margin-bottom: 15px;
+}
+
+.upload-text {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.upload-text strong {
+  color: #333;
+  font-size: 18px;
+}
+
+.upload-text span {
+  color: #666;
+  font-size: 14px;
+}
+
+.upload-text small {
+  color: #999;
+  font-size: 12px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .file-selected-container {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+  
+  .file-info {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .remove-file-btn {
+    align-self: center;
+  }
+}
+
+/* Agrega esto a tu RegisterScreen.css */
 .map-selector-container {
   margin: 20px 0;
 }

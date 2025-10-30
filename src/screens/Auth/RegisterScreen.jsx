@@ -16,6 +16,8 @@ export default function RegisterScreen() {
   const [currentSection, setCurrentSection] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [formErrors, setFormErrors] = useState({});
+  const [imagePreview, setImagePreview] = useState(null);
+  const [fileName, setFileName] = useState("");
   
   // Estado con valores por defecto
   const [form, setForm] = useState({
@@ -23,6 +25,7 @@ export default function RegisterScreen() {
     email: "",
     password: "",
     fotoPortada: "",
+    tipoComercio: "",
     celular: "",
     ciudad: "Miramar",
     calle: "",
@@ -33,6 +36,7 @@ export default function RegisterScreen() {
     cvu: "",
     alias: "",
     destacado: false,
+    deliveryPropio: true,
   });
 
   const handleMapLocationSelect = (lat, lng) => {
@@ -61,6 +65,49 @@ export default function RegisterScreen() {
     }));
   };
 
+  // Agrega esta función para manejar la selección de archivos
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    
+    if (file) {
+      // Validar que sea una imagen
+      if (!file.type.startsWith('image/')) {
+        alert('❌ Por favor selecciona un archivo de imagen válido');
+        return;
+      }
+      
+      // Validar tamaño (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('❌ La imagen es demasiado grande. Máximo 5MB permitido');
+        return;
+      }
+      
+      // Guardar el nombre del archivo
+      setFileName(file.name); // ← Agrega esta línea
+      
+      // Crear URL temporal para vista previa
+      const previewUrl = URL.createObjectURL(file);
+      setImagePreview(previewUrl);      
+      console.log('📸 Imagen seleccionada:', file.name);
+    }
+  };
+
+  // Función para limpiar la imagen seleccionada
+  const clearImage = () => {
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+    }
+    setImagePreview(null);
+    setFileName(""); // ← Agrega esta línea
+    setForm(prev => ({ ...prev, fotoPortada: "" }));
+    
+    // Resetear el input file
+    const fileInput = document.getElementById('fotoPortadaUpload');
+    if (fileInput) {
+      fileInput.value = '';
+    }
+  };
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setForm((prev) => ({
@@ -86,10 +133,12 @@ export default function RegisterScreen() {
       else if (!/\S+@\S+\.\S+/.test(form.email)) errors.email = "El email no es válido";
       if (!form.password) errors.password = "La contraseña es requerida";
       else if (form.password.length < 6) errors.password = "La contraseña debe tener al menos 6 caracteres";
+      if (form.tipoComercio.length > 250) errors.tipoComercio = "La descripción no puede exceder los 250 caracteres";
       if (!form.encargado?.trim()) errors.encargado = "El encargado es requerido";
       if (!form.celular?.trim()) errors.celular = "El celular es requerido";
       if (!form.cvu?.trim()) errors.cvu = "El CVU es requerido";
       if (!form.alias?.trim()) errors.alias = "El alias es requerido";
+      if (!form.deliveryPropio && errors.deliveryPropio !== false) errors.deliveryPropio = "Debes seleccionar una opción de delivery";
     }
     
     if (section === 1) {
@@ -135,6 +184,7 @@ export default function RegisterScreen() {
         Email: String(form.email || ""),
         Password: String(form.password || ""),
         FotoPortada: String(form.fotoPortada || ""),
+        tipoComercio: String(form.tipoComercio || ""),
         Celular: String(form.celular || ""),
         Ciudad: String(form.ciudad || ""),
         Calle: String(form.calle || ""),
@@ -144,7 +194,8 @@ export default function RegisterScreen() {
         Encargado: String(form.encargado || ""),
         Cvu: String(form.cvu || ""),
         Alias: String(form.alias || ""),
-        Destacado: Boolean(form.destacado)
+        Destacado: Boolean(form.destacado),
+        DeliveryPropio: Boolean(form.deliveryPropio),
       };
 
       console.log('📤 Estado del formulario:', form);
@@ -225,7 +276,36 @@ export default function RegisterScreen() {
                 />
                 {formErrors.nombreComercio && <span className="error-message">{formErrors.nombreComercio}</span>}
               </div>
-              
+
+              <div className="register-input-group">
+                <label className="register-form-label">Celular del Comercio *</label>
+                <input 
+                  className={`register-form-input ${formErrors.celular ? 'error' : ''}`}
+                  name="celular" 
+                  value={form.celular}
+                  placeholder="+54 9 11 1234-5678" 
+                  onChange={handleChange} 
+                />
+                {formErrors.celular && <span className="error-message">{formErrors.celular}</span>}
+              </div>
+
+              <div className="register-input-group">
+                <label className="register-form-label">Tipo de Comercio *</label>
+                <select 
+                  className={`register-form-input ${formErrors.tipoComercio ? 'error' : ''}`}
+                  name="tipoComercio" 
+                  value={form.tipoComercio}
+                  onChange={handleChange}
+                >
+                  <option value="">Selecciona el tipo de comercio</option>
+                  <option value="Restaurante">Restaurante</option>
+                  <option value="Cafetería">Cafetería</option>
+                  <option value="Supermercado">Supermercado</option>
+                  {/* ... otras opciones ... */}
+                </select>
+                {formErrors.tipoComercio && <span className="error-message">{formErrors.tipoComercio}</span>}
+              </div>
+
               <div className="register-input-group">
                 <label className="register-form-label">Email *</label>
                 <input 
@@ -251,6 +331,35 @@ export default function RegisterScreen() {
                 />
                 {formErrors.password && <span className="error-message">{formErrors.password}</span>}
               </div>
+
+              
+
+              <div className="register-input-group">
+                <label className="register-form-label">Delivery</label>
+                <div className="radio-group">
+                  <label className="radio-option">
+                    <input
+                      type="radio"
+                      name="deliveryPropio"
+                      value="true"
+                      checked={form.deliveryPropio === true}
+                      onChange={() => setForm(prev => ({ ...prev, deliveryPropio: true }))}
+                    />
+                    <span className="radio-label">✅ Tengo delivery propio</span>
+                  </label>
+                  
+                  <label className="radio-option">
+                    <input
+                      type="radio"
+                      name="deliveryPropio"
+                      value="false"
+                      checked={form.deliveryPropio === false}
+                      onChange={() => setForm(prev => ({ ...prev, deliveryPropio: false }))}
+                    />
+                    <span className="radio-label">❌ No tengo delivery propio</span>
+                  </label>
+                </div>
+              </div>
               
               <div className="register-input-group">
                 <label className="register-form-label">Encargado *</label>
@@ -264,17 +373,7 @@ export default function RegisterScreen() {
                 {formErrors.encargado && <span className="error-message">{formErrors.encargado}</span>}
               </div>
               
-              <div className="register-input-group">
-                <label className="register-form-label">Celular *</label>
-                <input 
-                  className={`register-form-input ${formErrors.celular ? 'error' : ''}`}
-                  name="celular" 
-                  value={form.celular}
-                  placeholder="+54 9 11 1234-5678" 
-                  onChange={handleChange} 
-                />
-                {formErrors.celular && <span className="error-message">{formErrors.celular}</span>}
-              </div>
+              
 
               <div className="register-input-group">
                 <label className="register-form-label">CVU *</label>
@@ -301,17 +400,49 @@ export default function RegisterScreen() {
               </div>
 
               <div className="register-input-group">
-                <label className="register-form-label">Foto de portada (URL)</label>
-                <input 
-                  className="register-form-input"
-                  name="fotoPortada" 
-                  value={form.fotoPortada}
-                  placeholder="https://ejemplo.com/imagen.jpg" 
-                  onChange={handleChange} 
-                />
+                <label className="register-form-label">Foto de portada</label>
+                
+                <div className="image-upload-container">
+                  {!fileName && !form.fotoPortada ? (
+                    <div className="image-upload-area">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="image-file-input"
+                        id="fotoPortadaUpload"
+                      />
+                      <label htmlFor="fotoPortadaUpload" className="image-upload-label">
+                        <div className="upload-icon">📸</div>
+                        {/* <div className="upload-text">
+                          <strong>Seleccionar imagen</strong>
+                          <span>Haz clic para elegir una imagen</span>
+                          <small>Formatos: JPG, PNG, WEBP (Max. 5MB)</small>
+                        </div> */}
+                      </label>
+                    </div>
+                  ) : (
+                    <div className="file-selected-container">
+                      <div className="file-info">
+                        <span className="file-icon">📷</span>
+                        <div className="file-details">
+                          <span className="file-name">{fileName}</span>
+                          <span className="file-status">✅ Imagen seleccionada</span>
+                        </div>
+                      </div>
+                      <button 
+                        type="button" 
+                        className="remove-file-btn"
+                        onClick={clearImage}
+                        title="Eliminar imagen"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-            
             <div className="register-navigation-buttons">
               <button type="button" className="register-nav-button register-next-button" onClick={nextSection}>
                 Siguiente → Dirección
