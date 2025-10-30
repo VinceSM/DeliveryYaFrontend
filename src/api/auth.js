@@ -233,6 +233,10 @@ const obtenerDatosComercioPorEmail = async (email) => {
     return {
       idComercio: comercio.idComercio || comercio.IdComercio,
       NombreComercio: comercio.nombreComercio || comercio.NombreComercio,
+      // Descripcion: comercio.descripcion || comercio.Descripcion,
+      // Envio: comercio.envio || comercio.Envio,
+      // FotoPortada: comercio.fotoPortada || comercio.FotoPortada,
+      // deliveryPropio: comercio.deliveryPropio || comercio.DeliveryPropio,
       Email: comercio.email || comercio.Email,
       Encargado: comercio.encargado || comercio.Encargado,
       Celular: comercio.celular || comercio.Celular,

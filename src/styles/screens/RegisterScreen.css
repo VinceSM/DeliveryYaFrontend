@@ -1,3 +1,87 @@
+/* Agrega esto a tu RegisterScreen.css */
+
+.map-selector-container {
+  margin: 20px 0;
+}
+
+.map-instructions {
+  background: #e3f2fd;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: #1976d2;
+}
+
+.map-container {
+  border: 2px solid #e0e0e0;
+}
+
+.coordinates-display {
+  display: flex;
+  gap: 15px;
+  margin-top: 10px;
+  padding: 10px;
+  background: #f5f5f5;
+  border-radius: 5px;
+  font-size: 14px;
+  flex-wrap: wrap;
+}
+
+.coordinates-display span {
+  font-family: monospace;
+}
+
+.map-section {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.map-section-title {
+  color: #333;
+  margin-bottom: 5px;
+}
+
+.map-section-description {
+  color: #666;
+  margin-bottom: 15px;
+  font-size: 14px;
+}
+
+.coordinates-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin: 15px 0;
+}
+
+.coordinate-input-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.clear-coordinates-button {
+  background: #ff4444;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-top: 10px;
+}
+
+.clear-coordinates-button:hover {
+  background: #cc0000;
+}
+
+/* Asegúrate de que Leaflet se vea bien */
+.leaflet-container {
+  height: 400px;
+  width: 100%;
+}
+
 /* src/styles/screens/RegisterScreen.css */
 .register-container {
   min-height: 100vh;

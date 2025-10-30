@@ -4,6 +4,13 @@ import { Link } from "react-router-dom";
 import { registerComercio } from "../../api/auth";
 import LogoDeliveryYa from "../../assets/LogoDeliveryYa.png";
 import "../../styles/screens/RegisterScreen.css";
+import MapSelector from "../../components/MapSelector.jsx";
+
+// Coordenadas por defecto de Miramar, Buenos Aires
+const MIRAMAR_COORDINATES = {
+  lat: -38.270510,
+  lng: -57.839651
+};
 
 export default function RegisterScreen() {
   const [currentSection, setCurrentSection] = useState(0);
@@ -20,13 +27,39 @@ export default function RegisterScreen() {
     ciudad: "Miramar",
     calle: "",
     numero: "",
-    latitud: "-34.6037",
-    longitud: "-58.3816",
+    latitud: "",
+    longitud: "",
     encargado: "",
     cvu: "",
     alias: "",
     destacado: false,
   });
+
+  const handleMapLocationSelect = (lat, lng) => {
+    setForm(prev => ({
+      ...prev,
+      latitud: lat.toString(),
+      longitud: lng.toString()
+    }));
+    
+    // Limpiar errores de coordenadas si existían
+    if (formErrors.latitud || formErrors.longitud) {
+      setFormErrors(prev => ({
+        ...prev,
+        latitud: "",
+        longitud: ""
+      }));
+    }
+  };
+
+  // Limpiar coordenadas (hacerlas null)
+  const clearCoordinates = () => {
+    setForm(prev => ({
+      ...prev,
+      latitud: "",
+      longitud: ""
+    }));
+  };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -64,10 +97,10 @@ export default function RegisterScreen() {
       if (!form.calle?.trim()) errors.calle = "La calle es requerida";
       if (!form.numero?.trim()) errors.numero = "El número es requerido";
       else if (isNaN(form.numero)) errors.numero = "El número debe ser un valor numérico";
-      if (!form.latitud) errors.latitud = "La latitud es requerida";
-      else if (isNaN(form.latitud)) errors.latitud = "La latitud debe ser un número";
-      if (!form.longitud) errors.longitud = "La longitud es requerida";
-      else if (isNaN(form.longitud)) errors.longitud = "La longitud debe ser un número";
+      // if (!form.latitud) errors.latitud = "La latitud es requerida";
+      // else if (isNaN(form.latitud)) errors.latitud = "La latitud debe ser un número";
+      // if (!form.longitud) errors.longitud = "La longitud es requerida";
+      // else if (isNaN(form.longitud)) errors.longitud = "La longitud debe ser un número";
     }
     
     setFormErrors(errors);
@@ -106,8 +139,8 @@ export default function RegisterScreen() {
         Ciudad: String(form.ciudad || ""),
         Calle: String(form.calle || ""),
         Numero: Number(form.numero) || 0,
-        Latitud: Number(form.latitud) || 0,
-        Longitud: Number(form.longitud) || 0,
+        Latitud: form.latitud ? Number(form.latitud) : 0,
+        Longitud: form.longitud ? Number(form.longitud) : 0,
         Encargado: String(form.encargado || ""),
         Cvu: String(form.cvu || ""),
         Alias: String(form.alias || ""),
@@ -141,6 +174,13 @@ export default function RegisterScreen() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const getInitialMapPosition = () => {
+    if (form.latitud && form.longitud) {
+      return [parseFloat(form.latitud), parseFloat(form.longitud)];
+    }
+    return [MIRAMAR_COORDINATES.lat, MIRAMAR_COORDINATES.lng];
   };
 
   const sectionTitles = ["Información", "Dirección", "Contrato"];
@@ -284,6 +324,7 @@ export default function RegisterScreen() {
         {currentSection === 1 && (
           <div className="register-form-section">
             <h2 className="register-section-title">Dirección del Comercio</h2>
+            
             <div className="register-form-grid">
               <div className="register-input-group">
                 <label className="register-form-label">Ciudad *</label>
@@ -320,34 +361,57 @@ export default function RegisterScreen() {
                 />
                 {formErrors.numero && <span className="error-message">{formErrors.numero}</span>}
               </div>
+            </div>
+
+            {/* Mapa de selección de ubicación */}
+            <div className="map-section">
+              <h3 className="map-section-title">Ubicación en el mapa (Opcional)</h3>
+              <p className="map-section-description">
+                Selecciona la ubicación exacta de tu comercio en el mapa para que los clientes te encuentren más fácilmente.
+              </p>
               
-              <div className="register-input-group">
-                <label className="register-form-label">Latitud *</label>
-                <input 
-                  className={`register-form-input ${formErrors.latitud ? 'error' : ''}`}
-                  name="latitud" 
-                  type="number" 
-                  step="any"
-                  value={form.latitud}
-                  placeholder="Ej: -34.603722" 
-                  onChange={handleChange} 
-                />
-                {formErrors.latitud && <span className="error-message">{formErrors.latitud}</span>}
+              <MapSelector 
+                onLocationSelect={handleMapLocationSelect}
+                initialPosition={getInitialMapPosition()}
+              />
+              
+              <div className="coordinates-inputs">
+                <div className="coordinate-input-group">
+                  <label className="register-form-label">Latitud</label>
+                  <input 
+                    className={`register-form-input ${formErrors.latitud ? 'error' : ''}`}
+                    name="latitud" 
+                    type="number" 
+                    step="any"
+                    value={form.latitud}
+                    readOnly 
+                    onChange={handleChange} 
+                  />
+                  {formErrors.latitud && <span className="error-message">{formErrors.latitud}</span>}
+                </div>
+                
+                <div className="coordinate-input-group">
+                  <label className="register-form-label">Longitud</label>
+                  <input 
+                    className={`register-form-input ${formErrors.longitud ? 'error' : ''}`}
+                    name="longitud" 
+                    type="number" 
+                    step="any"
+                    value={form.longitud}
+                    readOnly
+                    onChange={handleChange} 
+                  />
+                  {formErrors.longitud && <span className="error-message">{formErrors.longitud}</span>}
+                </div>
               </div>
               
-              <div className="register-input-group">
-                <label className="register-form-label">Longitud *</label>
-                <input 
-                  className={`register-form-input ${formErrors.longitud ? 'error' : ''}`}
-                  name="longitud" 
-                  type="number" 
-                  step="any"
-                  value={form.longitud}
-                  placeholder="Ej: -58.381592" 
-                  onChange={handleChange} 
-                />
-                {formErrors.longitud && <span className="error-message">{formErrors.longitud}</span>}
-              </div>
+              <button 
+                type="button" 
+                className="clear-coordinates-button"
+                onClick={clearCoordinates}
+              >
+                🗑️ Limpiar coordenadas
+              </button>
             </div>
             
             <div className="register-navigation-buttons">
@@ -372,7 +436,7 @@ export default function RegisterScreen() {
                   <p className="register-price">$0<span>/mes</span></p>
                 </div>
                 <ul className="register-features-list">
-                  <li>✔ Presencia en el directorio</li>
+                  <li>✔ 20% de comision por pedido</li>
                   <li>✔ Gestión de pedidos básica</li>
                   <li>✔ Soporte por email</li>
                   <li>✖ Destacado en búsquedas</li>
@@ -395,10 +459,10 @@ export default function RegisterScreen() {
               <div className="register-contract-option register-highlighted">
                 <div className="register-option-header">
                   <h3>Plan Destacado</h3>
-                  <p className="register-price">$2990<span>/mes</span></p>
+                  <p className="register-price">$30.000<span>/mes</span></p>
                 </div>
                 <ul className="register-features-list">
-                  <li>✔ Todo lo del Plan Básico</li>
+                  <li>✔ 10% de comision por pedido</li>
                   <li>✔ Destacado en búsquedas</li>
                   <li>✔ Promociones destacadas</li>
                   <li>✔ Soporte prioritario 24/7</li>
