@@ -5,6 +5,8 @@ export const registerComercio = async (comercioData) => {
   try {
     // DEBUG: Ver qué está llegando
     console.log('📥 Datos recibidos en auth.js:', comercioData);
+    console.log('🔍 Valor de Descripcion recibido:', comercioData.Descripcion);
+    console.log('🔍 Valor de DeliveryPropio recibido:', comercioData.DeliveryPropio);
     
     // El RegisterScreen ya envía los datos con los nombres correctos
     // Solo necesitamos asegurar los tipos
@@ -22,10 +24,15 @@ export const registerComercio = async (comercioData) => {
       Encargado: String(comercioData.Encargado || ""),
       Cvu: String(comercioData.Cvu || ""),
       Alias: String(comercioData.Alias || ""),
-      Destacado: Boolean(comercioData.Destacado)
+      Destacado: Boolean(comercioData.Destacado),
+      DeliveryPropio: Boolean(comercioData.DeliveryPropio), // ← AGREGADO
+      Descripcion: String(comercioData.Descripcion || ""),  // ← AGREGADO (OBLIGATORIO)
+      tipoComercio: String(comercioData.tipoComercio || "") // ← AGREGADO por si acaso
     };
 
     console.log('📤 Datos procesados para enviar:', requestData);
+    console.log('🔍 Descripcion enviado:', requestData.Descripcion);
+    console.log('🔍 DeliveryPropio enviado:', requestData.DeliveryPropio);
     console.log('🔗 URL:', `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.COMERCIOS.BASE}`);
 
     const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.COMERCIOS.BASE}`, {
@@ -207,6 +214,7 @@ export const loginComercio = async (credentials) => {
 };
 
 // Función auxiliar para obtener datos del comercio por email
+// Función auxiliar para obtener datos del comercio por email
 const obtenerDatosComercioPorEmail = async (email) => {
   try {
     console.log('🔍 Buscando datos del comercio por email:', email);
@@ -231,12 +239,12 @@ const obtenerDatosComercioPorEmail = async (email) => {
     
     // Mapear los datos a la estructura que espera el frontend
     return {
-      idComercio: comercio.idComercio || comercio.IdComercio,
+      idComercio: comercio.idcomercio || comercio.IdComercio,
       NombreComercio: comercio.nombreComercio || comercio.NombreComercio,
-      // Descripcion: comercio.descripcion || comercio.Descripcion,
-      // Envio: comercio.envio || comercio.Envio,
-      // FotoPortada: comercio.fotoPortada || comercio.FotoPortada,
-      // deliveryPropio: comercio.deliveryPropio || comercio.DeliveryPropio,
+      Descripcion: comercio.descripcion || comercio.Descripcion, // ← AGREGAR DESCRIPCIÓN
+      Envio: comercio.envio || comercio.Envio, // ← AGREGAR ENVÍO
+      FotoPortada: comercio.fotoPortada || comercio.FotoPortada,
+      DeliveryPropio: comercio.deliveryPropio || comercio.DeliveryPropio, // ← AGREGAR DELIVERY PROPIO
       Email: comercio.email || comercio.Email,
       Encargado: comercio.encargado || comercio.Encargado,
       Celular: comercio.celular || comercio.Celular,
@@ -253,7 +261,6 @@ const obtenerDatosComercioPorEmail = async (email) => {
     throw new Error('No se pudieron obtener los datos del usuario después del login');
   }
 };
-
 // Función para logout
 export const logoutComercio = () => {
   try {

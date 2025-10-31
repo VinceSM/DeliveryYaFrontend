@@ -37,6 +37,7 @@ export default function RegisterScreen() {
     alias: "",
     destacado: false,
     deliveryPropio: true,
+    descripcion: "",
   });
 
   const handleMapLocationSelect = (lat, lng) => {
@@ -133,7 +134,11 @@ export default function RegisterScreen() {
       else if (!/\S+@\S+\.\S+/.test(form.email)) errors.email = "El email no es válido";
       if (!form.password) errors.password = "La contraseña es requerida";
       else if (form.password.length < 6) errors.password = "La contraseña debe tener al menos 6 caracteres";
-      if (form.tipoComercio.length > 250) errors.tipoComercio = "La descripción no puede exceder los 250 caracteres";
+      
+      // AGREGAR VALIDACIÓN PARA DESCRIPCIÓN (OBLIGATORIA)
+      if (!form.descripcion?.trim()) errors.descripcion = "La descripción es requerida";
+      else if (form.descripcion.length > 250) errors.descripcion = "La descripción no puede exceder los 250 caracteres";
+      
       if (!form.encargado?.trim()) errors.encargado = "El encargado es requerido";
       if (!form.celular?.trim()) errors.celular = "El celular es requerido";
       if (!form.cvu?.trim()) errors.cvu = "El CVU es requerido";
@@ -166,66 +171,64 @@ export default function RegisterScreen() {
     setCurrentSection(prev => prev - 1);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    // Validar la sección actual
-    if (!validateSection(currentSection)) {
-      alert("❌ Por favor corrige los errores en el formulario");
-      return;
-    }
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  
+  if (!validateSection(currentSection)) {
+    alert("❌ Por favor corrige los errores en el formulario");
+    return;
+  }
 
-    setIsLoading(true);
+  setIsLoading(true);
+  
+  try {
+    const comercioData = {
+      NombreComercio: String(form.nombreComercio || ""),
+      Email: String(form.email || ""),
+      Password: String(form.password || ""),
+      FotoPortada: String(form.fotoPortada || ""),
+      tipoComercio: String(form.tipoComercio || ""),
+      Celular: String(form.celular || ""),
+      Ciudad: String(form.ciudad || ""),
+      Calle: String(form.calle || ""),
+      Numero: Number(form.numero) || 0,
+      Latitud: form.latitud ? Number(form.latitud) : 0,
+      Longitud: form.longitud ? Number(form.longitud) : 0,
+      Encargado: String(form.encargado || ""),
+      Cvu: String(form.cvu || ""),
+      Alias: String(form.alias || ""),
+      Destacado: Boolean(form.destacado),
+      DeliveryPropio: Boolean(form.deliveryPropio),
+      Descripcion: String(form.descripcion || ""),
+    };
+
+    console.log('📤 Estado del formulario:', form);
+    console.log('📤 Datos procesados para enviar:', comercioData);
     
+    const response = await registerComercio(comercioData);
+    console.log('✅ Registro exitoso:', response);
+    
+    alert("✅ Comercio registrado exitosamente");
+    window.location.href = "/auth/login";
+  } catch (error) {
+    console.error("❌ Error en registro:", error);
+    
+    let errorMessage = "Error al registrar el comercio";
     try {
-      // Preparar datos con conversión explícita de tipos
-      const comercioData = {
-        NombreComercio: String(form.nombreComercio || ""),
-        Email: String(form.email || ""),
-        Password: String(form.password || ""),
-        FotoPortada: String(form.fotoPortada || ""),
-        tipoComercio: String(form.tipoComercio || ""),
-        Celular: String(form.celular || ""),
-        Ciudad: String(form.ciudad || ""),
-        Calle: String(form.calle || ""),
-        Numero: Number(form.numero) || 0,
-        Latitud: form.latitud ? Number(form.latitud) : 0,
-        Longitud: form.longitud ? Number(form.longitud) : 0,
-        Encargado: String(form.encargado || ""),
-        Cvu: String(form.cvu || ""),
-        Alias: String(form.alias || ""),
-        Destacado: Boolean(form.destacado),
-        DeliveryPropio: Boolean(form.deliveryPropio),
-      };
-
-      console.log('📤 Estado del formulario:', form);
-      console.log('📤 Datos procesados para enviar:', comercioData);
-      
-      const response = await registerComercio(comercioData);
-      console.log('✅ Registro exitoso:', response);
-      
-      alert("✅ Comercio registrado exitosamente");
-      window.location.href = "/auth/login";
-    } catch (error) {
-      console.error("❌ Error en registro:", error);
-      
-      // Mostrar error más amigable
-      let errorMessage = "Error al registrar el comercio";
-      try {
-        const errorData = JSON.parse(error.message);
-        if (errorData.errors) {
-          const errorList = Object.values(errorData.errors).flat().join(', ');
-          errorMessage = `Errores de validación: ${errorList}`;
-        }
-      } catch {
-        errorMessage = error.message;
+      const errorData = JSON.parse(error.message);
+      if (errorData.errors) {
+        const errorList = Object.values(errorData.errors).flat().join(', ');
+        errorMessage = `Errores de validación: ${errorList}`;
       }
-      
-      alert("❌ " + errorMessage);
-    } finally {
-      setIsLoading(false);
+    } catch {
+      errorMessage = error.message;
     }
-  };
+    
+    alert("❌ " + errorMessage);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const getInitialMapPosition = () => {
     if (form.latitud && form.longitud) {
@@ -275,6 +278,33 @@ export default function RegisterScreen() {
                   onChange={handleChange} 
                 />
                 {formErrors.nombreComercio && <span className="error-message">{formErrors.nombreComercio}</span>}
+              </div>
+
+              <div className="register-input-group" style={{ gridColumn: "1 / -1" }}>
+                <label className="register-form-label">Descripción del Comercio *</label>
+                <textarea 
+                  className={`register-form-input ${formErrors.descripcion ? 'error' : ''}`}
+                  name="descripcion" 
+                  value={form.descripcion}
+                  placeholder="Describe tu comercio, productos, especialidades, horarios, etc. (Máximo 250 caracteres)"
+                  onChange={handleChange}
+                  rows="4"
+                  maxLength="250"
+                  style={{ 
+                    resize: "vertical",
+                    minHeight: "100px",
+                    fontFamily: "inherit"
+                  }}
+                />
+                <div style={{ 
+                  fontSize: "12px", 
+                  color: form.descripcion.length >= 250 ? "#ff4444" : "#666",
+                  textAlign: "right",
+                  marginTop: "5px"
+                }}>
+                  {form.descripcion.length}/250 caracteres
+                </div>
+                {formErrors.descripcion && <span className="error-message">{formErrors.descripcion}</span>}
               </div>
 
               <div className="register-input-group">

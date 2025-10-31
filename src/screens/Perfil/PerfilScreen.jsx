@@ -27,21 +27,22 @@ export default function PerfilScreen() {
   const { user } = useAuth();
 
   // Datos del comercio - ahora con datos reales
-  const [comercio, setComercio] = useState({
-    nombre: "",
-    descripcion: "Restaurante especializado en comida rápida y delivery",
-    email: "",
-    telefono: "",
-    direccion: "",
-    horarioAtencion: "Lunes a Domingo: 9:00 - 23:00",
-    categoria: "Restaurante",
-    tiempoEntrega: "30-45 min",
-    costoEnvio: 5.00,
-    encargado: "",
-    cvu: "",
-    alias: "",
-    destacado: false
-  });
+const [comercio, setComercio] = useState({
+  nombre: "",
+  descripcion: "",
+  email: "",
+  telefono: "",
+  direccion: "",
+  horarioAtencion: "Lunes a Domingo: 9:00 - 23:00",
+  categoria: "Restaurante",
+  tiempoEntrega: "30-45 min",
+  costoEnvio: 0, 
+  encargado: "",
+  cvu: "",
+  alias: "",
+  destacado: false,
+  deliveryPropio: false 
+});
 
   // Configuración
   const [configuracion, setConfiguracion] = useState({
@@ -59,44 +60,82 @@ export default function PerfilScreen() {
     cargarDatosReales();
   }, []);
 
-  const cargarDatosReales = () => {
-    try {
-      // Obtener datos del localStorage o del contexto
-      const datosReales = getComercioData();
+const cargarDatosReales = async () => {
+  try {
+    // Obtener datos del localStorage o del contexto
+    const datosReales = getComercioData();
+    
+    if (datosReales) {
+      console.log("📊 Datos reales del comercio:", datosReales);
       
-      if (datosReales) {
-        console.log("📊 Datos reales del comercio:", datosReales);
-        
-        setComercio(prev => ({
-          ...prev,
-          nombre: datosReales.NombreComercio || "",
-          email: datosReales.Email || "",
-          telefono: datosReales.Celular || "",
-          direccion: datosReales.Direccion || "",
-          encargado: datosReales.Encargado || "",
-          cvu: datosReales.CVU || "",
-          alias: datosReales.Alias || "",
-          destacado: datosReales.Destacado || false
-        }));
-      } else if (user) {
-        console.log("📊 Usando datos del contexto:", user);
-        
-        setComercio(prev => ({
-          ...prev,
-          nombre: user.NombreComercio || "",
-          email: user.Email || "",
-          telefono: user.Celular || "",
-          direccion: user.Direccion || "",
-          encargado: user.Encargado || "",
-          cvu: user.CVU || "",
-          alias: user.Alias || "",
-          destacado: user.Destacado || false
-        }));
+      // Si no tenemos todos los datos, obtenerlos de la API
+      if (!datosReales.Descripcion && !datosReales.descripcion) {
+        console.log("🔍 Obteniendo datos completos desde la API...");
+        try {
+          const comercioId = datosReales.idcomercio || datosReales.Id || datosReales.id || datosReales.ID;
+          if (comercioId) {
+            const datosCompletos = await comerciosService.getById(comercioId);
+            console.log("📊 Datos completos desde API:", datosCompletos);
+            
+            setComercio(prev => ({
+              ...prev,
+              nombre: datosCompletos.nombreComercio || datosCompletos.NombreComercio || "",
+              descripcion: datosCompletos.descripcion || datosCompletos.Descripcion || "",
+              email: datosCompletos.email || datosCompletos.Email || "",
+              telefono: datosCompletos.celular || datosCompletos.Celular || "",
+              direccion: `${datosCompletos.calle || datosCompletos.Calle || ""} ${datosCompletos.numero || datosCompletos.Numero || ""}, ${datosCompletos.ciudad || datosCompletos.Ciudad || ""}`,
+              encargado: datosCompletos.encargado || datosCompletos.Encargado || "",
+              cvu: datosCompletos.cvu || datosCompletos.CVU || "",
+              alias: datosCompletos.alias || datosCompletos.Alias || "",
+              destacado: datosCompletos.destacado || datosCompletos.Destacado || false,
+              costoEnvio: datosCompletos.envio || datosCompletos.Envio || 0,
+              deliveryPropio: datosCompletos.deliveryPropio || datosCompletos.DeliveryPropio || false
+            }));
+            return;
+          }
+        } catch (apiError) {
+          console.error("❌ Error obteniendo datos de API:", apiError);
+        }
       }
-    } catch (error) {
-      console.error("💥 Error cargando datos reales:", error);
+      
+      // Usar datos del localStorage
+      setComercio(prev => ({
+        ...prev,
+        nombre: datosReales.NombreComercio || datosReales.nombreComercio || "",
+        descripcion: datosReales.Descripcion || datosReales.descripcion || "",
+        email: datosReales.Email || datosReales.email || "",
+        telefono: datosReales.Celular || datosReales.celular || "",
+        direccion: datosReales.Direccion || 
+                  `${datosReales.calle || datosReales.Calle || ""} ${datosReales.numero || datosReales.Numero || ""}, ${datosReales.ciudad || datosReales.Ciudad || ""}`,
+        encargado: datosReales.Encargado || datosReales.encargado || "",
+        cvu: datosReales.CVU || datosReales.cvu || "",
+        alias: datosReales.Alias || datosReales.alias || "",
+        destacado: datosReales.Destacado || datosReales.destacado || false,
+        costoEnvio: datosReales.Envio || datosReales.envio || 0,
+        deliveryPropio: datosReales.DeliveryPropio || datosReales.deliveryPropio || false
+      }));
+    } else if (user) {
+      console.log("📊 Usando datos del contexto:", user);
+      
+      setComercio(prev => ({
+        ...prev,
+        nombre: user.NombreComercio || "",
+        descripcion: user.Descripcion || user.descripcion || "",
+        email: user.Email || "",
+        telefono: user.Celular || "",
+        direccion: user.Direccion || "",
+        encargado: user.Encargado || "",
+        cvu: user.CVU || "",
+        alias: user.Alias || "",
+        destacado: user.Destacado || false,
+        costoEnvio: user.Envio || 0,
+        deliveryPropio: user.DeliveryPropio || false
+      }));
     }
-  };
+  } catch (error) {
+    console.error("💥 Error cargando datos reales:", error);
+  }
+};
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -113,118 +152,124 @@ export default function PerfilScreen() {
     }));
   };
 
-  const handleGuardar = async () => {
-    setGuardando(true);
+const handleGuardar = async () => {
+  setGuardando(true);
+  
+  try {
+    console.log("💾 Guardando datos:", comercio);
     
-    try {
-      console.log("💾 Guardando datos:", comercio);
-      
-      // Obtener todos los datos del comercio
-      const datosReales = getComercioData();
-      console.log("📋 Datos reales completos:", datosReales);
-      
-      // Buscar el ID en diferentes propiedades posibles
-      let comercioId = datosReales?.idcomercio || datosReales?.Id || datosReales?.id || datosReales?.ID;
-      
-      console.log("🔍 ID del comercio encontrado:", comercioId);
+    // Obtener todos los datos del comercio
+    const datosReales = getComercioData();
+    console.log("📋 Datos reales completos:", datosReales);
+    
+    // Buscar el ID en diferentes propiedades posibles
+    let comercioId = datosReales?.idcomercio || datosReales?.Id || datosReales?.id || datosReales?.ID;
+    
+    console.log("🔍 ID del comercio encontrado:", comercioId);
 
-      if (!comercioId) {
-        console.log("🔍 Buscando ID en todas las propiedades:", Object.keys(datosReales));
+    if (!comercioId) {
+      console.log("🔍 Buscando ID en todas las propiedades:", Object.keys(datosReales));
+      
+      // SOLUCIÓN: Obtener el ID desde la API buscando por email
+      console.warn("⚠️ No se encontró ID, buscando en la API...");
+      
+      const todosComercios = await comerciosService.getAll();
+      const comercioEncontrado = todosComercios.find(c => 
+        c.email === comercio.email || c.Email === comercio.email
+      );
+      
+      if (comercioEncontrado) {
+        comercioId = comercioEncontrado.idcomercio || comercioEncontrado.Id || comercioEncontrado.id;
+        console.log("✅ ID encontrado por email:", comercioId);
         
-        // SOLUCIÓN: Obtener el ID desde la API buscando por email
-        console.warn("⚠️ No se encontró ID, buscando en la API...");
-        
-        const todosComercios = await comerciosService.getAll();
-        const comercioEncontrado = todosComercios.find(c => 
-          c.email === comercio.email || c.Email === comercio.email
-        );
-        
-        if (comercioEncontrado) {
-          comercioId = comercioEncontrado.idcomercio || comercioEncontrado.Id || comercioEncontrado.id;
-          console.log("✅ ID encontrado por email:", comercioId);
-          
-          // Guardar el ID en localStorage para futuras actualizaciones
-          const datosActualizados = {
-            ...datosReales,
-            idcomercio: comercioId
-          };
-          localStorage.setItem('comercioData', JSON.stringify(datosActualizados));
-        } else {
-          throw new Error("No se pudo encontrar el comercio en la API");
-        }
+        // Guardar el ID en localStorage para futuras actualizaciones
+        const datosActualizados = {
+          ...datosReales,
+          idcomercio: comercioId
+        };
+        localStorage.setItem('comercioData', JSON.stringify(datosActualizados));
+      } else {
+        throw new Error("No se pudo encontrar el comercio en la API");
       }
-
-      // Parsear la dirección para obtener calle, número y ciudad
-      const direccionCompleta = comercio.direccion || "";
-      let calle = "26";
-      let numero = 472;
-      let ciudad = "Miramar";
-
-      if (direccionCompleta) {
-        const partes = direccionCompleta.split(',');
-        if (partes.length > 1) {
-          ciudad = partes[1].trim();
-        }
-        
-        const direccionPartes = partes[0].trim().split(' ');
-        if (direccionPartes.length >= 2) {
-          calle = direccionPartes[0];
-          numero = parseInt(direccionPartes[1]) || 472;
-        }
-      }
-
-      // Preparar datos para la API
-      const datosParaAPI = {
-        Id: comercioId,
-        NombreComercio: comercio.nombre,
-        Email: comercio.email,
-        Celular: comercio.telefono,
-        Ciudad: ciudad,
-        Calle: calle,
-        Numero: numero,
-        Latitud: datosReales.Latitud || -34.6037,
-        Longitud: datosReales.Longitud || -58.3816,
-        Encargado: comercio.encargado,
-        Cvu: comercio.cvu,
-        Alias: comercio.alias,
-        Destacado: comercio.destacado,
-        FotoPortada: datosReales.FotoPortada || "",
-        Password: ""
-      };
-
-      console.log("📤 Enviando datos a la API:", datosParaAPI);
-
-      // ✅ Llamar a la API real para actualizar
-      const resultado = await comerciosService.update(comercioId, datosParaAPI);
-      
-      console.log("✅ Datos guardados exitosamente:", resultado);
-      
-      // Actualizar localStorage con los nuevos datos
-      const datosActualizados = {
-        ...datosReales,
-        idcomercio: comercioId,
-        NombreComercio: comercio.nombre,
-        Email: comercio.email,
-        Celular: comercio.telefono,
-        Encargado: comercio.encargado,
-        CVU: comercio.cvu,
-        Alias: comercio.alias,
-        Destacado: comercio.destacado,
-        Direccion: comercio.direccion
-      };
-      
-      localStorage.setItem('comercioData', JSON.stringify(datosActualizados));
-      
-      alert("✅ Perfil actualizado correctamente");
-      
-    } catch (error) {
-      console.error("❌ Error guardando datos:", error);
-      alert("❌ Error al guardar los cambios: " + error.message);
-    } finally {
-      setGuardando(false);
-      setEditando(false);
     }
-  };
+
+    // Parsear la dirección para obtener calle, número y ciudad
+    const direccionCompleta = comercio.direccion || "";
+    let calle = datosReales?.calle || datosReales?.Calle || "26";
+    let numero = datosReales?.numero || datosReales?.Numero || 472;
+    let ciudad = datosReales?.ciudad || datosReales?.Ciudad || "Miramar";
+
+    if (direccionCompleta) {
+      const partes = direccionCompleta.split(',');
+      if (partes.length > 1) {
+        ciudad = partes[1].trim();
+      }
+      
+      const direccionPartes = partes[0].trim().split(' ');
+      if (direccionPartes.length >= 2) {
+        calle = direccionPartes[0];
+        numero = parseInt(direccionPartes[1]) || numero;
+      }
+    }
+
+    // Preparar datos para la API
+    const datosParaAPI = {
+      Id: comercioId,
+      NombreComercio: comercio.nombre,
+      Email: comercio.email,
+      Celular: comercio.telefono,
+      Ciudad: ciudad,
+      Calle: calle,
+      Numero: numero,
+      Latitud: datosReales?.Latitud || datosReales?.latitud || -34.6037,
+      Longitud: datosReales?.Longitud || datosReales?.longitud || -58.3816,
+      Encargado: comercio.encargado,
+      Cvu: comercio.cvu,
+      Alias: comercio.alias,
+      Destacado: comercio.destacado,
+      FotoPortada: datosReales?.FotoPortada || datosReales?.fotoPortada || "",
+      Password: "",
+      Descripcion: comercio.descripcion || "",
+      Envio: Number(comercio.costoEnvio) || 0, // ← AGREGAR ENVÍO
+      DeliveryPropio: Boolean(comercio.deliveryPropio) // ← AGREGAR DELIVERY PROPIO
+    };
+
+    console.log("📤 Enviando datos a la API:", datosParaAPI);
+
+    // ✅ Llamar a la API real para actualizar
+    const resultado = await comerciosService.update(comercioId, datosParaAPI);
+    
+    console.log("✅ Datos guardados exitosamente:", resultado);
+    
+    // Actualizar localStorage con los nuevos datos
+    const datosActualizados = {
+      ...datosReales,
+      idcomercio: comercioId,
+      NombreComercio: comercio.nombre,
+      Email: comercio.email,
+      Celular: comercio.telefono,
+      Encargado: comercio.encargado,
+      CVU: comercio.cvu,
+      Alias: comercio.alias,
+      Destacado: comercio.destacado,
+      Direccion: comercio.direccion,
+      Descripcion: comercio.descripcion,
+      Envio: comercio.costoEnvio, // ← ACTUALIZAR ENVÍO
+      DeliveryPropio: comercio.deliveryPropio // ← ACTUALIZAR DELIVERY PROPIO
+    };
+    
+    localStorage.setItem('comercioData', JSON.stringify(datosActualizados));
+    
+    alert("✅ Perfil actualizado correctamente");
+    
+  } catch (error) {
+    console.error("❌ Error guardando datos:", error);
+    alert("❌ Error al guardar los cambios: " + error.message);
+  } finally {
+    setGuardando(false);
+    setEditando(false);
+  }
+};
 
   const handleCancelar = () => {
     setEditando(false);
@@ -233,66 +278,96 @@ export default function PerfilScreen() {
   };
 
   // ✅ Sección de información bancaria
-  const renderInformacionBancaria = () => (
-    <div className="form-seccion-bancaria">
-      <h4 className="seccion-subtitulo">Información Bancaria</h4>
-      <div className="form-grid">
-        <div className="form-group-perfil">
-          <label className="form-label-perfil">CVU</label>
-          <input
-            type="text"
-            name="cvu"
-            value={comercio.cvu}
-            onChange={handleInputChange}
-            className="form-input-perfil"
-            disabled={!editando}
-            placeholder="0000003100001234567890"
-          />
-        </div>
+const renderInformacionBancaria = () => (
+  <div className="form-seccion-bancaria">
+    <h4 className="seccion-subtitulo">Información Bancaria y Delivery</h4>
+    <div className="form-grid">
+      <div className="form-group-perfil">
+        <label className="form-label-perfil">CVU</label>
+        <input
+          type="text"
+          name="cvu"
+          value={comercio.cvu}
+          onChange={handleInputChange}
+          className="form-input-perfil"
+          disabled={!editando}
+          placeholder="0000003100001234567890"
+        />
+      </div>
 
-        <div className="form-group-perfil">
-          <label className="form-label-perfil">Alias</label>
-          <input
-            type="text"
-            name="alias"
-            value={comercio.alias}
-            onChange={handleInputChange}
-            className="form-input-perfil"
-            disabled={!editando}
-            placeholder="mi.comercio.mp"
-          />
-        </div>
+      <div className="form-group-perfil">
+        <label className="form-label-perfil">Alias</label>
+        <input
+          type="text"
+          name="alias"
+          value={comercio.alias}
+          onChange={handleInputChange}
+          className="form-input-perfil"
+          disabled={!editando}
+          placeholder="mi.comercio.mp"
+        />
+      </div>
 
-        <div className="form-group-perfil">
-          <label className="form-label-perfil">Encargado</label>
-          <input
-            type="text"
-            name="encargado"
-            value={comercio.encargado}
-            onChange={handleInputChange}
-            className="form-input-perfil"
-            disabled={!editando}
-            placeholder="Nombre del encargado"
-          />
-        </div>
+      <div className="form-group-perfil">
+        <label className="form-label-perfil">Encargado</label>
+        <input
+          type="text"
+          name="encargado"
+          value={comercio.encargado}
+          onChange={handleInputChange}
+          className="form-input-perfil"
+          disabled={!editando}
+          placeholder="Nombre del encargado"
+        />
+      </div>
 
-        <div className="form-group-perfil">
-          <label className="form-label-perfil">Destacado</label>
-          <div className="checkbox-container">
-            <input
-              type="checkbox"
-              name="destacado"
-              checked={comercio.destacado}
-              onChange={(e) => setComercio(prev => ({ ...prev, destacado: e.target.checked }))}
-              className="form-checkbox-perfil"
-              disabled={!editando}
-            />
-            <span className="checkbox-label">Marcar como comercio destacado</span>
-          </div>
+      <div className="form-group-perfil">
+        <label className="form-label-perfil">Costo de Envío ($)</label>
+        <input
+          type="number"
+          name="costoEnvio"
+          value={comercio.costoEnvio}
+          onChange={handleInputChange}
+          className="form-input-perfil"
+          disabled={!editando}
+          step="0.01"
+          min="0"
+          placeholder="0.00"
+        />
+      </div>
+
+      <div className="form-group-perfil">
+        <label className="form-label-perfil">Delivery Propio</label>
+        <div className="checkbox-container">
+          <input
+            type="checkbox"
+            name="deliveryPropio"
+            checked={comercio.deliveryPropio}
+            onChange={(e) => setComercio(prev => ({ ...prev, deliveryPropio: e.target.checked }))}
+            className="form-checkbox-perfil"
+            disabled={!editando}
+          />
+          <span className="checkbox-label">Tengo delivery propio</span>
+        </div>
+      </div>
+
+      <div className="form-group-perfil">
+        <label className="form-label-perfil">Destacado</label>
+        <div className="checkbox-container">
+          <input
+            type="checkbox"
+            name="destacado"
+            checked={comercio.destacado}
+            onChange={(e) => setComercio(prev => ({ ...prev, destacado: e.target.checked }))}
+            className="form-checkbox-perfil"
+            disabled={!editando}
+          />
+          <span className="checkbox-label">Marcar como comercio destacado</span>
         </div>
       </div>
     </div>
-  );
+  </div>
+);
 
   const renderSeccionInformacion = () => (
     <div className="seccion-contenido">
