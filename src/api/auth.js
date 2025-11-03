@@ -5,16 +5,13 @@ export const registerComercio = async (comercioData) => {
   try {
     // DEBUG: Ver qué está llegando
     console.log('📥 Datos recibidos en auth.js:', comercioData);
-    console.log('🔍 Valor de Descripcion recibido:', comercioData.Descripcion);
-    console.log('🔍 Valor de DeliveryPropio recibido:', comercioData.DeliveryPropio);
     
-    // El RegisterScreen ya envía los datos con los nombres correctos
-    // Solo necesitamos asegurar los tipos
+    // SOLO ENVIAR LOS CAMPOS QUE ESPERA EL BACKEND
     const requestData = {
       NombreComercio: String(comercioData.NombreComercio || ""),
       Email: String(comercioData.Email || ""),
       Password: String(comercioData.Password || ""),
-      FotoPortada: String(comercioData.FotoPortada || ""),
+      TipoComercio: String(comercioData.TipoComercio || "Otro"),
       Celular: String(comercioData.Celular || ""),
       Ciudad: String(comercioData.Ciudad || ""),
       Calle: String(comercioData.Calle || ""),
@@ -24,15 +21,17 @@ export const registerComercio = async (comercioData) => {
       Encargado: String(comercioData.Encargado || ""),
       Cvu: String(comercioData.Cvu || ""),
       Alias: String(comercioData.Alias || ""),
-      Destacado: Boolean(comercioData.Destacado),
-      DeliveryPropio: Boolean(comercioData.DeliveryPropio), // ← AGREGADO
-      Descripcion: String(comercioData.Descripcion || ""),  // ← AGREGADO (OBLIGATORIO)
-      tipoComercio: String(comercioData.tipoComercio || "") // ← AGREGADO por si acaso
+      DeliveryPropio: Boolean(comercioData.DeliveryPropio),
+      Eslogan: String(comercioData.Eslogan || ""),
+      Sucursales: Number(comercioData.Sucursales) || 1
     };
 
+    // NOTA: El backend ya no requiere estos campos:
+    // - FotoPortada (se puede enviar como null o string vacío si quieres)
+    // - Destacado (el backend lo establece como false por defecto)
+    // - Envio (el backend lo establece como 0 por defecto)
+
     console.log('📤 Datos procesados para enviar:', requestData);
-    console.log('🔍 Descripcion enviado:', requestData.Descripcion);
-    console.log('🔍 DeliveryPropio enviado:', requestData.DeliveryPropio);
     console.log('🔗 URL:', `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.COMERCIOS.BASE}`);
 
     const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.COMERCIOS.BASE}`, {
@@ -214,7 +213,6 @@ export const loginComercio = async (credentials) => {
 };
 
 // Función auxiliar para obtener datos del comercio por email
-// Función auxiliar para obtener datos del comercio por email
 const obtenerDatosComercioPorEmail = async (email) => {
   try {
     console.log('🔍 Buscando datos del comercio por email:', email);
@@ -241,14 +239,18 @@ const obtenerDatosComercioPorEmail = async (email) => {
     return {
       idComercio: comercio.idcomercio || comercio.IdComercio,
       NombreComercio: comercio.nombreComercio || comercio.NombreComercio,
-      Descripcion: comercio.descripcion || comercio.Descripcion, // ← AGREGAR DESCRIPCIÓN
-      Envio: comercio.envio || comercio.Envio, // ← AGREGAR ENVÍO
+      TipoComercio: comercio.tipoComercio || comercio.TipoComercio,
+      Eslogan: comercio.eslogan || comercio.Eslogan,
+      Envio: comercio.envio || comercio.Envio,
       FotoPortada: comercio.fotoPortada || comercio.FotoPortada,
-      DeliveryPropio: comercio.deliveryPropio || comercio.DeliveryPropio, // ← AGREGAR DELIVERY PROPIO
+      DeliveryPropio: comercio.deliveryPropio || comercio.DeliveryPropio,
       Email: comercio.email || comercio.Email,
       Encargado: comercio.encargado || comercio.Encargado,
       Celular: comercio.celular || comercio.Celular,
-      Direccion: `${comercio.calle || comercio.Calle} ${comercio.numero || comercio.Numero}, ${comercio.ciudad || comercio.Ciudad}`,
+      Ciudad: comercio.ciudad || comercio.Ciudad,
+      Calle: comercio.calle || comercio.Calle,
+      Numero: comercio.numero || comercio.Numero,
+      Sucursales: comercio.sucursales || comercio.Sucursales,
       Latitud: comercio.latitud || comercio.Latitud,
       Longitud: comercio.longitud || comercio.Longitud,
       CVU: comercio.cvu || comercio.CVU,
@@ -261,6 +263,7 @@ const obtenerDatosComercioPorEmail = async (email) => {
     throw new Error('No se pudieron obtener los datos del usuario después del login');
   }
 };
+
 // Función para logout
 export const logoutComercio = () => {
   try {

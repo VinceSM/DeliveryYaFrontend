@@ -13,13 +13,12 @@ const MIRAMAR_COORDINATES = {
 };
 
 export default function RegisterScreen() {
-  const [currentSection, setCurrentSection] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [formErrors, setFormErrors] = useState({});
   const [imagePreview, setImagePreview] = useState(null);
   const [fileName, setFileName] = useState("");
   
-  // Estado con valores por defecto
+  // Estado con valores por defecto - AGREGAR ENVIO
   const [form, setForm] = useState({
     nombreComercio: "",
     email: "",
@@ -37,7 +36,9 @@ export default function RegisterScreen() {
     alias: "",
     destacado: false,
     deliveryPropio: true,
-    descripcion: "",
+    eslogan: "",
+    sucursales: 1,
+    envio: 0 // ← CAMPO NUEVO AGREGADO
   });
 
   const handleMapLocationSelect = (lat, lng) => {
@@ -46,27 +47,9 @@ export default function RegisterScreen() {
       latitud: lat.toString(),
       longitud: lng.toString()
     }));
-    
-    // Limpiar errores de coordenadas si existían
-    if (formErrors.latitud || formErrors.longitud) {
-      setFormErrors(prev => ({
-        ...prev,
-        latitud: "",
-        longitud: ""
-      }));
-    }
   };
 
-  // Limpiar coordenadas (hacerlas null)
-  const clearCoordinates = () => {
-    setForm(prev => ({
-      ...prev,
-      latitud: "",
-      longitud: ""
-    }));
-  };
-
-  // Agrega esta función para manejar la selección de archivos
+  // Manejar la selección de archivos
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     
@@ -84,7 +67,7 @@ export default function RegisterScreen() {
       }
       
       // Guardar el nombre del archivo
-      setFileName(file.name); // ← Agrega esta línea
+      setFileName(file.name);
       
       // Crear URL temporal para vista previa
       const previewUrl = URL.createObjectURL(file);
@@ -99,7 +82,7 @@ export default function RegisterScreen() {
       URL.revokeObjectURL(imagePreview);
     }
     setImagePreview(null);
-    setFileName(""); // ← Agrega esta línea
+    setFileName("");
     setForm(prev => ({ ...prev, fotoPortada: "" }));
     
     // Resetear el input file
@@ -111,10 +94,31 @@ export default function RegisterScreen() {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setForm((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
+    
+    if (name === "sucursales") {
+      // Manejo especial para sucursales - permite 0 pero no null/vacío
+      const numericValue = value.replace(/\D/g, ''); // Remover caracteres no numéricos
+      
+      if (numericValue === '') {
+        // Si está vacío, establecer 0
+        setForm(prev => ({
+          ...prev,
+          [name]: 0
+        }));
+      } else {
+        // Convertir a número y permitir 0
+        const finalValue = parseInt(numericValue) || 0;
+        setForm(prev => ({
+          ...prev,
+          [name]: finalValue
+        }));
+      }
+    } else {
+      setForm((prev) => ({
+        ...prev,
+        [name]: type === "checkbox" ? checked : value,
+      }));
+    }
     
     // Limpiar error del campo cuando el usuario empiece a escribir
     if (formErrors[name]) {
@@ -125,110 +129,91 @@ export default function RegisterScreen() {
     }
   };
 
-  const validateSection = (section) => {
+  const validateForm = () => {
     const errors = {};
     
-    if (section === 0) {
-      if (!form.nombreComercio?.trim()) errors.nombreComercio = "El nombre del comercio es requerido";
-      if (!form.email?.trim()) errors.email = "El email es requerido";
-      else if (!/\S+@\S+\.\S+/.test(form.email)) errors.email = "El email no es válido";
-      if (!form.password) errors.password = "La contraseña es requerida";
-      else if (form.password.length < 6) errors.password = "La contraseña debe tener al menos 6 caracteres";
-      
-      // AGREGAR VALIDACIÓN PARA DESCRIPCIÓN (OBLIGATORIA)
-      if (!form.descripcion?.trim()) errors.descripcion = "La descripción es requerida";
-      else if (form.descripcion.length > 250) errors.descripcion = "La descripción no puede exceder los 250 caracteres";
-      
-      if (!form.encargado?.trim()) errors.encargado = "El encargado es requerido";
-      if (!form.celular?.trim()) errors.celular = "El celular es requerido";
-      if (!form.cvu?.trim()) errors.cvu = "El CVU es requerido";
-      if (!form.alias?.trim()) errors.alias = "El alias es requerido";
-      if (!form.deliveryPropio && errors.deliveryPropio !== false) errors.deliveryPropio = "Debes seleccionar una opción de delivery";
-    }
+    // Validaciones básicas
+    if (!form.nombreComercio?.trim()) errors.nombreComercio = "El nombre del comercio es requerido";
+    if (!form.email?.trim()) errors.email = "El email es requerido";
+    else if (!/\S+@\S+\.\S+/.test(form.email)) errors.email = "El email no es válido";
+    if (!form.password) errors.password = "La contraseña es requerida";
+    else if (form.password.length < 6) errors.password = "La contraseña debe tener al menos 6 caracteres";
+    if (!form.encargado?.trim()) errors.encargado = "El encargado es requerido";
+    if (!form.celular?.trim()) errors.celular = "El celular es requerido";
+    if (!form.tipoComercio?.trim()) errors.tipoComercio = "El tipo de comercio es requerido";
+    if (!form.eslogan?.trim()) errors.eslogan = "El eslogan es requerido";
+    // CVU ya no es obligatorio - se elimina la validación
+    if (!form.alias?.trim()) errors.alias = "El alias es requerido";
+    if (!form.ciudad?.trim()) errors.ciudad = "La ciudad es requerida";
+    if (!form.calle?.trim()) errors.calle = "La calle es requerida";
+    if (!form.numero?.trim()) errors.numero = "El número es requerido";
+    else if (isNaN(form.numero)) errors.numero = "El número debe ser un valor numérico";
     
-    if (section === 1) {
-      if (!form.ciudad?.trim()) errors.ciudad = "La ciudad es requerida";
-      if (!form.calle?.trim()) errors.calle = "La calle es requerida";
-      if (!form.numero?.trim()) errors.numero = "El número es requerido";
-      else if (isNaN(form.numero)) errors.numero = "El número debe ser un valor numérico";
-      // if (!form.latitud) errors.latitud = "La latitud es requerida";
-      // else if (isNaN(form.latitud)) errors.latitud = "La latitud debe ser un número";
-      // if (!form.longitud) errors.longitud = "La longitud es requerida";
-      // else if (isNaN(form.longitud)) errors.longitud = "La longitud debe ser un número";
-    }
+    // Sucursales: no necesita validación ya que siempre tendrá un valor numérico (0 o mayor)
     
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
-  const nextSection = () => {
-    if (validateSection(currentSection)) {
-      setCurrentSection(prev => prev + 1);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!validateForm()) {
+      alert("❌ Por favor corrige los errores en el formulario");
+      return;
     }
-  };
 
-  const prevSection = () => {
-    setCurrentSection(prev => prev - 1);
-  };
-
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  
-  if (!validateSection(currentSection)) {
-    alert("❌ Por favor corrige los errores en el formulario");
-    return;
-  }
-
-  setIsLoading(true);
-  
-  try {
-    const comercioData = {
-      NombreComercio: String(form.nombreComercio || ""),
-      Email: String(form.email || ""),
-      Password: String(form.password || ""),
-      FotoPortada: String(form.fotoPortada || ""),
-      tipoComercio: String(form.tipoComercio || ""),
-      Celular: String(form.celular || ""),
-      Ciudad: String(form.ciudad || ""),
-      Calle: String(form.calle || ""),
-      Numero: Number(form.numero) || 0,
-      Latitud: form.latitud ? Number(form.latitud) : 0,
-      Longitud: form.longitud ? Number(form.longitud) : 0,
-      Encargado: String(form.encargado || ""),
-      Cvu: String(form.cvu || ""),
-      Alias: String(form.alias || ""),
-      Destacado: Boolean(form.destacado),
-      DeliveryPropio: Boolean(form.deliveryPropio),
-      Descripcion: String(form.descripcion || ""),
-    };
-
-    console.log('📤 Estado del formulario:', form);
-    console.log('📤 Datos procesados para enviar:', comercioData);
+    setIsLoading(true);
     
-    const response = await registerComercio(comercioData);
-    console.log('✅ Registro exitoso:', response);
-    
-    alert("✅ Comercio registrado exitosamente");
-    window.location.href = "/auth/login";
-  } catch (error) {
-    console.error("❌ Error en registro:", error);
-    
-    let errorMessage = "Error al registrar el comercio";
     try {
-      const errorData = JSON.parse(error.message);
-      if (errorData.errors) {
-        const errorList = Object.values(errorData.errors).flat().join(', ');
-        errorMessage = `Errores de validación: ${errorList}`;
+      const comercioData = {
+        NombreComercio: String(form.nombreComercio || ""),
+        Email: String(form.email || ""),
+        Password: String(form.password || ""),
+        FotoPortada: String(form.fotoPortada || ""),
+        TipoComercio: String(form.tipoComercio || ""), // ← CAMBIAR a "TipoComercio" (con T mayúscula)
+        Celular: String(form.celular || ""),
+        Ciudad: String(form.ciudad || ""),
+        Calle: String(form.calle || ""),
+        Numero: Number(form.numero) || 0,
+        Latitud: form.latitud ? Number(form.latitud) : 0,
+        Longitud: form.longitud ? Number(form.longitud) : 0,
+        Encargado: String(form.encargado || ""),
+        Cvu: String(form.cvu || ""), // ← Enviar siempre aunque sea string vacío
+        Alias: String(form.alias || ""),
+        Destacado: Boolean(form.destacado),
+        DeliveryPropio: Boolean(form.deliveryPropio),
+        Eslogan: String(form.eslogan || ""), // ← Asegurar que se envía
+        Sucursales: Number(form.sucursales) || 0, // Permite 0
+        Envio: Number(form.envio) || 0 // ← CAMPO NUEVO AGREGADO
+      };
+
+      console.log('📤 Datos procesados para enviar:', comercioData);
+      
+      const response = await registerComercio(comercioData);
+      console.log('✅ Registro exitoso:', response);
+      
+      alert("✅ Comercio registrado exitosamente");
+      window.location.href = "/auth/login";
+    } catch (error) {
+      console.error("❌ Error en registro:", error);
+      
+      let errorMessage = "Error al registrar el comercio";
+      try {
+        const errorData = JSON.parse(error.message);
+        if (errorData.errors) {
+          const errorList = Object.values(errorData.errors).flat().join(', ');
+          errorMessage = `Errores de validación: ${errorList}`;
+        }
+      } catch {
+        errorMessage = error.message;
       }
-    } catch {
-      errorMessage = error.message;
+      
+      alert("❌ " + errorMessage);
+    } finally {
+      setIsLoading(false);
     }
-    
-    alert("❌ " + errorMessage);
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
 
   const getInitialMapPosition = () => {
     if (form.latitud && form.longitud) {
@@ -237,37 +222,29 @@ const handleSubmit = async (e) => {
     return [MIRAMAR_COORDINATES.lat, MIRAMAR_COORDINATES.lng];
   };
 
-  const sectionTitles = ["Información", "Dirección", "Contrato"];
-  
   return (
     <div className="register-container">
       <div className="register-header">
         <img src={LogoDeliveryYa} alt="Logo DeliveryYa" className="register-logo" />
         
-        <div style={{textAlign: 'right', marginBottom: '10px'}}>
-          <Link to="/auth/login" style={{color: '#fff', textDecoration: 'none', fontSize: '14px'}}>
+        <div className="register-back-link">
+          <Link to="/auth/login">
             ← Volver al Login
           </Link>
         </div>
         
         <h1 className="register-title">Registro de Comercio</h1>
-        
-        <div className="register-progress-indicator">
-          {sectionTitles.map((title, index) => (
-            <div key={index} className={`register-progress-step ${index === currentSection ? 'register-active' : ''} ${index < currentSection ? 'register-completed' : ''}`}>
-              <div className="register-step-number">{index + 1}</div>
-              <div className="register-step-title">{title}</div>
-            </div>
-          ))}
-        </div>
+        <p className="register-subtitle">Completa todos los datos de tu comercio en un solo paso</p>
       </div>
       
       <form onSubmit={handleSubmit} className="register-form">
-        {/* SECCIÓN 1: INFORMACIÓN */}
-        {currentSection === 0 && (
-          <div className="register-form-section">
-            <h2 className="register-section-title">Información del Comercio</h2>
+        <div className="register-sections-container">
+          
+          {/* SECCIÓN INFORMACIÓN BÁSICA */}
+          <div className="register-section">
+            <h2 className="register-section-title">Información Básica</h2>
             <div className="register-form-grid">
+              
               <div className="register-input-group">
                 <label className="register-form-label">Nombre del comercio *</label>
                 <input 
@@ -280,43 +257,16 @@ const handleSubmit = async (e) => {
                 {formErrors.nombreComercio && <span className="error-message">{formErrors.nombreComercio}</span>}
               </div>
 
-              <div className="register-input-group" style={{ gridColumn: "1 / -1" }}>
-                <label className="register-form-label">Descripción del Comercio *</label>
-                <textarea 
-                  className={`register-form-input ${formErrors.descripcion ? 'error' : ''}`}
-                  name="descripcion" 
-                  value={form.descripcion}
-                  placeholder="Describe tu comercio, productos, especialidades, horarios, etc. (Máximo 250 caracteres)"
-                  onChange={handleChange}
-                  rows="4"
-                  maxLength="250"
-                  style={{ 
-                    resize: "vertical",
-                    minHeight: "100px",
-                    fontFamily: "inherit"
-                  }}
-                />
-                <div style={{ 
-                  fontSize: "12px", 
-                  color: form.descripcion.length >= 250 ? "#ff4444" : "#666",
-                  textAlign: "right",
-                  marginTop: "5px"
-                }}>
-                  {form.descripcion.length}/250 caracteres
-                </div>
-                {formErrors.descripcion && <span className="error-message">{formErrors.descripcion}</span>}
-              </div>
-
               <div className="register-input-group">
-                <label className="register-form-label">Celular del Comercio *</label>
+                <label className="register-form-label">Eslogan *</label>
                 <input 
-                  className={`register-form-input ${formErrors.celular ? 'error' : ''}`}
-                  name="celular" 
-                  value={form.celular}
-                  placeholder="+54 9 11 1234-5678" 
+                  className={`register-form-input ${formErrors.eslogan ? 'error' : ''}`}
+                  name="eslogan" 
+                  value={form.eslogan}
+                  placeholder="Tu eslogan comercial" 
                   onChange={handleChange} 
                 />
-                {formErrors.celular && <span className="error-message">{formErrors.celular}</span>}
+                {formErrors.eslogan && <span className="error-message">{formErrors.eslogan}</span>}
               </div>
 
               <div className="register-input-group">
@@ -331,11 +281,69 @@ const handleSubmit = async (e) => {
                   <option value="Restaurante">Restaurante</option>
                   <option value="Cafetería">Cafetería</option>
                   <option value="Supermercado">Supermercado</option>
-                  {/* ... otras opciones ... */}
+                  <option value="Almacén">Almacén</option>
+                  <option value="Kiosco">Kiosco</option>
+                  <option value="Farmacia">Farmacia</option>
+                  <option value="Verdulería">Verdulería</option>
+                  <option value="Carnicería">Carnicería</option>
+                  <option value="Panadería">Panadería</option>
+                  <option value="Otro">Otro</option>
                 </select>
                 {formErrors.tipoComercio && <span className="error-message">{formErrors.tipoComercio}</span>}
               </div>
 
+              <div className="register-input-group">
+                <label className="register-form-label">
+                  Número de Sucursales
+                  <div className="info-tooltip">
+                    <span className="info-icon">ℹ️</span>
+                    <div className="tooltip-text">
+                      Podrás registrar tu primera sucursal en este proceso. Al finalizar, un asesor se pondrá en contacto contigo para gestionar el alta de las sucursales restantes.
+                    </div>
+                  </div>
+                </label>
+                <input 
+                  className="register-form-input no-spinner"
+                  name="sucursales" 
+                  value={form.sucursales}
+                  onChange={handleChange}
+                  pattern="[0-9]*"
+                  inputMode="numeric"
+                />
+              </div>
+
+              <div className="register-input-group">
+                <label className="register-form-label">Encargado *</label>
+                <input 
+                  className={`register-form-input ${formErrors.encargado ? 'error' : ''}`}
+                  name="encargado" 
+                  value={form.encargado}
+                  placeholder="Nombre del encargado" 
+                  onChange={handleChange} 
+                />
+                {formErrors.encargado && <span className="error-message">{formErrors.encargado}</span>}
+              </div>
+
+              <div className="register-input-group">
+                <label className="register-form-label">Celular *</label>
+                <input 
+                  className={`register-form-input ${formErrors.celular ? 'error' : ''}`}
+                  name="celular" 
+                  value={form.celular}
+                  placeholder="+54 9 11 1234-5678" 
+                  onChange={handleChange} 
+                />
+                {formErrors.celular && <span className="error-message">{formErrors.celular}</span>}
+              </div>
+
+            </div>
+          </div>
+
+          {/* SECCIÓN CREDENCIALES */}
+          <div className="register-section">
+            <h2 className="register-section-title">Credenciales de Acceso</h2>
+            <div className="register-form-grid">
+              
               <div className="register-input-group">
                 <label className="register-form-label">Email *</label>
                 <input 
@@ -362,131 +370,14 @@ const handleSubmit = async (e) => {
                 {formErrors.password && <span className="error-message">{formErrors.password}</span>}
               </div>
 
-              
-
-              <div className="register-input-group">
-                <label className="register-form-label">Delivery</label>
-                <div className="radio-group">
-                  <label className="radio-option">
-                    <input
-                      type="radio"
-                      name="deliveryPropio"
-                      value="true"
-                      checked={form.deliveryPropio === true}
-                      onChange={() => setForm(prev => ({ ...prev, deliveryPropio: true }))}
-                    />
-                    <span className="radio-label">✅ Tengo delivery propio</span>
-                  </label>
-                  
-                  <label className="radio-option">
-                    <input
-                      type="radio"
-                      name="deliveryPropio"
-                      value="false"
-                      checked={form.deliveryPropio === false}
-                      onChange={() => setForm(prev => ({ ...prev, deliveryPropio: false }))}
-                    />
-                    <span className="radio-label">❌ No tengo delivery propio</span>
-                  </label>
-                </div>
-              </div>
-              
-              <div className="register-input-group">
-                <label className="register-form-label">Encargado *</label>
-                <input 
-                  className={`register-form-input ${formErrors.encargado ? 'error' : ''}`}
-                  name="encargado" 
-                  value={form.encargado}
-                  placeholder="Nombre del encargado" 
-                  onChange={handleChange} 
-                />
-                {formErrors.encargado && <span className="error-message">{formErrors.encargado}</span>}
-              </div>
-              
-              
-
-              <div className="register-input-group">
-                <label className="register-form-label">CVU *</label>
-                <input 
-                  className={`register-form-input ${formErrors.cvu ? 'error' : ''}`}
-                  name="cvu" 
-                  value={form.cvu}
-                  placeholder="CVU bancario (22 dígitos)" 
-                  onChange={handleChange} 
-                />
-                {formErrors.cvu && <span className="error-message">{formErrors.cvu}</span>}
-              </div>
-
-              <div className="register-input-group">
-                <label className="register-form-label">Alias *</label>
-                <input 
-                  className={`register-form-input ${formErrors.alias ? 'error' : ''}`}
-                  name="alias" 
-                  value={form.alias}
-                  placeholder="Alias bancario" 
-                  onChange={handleChange} 
-                />
-                {formErrors.alias && <span className="error-message">{formErrors.alias}</span>}
-              </div>
-
-              <div className="register-input-group">
-                <label className="register-form-label">Foto de portada</label>
-                
-                <div className="image-upload-container">
-                  {!fileName && !form.fotoPortada ? (
-                    <div className="image-upload-area">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageUpload}
-                        className="image-file-input"
-                        id="fotoPortadaUpload"
-                      />
-                      <label htmlFor="fotoPortadaUpload" className="image-upload-label">
-                        <div className="upload-icon">📸</div>
-                        {/* <div className="upload-text">
-                          <strong>Seleccionar imagen</strong>
-                          <span>Haz clic para elegir una imagen</span>
-                          <small>Formatos: JPG, PNG, WEBP (Max. 5MB)</small>
-                        </div> */}
-                      </label>
-                    </div>
-                  ) : (
-                    <div className="file-selected-container">
-                      <div className="file-info">
-                        <span className="file-icon">📷</span>
-                        <div className="file-details">
-                          <span className="file-name">{fileName}</span>
-                          <span className="file-status">✅ Imagen seleccionada</span>
-                        </div>
-                      </div>
-                      <button 
-                        type="button" 
-                        className="remove-file-btn"
-                        onClick={clearImage}
-                        title="Eliminar imagen"
-                      >
-                        ×
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-            <div className="register-navigation-buttons">
-              <button type="button" className="register-nav-button register-next-button" onClick={nextSection}>
-                Siguiente → Dirección
-              </button>
             </div>
           </div>
-        )}
-        
-        {/* SECCIÓN 2: DIRECCIÓN */}
-        {currentSection === 1 && (
-          <div className="register-form-section">
-            <h2 className="register-section-title">Dirección del Comercio</h2>
-            
+
+          {/* SECCIÓN UBICACIÓN */}
+          <div className="register-section">
+            <h2 className="register-section-title">Ubicación</h2>
             <div className="register-form-grid">
+              
               <div className="register-input-group">
                 <label className="register-form-label">Ciudad *</label>
                 <input 
@@ -522,6 +413,7 @@ const handleSubmit = async (e) => {
                 />
                 {formErrors.numero && <span className="error-message">{formErrors.numero}</span>}
               </div>
+
             </div>
 
             {/* Mapa de selección de ubicación */}
@@ -536,61 +428,133 @@ const handleSubmit = async (e) => {
                 initialPosition={getInitialMapPosition()}
               />
               
-              <div className="coordinates-inputs">
-                <div className="coordinate-input-group">
-                  <label className="register-form-label">Latitud</label>
-                  <input 
-                    className={`register-form-input ${formErrors.latitud ? 'error' : ''}`}
-                    name="latitud" 
-                    type="number" 
-                    step="any"
-                    value={form.latitud}
-                    readOnly 
-                    onChange={handleChange} 
-                  />
-                  {formErrors.latitud && <span className="error-message">{formErrors.latitud}</span>}
-                </div>
-                
-                <div className="coordinate-input-group">
-                  <label className="register-form-label">Longitud</label>
-                  <input 
-                    className={`register-form-input ${formErrors.longitud ? 'error' : ''}`}
-                    name="longitud" 
-                    type="number" 
-                    step="any"
-                    value={form.longitud}
-                    readOnly
-                    onChange={handleChange} 
-                  />
-                  {formErrors.longitud && <span className="error-message">{formErrors.longitud}</span>}
-                </div>
-              </div>
-              
-              <button 
-                type="button" 
-                className="clear-coordinates-button"
-                onClick={clearCoordinates}
-              >
-                🗑️ Limpiar coordenadas
-              </button>
-            </div>
-            
-            <div className="register-navigation-buttons">
-              <button type="button" className="register-nav-button register-prev-button" onClick={prevSection}>
-                ← Anterior
-              </button>
-              <button type="button" className="register-nav-button register-next-button" onClick={nextSection}>
-                Siguiente → Contrato
-              </button>
+              {/* Campos ocultos para latitud y longitud */}
+              <input 
+                type="hidden"
+                name="latitud" 
+                value={form.latitud}
+                onChange={handleChange} 
+              />
+              <input 
+                type="hidden"
+                name="longitud" 
+                value={form.longitud}
+                onChange={handleChange} 
+              />
             </div>
           </div>
-        )}
-        
-        {/* SECCIÓN 3: CONTRATO */}
-        {currentSection === 2 && (
-          <div className="register-form-section">
+
+          {/* SECCIÓN DATOS BANCARIOS */}
+          <div className="register-section">
+            <h2 className="register-section-title">Datos Bancarios</h2>
+            <div className="register-form-grid">
+              
+              <div className="register-input-group">
+                <label className="register-form-label">CVU (Opcional)</label>
+                <input 
+                  className={`register-form-input ${formErrors.cvu ? 'error' : ''}`}
+                  name="cvu" 
+                  value={form.cvu}
+                  placeholder="CVU bancario (22 dígitos)" 
+                  onChange={handleChange} 
+                />
+                {formErrors.cvu && <span className="error-message">{formErrors.cvu}</span>}
+              </div>
+
+              <div className="register-input-group">
+                <label className="register-form-label">Alias *</label>
+                <input 
+                  className={`register-form-input ${formErrors.alias ? 'error' : ''}`}
+                  name="alias" 
+                  value={form.alias}
+                  placeholder="Alias bancario" 
+                  onChange={handleChange} 
+                />
+                {formErrors.alias && <span className="error-message">{formErrors.alias}</span>}
+              </div>
+
+            </div>
+          </div>
+
+          {/* SECCIÓN CONFIGURACIÓN */}
+          <div className="register-section">
+            <h2 className="register-section-title">Configuración</h2>
+            <div className="register-form-grid">
+              
+              <div className="register-input-group">
+                <label className="register-form-label">Sistema de Delivery</label>
+                <div className="radio-group">
+                  <label className="radio-option">
+                    <input
+                      type="radio"
+                      name="deliveryPropio"
+                      value="true"
+                      checked={form.deliveryPropio === true}
+                      onChange={() => setForm(prev => ({ ...prev, deliveryPropio: true }))}
+                    />
+                    <span className="radio-label">✅ Tengo delivery propio</span>
+                  </label>
+                  
+                  <label className="radio-option">
+                    <input
+                      type="radio"
+                      name="deliveryPropio"
+                      value="false"
+                      checked={form.deliveryPropio === false}
+                      onChange={() => setForm(prev => ({ ...prev, deliveryPropio: false }))}
+                    />
+                    <span className="radio-label">❌ No tengo delivery propio</span>
+                  </label>
+                </div>
+              </div>
+
+              <div className="register-input-group">
+                <label className="register-form-label">Foto de portada</label>
+                <div className="image-upload-container">
+                  {!fileName && !form.fotoPortada ? (
+                    <div className="image-upload-area">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="image-file-input"
+                        id="fotoPortadaUpload"
+                      />
+                      <label htmlFor="fotoPortadaUpload" className="image-upload-label">
+                        <div className="upload-icon">📸</div>
+                        <span>Seleccionar imagen</span>
+                      </label>
+                    </div>
+                  ) : (
+                    <div className="file-selected-container">
+                      <div className="file-info">
+                        <span className="file-icon">📷</span>
+                        <div className="file-details">
+                          <span className="file-name">{fileName}</span>
+                          <span className="file-status">✅ Imagen seleccionada</span>
+                        </div>
+                      </div>
+                      <button 
+                        type="button" 
+                        className="remove-file-btn"
+                        onClick={clearImage}
+                        title="Eliminar imagen"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          {/* SECCIÓN PLAN */}
+          <div className="register-section">
             <h2 className="register-section-title">Selecciona tu Plan</h2>
             <div className="register-contract-options">
+              
               <div className="register-contract-option">
                 <div className="register-option-header">
                   <h3>Plan Básico</h3>
@@ -642,22 +606,26 @@ const handleSubmit = async (e) => {
                   </label>
                 </div>
               </div>
-            </div>
-            
-            <div className="register-navigation-buttons">
-              <button type="button" className="register-nav-button register-prev-button" onClick={prevSection}>
-                ← Anterior
-              </button>
-              <button 
-                type="submit" 
-                className="register-register-button"
-                disabled={isLoading}
-              >
-                {isLoading ? "Registrando..." : "Registrar Comercio"}
-              </button>
+
             </div>
           </div>
-        )}
+
+        </div>
+        
+        {/* BOTÓN DE REGISTRO */}
+        <div className="register-submit-section">
+          <button 
+            type="submit" 
+            className="register-register-button"
+            disabled={isLoading}
+          >
+            {isLoading ? "Registrando..." : "Registrar Comercio"}
+          </button>
+          
+          <div className="register-login-link">
+            ¿Ya tienes una cuenta? <Link to="/auth/login">Inicia sesión aquí</Link>
+          </div>
+        </div>
       </form>
     </div>
   );

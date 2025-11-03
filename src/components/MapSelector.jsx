@@ -53,14 +53,6 @@ const MapSelector = ({ onLocationSelect, initialPosition }) => {
           <Marker position={position} />
         )}
       </MapContainer>
-      
-      {position && (
-        <div className="coordinates-display">
-          <span>📍 Ubicación seleccionada:</span>
-          <span>Lat: {position[0].toFixed(6)}</span>
-          <span>Lng: {position[1].toFixed(6)}</span>
-        </div>
-      )}
     </div>
   );
 };

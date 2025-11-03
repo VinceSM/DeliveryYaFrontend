@@ -1,746 +1,162 @@
+// src/screens/Perfil/PerfilScreen.jsx
 import { useState, useEffect } from "react";
-import "../../styles/screens/PerfilScreen.css";
+import "../../styles/screens/PerfilScreen.css"
 import Sidebar from "../../components/screens/Sidebar";
-import { 
-  Settings, 
-  Store, 
-  Mail, 
-  Phone, 
-  MapPin, 
-  Clock, 
-  CreditCard, 
-  Bell,
-  Shield,
-  Download,
-  Upload,
-  Save,
-  Edit3
-} from "lucide-react";
-import { useAuth } from "../../hooks/useAuth";
+import { Store, Mail, Phone, Settings, CreditCard } from "lucide-react";
 import { getComercioData } from "../../api/auth";
-import { comerciosService } from "../../api/comercio"; // ✅ IMPORTACIÓN AGREGADA
+import { comerciosService } from "../../api/comercio";
+import PerfilInformacion from "./PerfilInformacion";
+import PerfilConfiguracion from "./PerfilConfiguracion";
+import PerfilEstadisticas from "./PerfilEstadisticas";
 
 export default function PerfilScreen() {
   const [seccionActiva, setSeccionActiva] = useState("informacion");
-  const [editando, setEditando] = useState(false);
-  const [guardando, setGuardando] = useState(false);
-  const { user } = useAuth();
-
-  // Datos del comercio - ahora con datos reales
-const [comercio, setComercio] = useState({
-  nombre: "",
-  descripcion: "",
-  email: "",
-  telefono: "",
-  direccion: "",
-  horarioAtencion: "Lunes a Domingo: 9:00 - 23:00",
-  categoria: "Restaurante",
-  tiempoEntrega: "30-45 min",
-  costoEnvio: 0, 
-  encargado: "",
-  cvu: "",
-  alias: "",
-  destacado: false,
-  deliveryPropio: false 
-});
-
-  // Configuración
-  const [configuracion, setConfiguracion] = useState({
-    notificacionesPedidos: true,
-    notificacionesStock: true,
-    notificacionesPromociones: false,
-    aceptaEfectivo: true,
-    aceptaTarjeta: true,
-    modoMantenimiento: false,
-    pedidosAutomaticos: true
+  const [loading, setLoading] = useState(true);
+  const [comercio, setComercio] = useState({
+    idcomercio: null,
+    nombreComercio: "",
+    tipoComercio: "",
+    eslogan: "",
+    email: "",
+    celular: "",
+    ciudad: "",
+    calle: "",
+    numero: "",
+    encargado: "",
+    cvu: "",
+    alias: "",
+    destacado: false,
+    deliveryPropio: false,
+    envio: 0,
+    sucursales: 1,
+    latitud: 0,
+    longitud: 0
   });
 
-  // ✅ Cargar datos reales cuando el componente se monta
+  // Cargar datos del comercio
   useEffect(() => {
-    cargarDatosReales();
+    cargarDatosComercio();
   }, []);
 
-const cargarDatosReales = async () => {
-  try {
-    // Obtener datos del localStorage o del contexto
-    const datosReales = getComercioData();
-    
-    if (datosReales) {
-      console.log("📊 Datos reales del comercio:", datosReales);
+  const cargarDatosComercio = async () => {
+    try {
+      setLoading(true);
+      const datosReales = getComercioData();
       
-      // Si no tenemos todos los datos, obtenerlos de la API
-      if (!datosReales.Descripcion && !datosReales.descripcion) {
-        console.log("🔍 Obteniendo datos completos desde la API...");
-        try {
-          const comercioId = datosReales.idcomercio || datosReales.Id || datosReales.id || datosReales.ID;
-          if (comercioId) {
-            const datosCompletos = await comerciosService.getById(comercioId);
-            console.log("📊 Datos completos desde API:", datosCompletos);
+      if (datosReales) {
+        console.log("📊 Datos reales del comercio:", datosReales);
+        
+        // Si no tenemos ID, buscar en la API
+        if (!datosReales.idcomercio) {
+          try {
+            const todosComercios = await comerciosService.getAll();
+            const comercioEncontrado = todosComercios.find(c => 
+              c.email === datosReales.email || c.Email === datosReales.email
+            );
             
-            setComercio(prev => ({
-              ...prev,
-              nombre: datosCompletos.nombreComercio || datosCompletos.NombreComercio || "",
-              descripcion: datosCompletos.descripcion || datosCompletos.Descripcion || "",
-              email: datosCompletos.email || datosCompletos.Email || "",
-              telefono: datosCompletos.celular || datosCompletos.Celular || "",
-              direccion: `${datosCompletos.calle || datosCompletos.Calle || ""} ${datosCompletos.numero || datosCompletos.Numero || ""}, ${datosCompletos.ciudad || datosCompletos.Ciudad || ""}`,
-              encargado: datosCompletos.encargado || datosCompletos.Encargado || "",
-              cvu: datosCompletos.cvu || datosCompletos.CVU || "",
-              alias: datosCompletos.alias || datosCompletos.Alias || "",
-              destacado: datosCompletos.destacado || datosCompletos.Destacado || false,
-              costoEnvio: datosCompletos.envio || datosCompletos.Envio || 0,
-              deliveryPropio: datosCompletos.deliveryPropio || datosCompletos.DeliveryPropio || false
-            }));
-            return;
+            if (comercioEncontrado) {
+              actualizarEstadoComercio(comercioEncontrado);
+              setLoading(false);
+              return;
+            }
+          } catch (apiError) {
+            console.error("❌ Error obteniendo datos de API:", apiError);
           }
-        } catch (apiError) {
-          console.error("❌ Error obteniendo datos de API:", apiError);
         }
+        
+        actualizarEstadoComercio(datosReales);
       }
-      
-      // Usar datos del localStorage
-      setComercio(prev => ({
-        ...prev,
-        nombre: datosReales.NombreComercio || datosReales.nombreComercio || "",
-        descripcion: datosReales.Descripcion || datosReales.descripcion || "",
-        email: datosReales.Email || datosReales.email || "",
-        telefono: datosReales.Celular || datosReales.celular || "",
-        direccion: datosReales.Direccion || 
-                  `${datosReales.calle || datosReales.Calle || ""} ${datosReales.numero || datosReales.Numero || ""}, ${datosReales.ciudad || datosReales.Ciudad || ""}`,
-        encargado: datosReales.Encargado || datosReales.encargado || "",
-        cvu: datosReales.CVU || datosReales.cvu || "",
-        alias: datosReales.Alias || datosReales.alias || "",
-        destacado: datosReales.Destacado || datosReales.destacado || false,
-        costoEnvio: datosReales.Envio || datosReales.envio || 0,
-        deliveryPropio: datosReales.DeliveryPropio || datosReales.deliveryPropio || false
-      }));
-    } else if (user) {
-      console.log("📊 Usando datos del contexto:", user);
-      
-      setComercio(prev => ({
-        ...prev,
-        nombre: user.NombreComercio || "",
-        descripcion: user.Descripcion || user.descripcion || "",
-        email: user.Email || "",
-        telefono: user.Celular || "",
-        direccion: user.Direccion || "",
-        encargado: user.Encargado || "",
-        cvu: user.CVU || "",
-        alias: user.Alias || "",
-        destacado: user.Destacado || false,
-        costoEnvio: user.Envio || 0,
-        deliveryPropio: user.DeliveryPropio || false
-      }));
+    } catch (error) {
+      console.error("💥 Error cargando datos del comercio:", error);
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.error("💥 Error cargando datos reales:", error);
-  }
-};
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setComercio(prev => ({
-      ...prev,
-      [name]: value
-    }));
   };
 
-  const handleConfigChange = (name, value) => {
-    setConfiguracion(prev => ({
-      ...prev,
-      [name]: value
-    }));
+  const actualizarEstadoComercio = (datos) => {
+    setComercio({
+      idcomercio: datos.idcomercio || datos.Id || datos.id || datos.ID,
+      nombreComercio: datos.nombreComercio || datos.NombreComercio || "Mi Comercio",
+      tipoComercio: datos.tipoComercio || datos.TipoComercio || "Restaurante",
+      eslogan: datos.eslogan || datos.Eslogan || "",
+      email: datos.email || datos.Email || "",
+      celular: datos.celular || datos.Celular || "",
+      ciudad: datos.ciudad || datos.Ciudad || "",
+      calle: datos.calle || datos.Calle || "",
+      numero: datos.numero || datos.Numero || "",
+      encargado: datos.encargado || datos.Encargado || "",
+      cvu: datos.cvu || datos.CVU || "",
+      alias: datos.alias || datos.Alias || "",
+      destacado: datos.destacado || datos.Destacado || false,
+      deliveryPropio: datos.deliveryPropio || datos.DeliveryPropio || false,
+      envio: datos.envio || datos.Envio || 0,
+      sucursales: datos.sucursales || datos.Sucursales || 1,
+      latitud: datos.latitud || datos.Latitud || 0,
+      longitud: datos.longitud || datos.Longitud || 0
+    });
   };
 
-const handleGuardar = async () => {
-  setGuardando(true);
-  
-  try {
-    console.log("💾 Guardando datos:", comercio);
-    
-    // Obtener todos los datos del comercio
-    const datosReales = getComercioData();
-    console.log("📋 Datos reales completos:", datosReales);
-    
-    // Buscar el ID en diferentes propiedades posibles
-    let comercioId = datosReales?.idcomercio || datosReales?.Id || datosReales?.id || datosReales?.ID;
-    
-    console.log("🔍 ID del comercio encontrado:", comercioId);
+  const actualizarComercio = (nuevosDatos) => {
+    setComercio(prev => ({ ...prev, ...nuevosDatos }));
+  };
 
-    if (!comercioId) {
-      console.log("🔍 Buscando ID en todas las propiedades:", Object.keys(datosReales));
-      
-      // SOLUCIÓN: Obtener el ID desde la API buscando por email
-      console.warn("⚠️ No se encontró ID, buscando en la API...");
-      
-      const todosComercios = await comerciosService.getAll();
-      const comercioEncontrado = todosComercios.find(c => 
-        c.email === comercio.email || c.Email === comercio.email
+  const obtenerDireccionCompleta = () => {
+    return `${comercio.calle || ""} ${comercio.numero || ""}, ${comercio.ciudad || ""}`.trim();
+  };
+
+  // Función para cambiar sección que también verifica datos
+  const cambiarSeccion = (seccion) => {
+    setSeccionActiva(seccion);
+    // Si los datos están vacíos, recargar
+    if (!comercio.idcomercio && !loading) {
+      cargarDatosComercio();
+    }
+  };
+
+  // Renderizar sección activa
+  const renderSeccionActiva = () => {
+    if (loading) {
+      return (
+        <div className="loading-container">
+          <div>Cargando información del comercio...</div>
+        </div>
       );
-      
-      if (comercioEncontrado) {
-        comercioId = comercioEncontrado.idcomercio || comercioEncontrado.Id || comercioEncontrado.id;
-        console.log("✅ ID encontrado por email:", comercioId);
-        
-        // Guardar el ID en localStorage para futuras actualizaciones
-        const datosActualizados = {
-          ...datosReales,
-          idcomercio: comercioId
-        };
-        localStorage.setItem('comercioData', JSON.stringify(datosActualizados));
-      } else {
-        throw new Error("No se pudo encontrar el comercio en la API");
-      }
     }
 
-    // Parsear la dirección para obtener calle, número y ciudad
-    const direccionCompleta = comercio.direccion || "";
-    let calle = datosReales?.calle || datosReales?.Calle || "26";
-    let numero = datosReales?.numero || datosReales?.Numero || 472;
-    let ciudad = datosReales?.ciudad || datosReales?.Ciudad || "Miramar";
-
-    if (direccionCompleta) {
-      const partes = direccionCompleta.split(',');
-      if (partes.length > 1) {
-        ciudad = partes[1].trim();
-      }
-      
-      const direccionPartes = partes[0].trim().split(' ');
-      if (direccionPartes.length >= 2) {
-        calle = direccionPartes[0];
-        numero = parseInt(direccionPartes[1]) || numero;
-      }
+    switch (seccionActiva) {
+      case "informacion":
+        return (
+          <PerfilInformacion 
+            comercio={comercio}
+            onActualizarComercio={actualizarComercio}
+            onRecargarDatos={cargarDatosComercio}
+          />
+        );
+      case "configuracion":
+        return <PerfilConfiguracion />;
+      case "estadisticas":
+        return <PerfilEstadisticas />;
+      default:
+        return (
+          <PerfilInformacion 
+            comercio={comercio}
+            onActualizarComercio={actualizarComercio}
+            onRecargarDatos={cargarDatosComercio}
+          />
+        );
     }
-
-    // Preparar datos para la API
-    const datosParaAPI = {
-      Id: comercioId,
-      NombreComercio: comercio.nombre,
-      Email: comercio.email,
-      Celular: comercio.telefono,
-      Ciudad: ciudad,
-      Calle: calle,
-      Numero: numero,
-      Latitud: datosReales?.Latitud || datosReales?.latitud || -34.6037,
-      Longitud: datosReales?.Longitud || datosReales?.longitud || -58.3816,
-      Encargado: comercio.encargado,
-      Cvu: comercio.cvu,
-      Alias: comercio.alias,
-      Destacado: comercio.destacado,
-      FotoPortada: datosReales?.FotoPortada || datosReales?.fotoPortada || "",
-      Password: "",
-      Descripcion: comercio.descripcion || "",
-      Envio: Number(comercio.costoEnvio) || 0, // ← AGREGAR ENVÍO
-      DeliveryPropio: Boolean(comercio.deliveryPropio) // ← AGREGAR DELIVERY PROPIO
-    };
-
-    console.log("📤 Enviando datos a la API:", datosParaAPI);
-
-    // ✅ Llamar a la API real para actualizar
-    const resultado = await comerciosService.update(comercioId, datosParaAPI);
-    
-    console.log("✅ Datos guardados exitosamente:", resultado);
-    
-    // Actualizar localStorage con los nuevos datos
-    const datosActualizados = {
-      ...datosReales,
-      idcomercio: comercioId,
-      NombreComercio: comercio.nombre,
-      Email: comercio.email,
-      Celular: comercio.telefono,
-      Encargado: comercio.encargado,
-      CVU: comercio.cvu,
-      Alias: comercio.alias,
-      Destacado: comercio.destacado,
-      Direccion: comercio.direccion,
-      Descripcion: comercio.descripcion,
-      Envio: comercio.costoEnvio, // ← ACTUALIZAR ENVÍO
-      DeliveryPropio: comercio.deliveryPropio // ← ACTUALIZAR DELIVERY PROPIO
-    };
-    
-    localStorage.setItem('comercioData', JSON.stringify(datosActualizados));
-    
-    alert("✅ Perfil actualizado correctamente");
-    
-  } catch (error) {
-    console.error("❌ Error guardando datos:", error);
-    alert("❌ Error al guardar los cambios: " + error.message);
-  } finally {
-    setGuardando(false);
-    setEditando(false);
-  }
-};
-
-  const handleCancelar = () => {
-    setEditando(false);
-    // Recargar datos originales
-    cargarDatosReales();
   };
 
-  // ✅ Sección de información bancaria
-const renderInformacionBancaria = () => (
-  <div className="form-seccion-bancaria">
-    <h4 className="seccion-subtitulo">Información Bancaria y Delivery</h4>
-    <div className="form-grid">
-      <div className="form-group-perfil">
-        <label className="form-label-perfil">CVU</label>
-        <input
-          type="text"
-          name="cvu"
-          value={comercio.cvu}
-          onChange={handleInputChange}
-          className="form-input-perfil"
-          disabled={!editando}
-          placeholder="0000003100001234567890"
-        />
+  if (loading) {
+    return (
+      <div className="dashboard-container flex h-screen">
+        <Sidebar />
+        <main className="main-content flex-1 overflow-y-auto flex items-center justify-center">
+          <div>Cargando perfil...</div>
+        </main>
       </div>
-
-      <div className="form-group-perfil">
-        <label className="form-label-perfil">Alias</label>
-        <input
-          type="text"
-          name="alias"
-          value={comercio.alias}
-          onChange={handleInputChange}
-          className="form-input-perfil"
-          disabled={!editando}
-          placeholder="mi.comercio.mp"
-        />
-      </div>
-
-      <div className="form-group-perfil">
-        <label className="form-label-perfil">Encargado</label>
-        <input
-          type="text"
-          name="encargado"
-          value={comercio.encargado}
-          onChange={handleInputChange}
-          className="form-input-perfil"
-          disabled={!editando}
-          placeholder="Nombre del encargado"
-        />
-      </div>
-
-      <div className="form-group-perfil">
-        <label className="form-label-perfil">Costo de Envío ($)</label>
-        <input
-          type="number"
-          name="costoEnvio"
-          value={comercio.costoEnvio}
-          onChange={handleInputChange}
-          className="form-input-perfil"
-          disabled={!editando}
-          step="0.01"
-          min="0"
-          placeholder="0.00"
-        />
-      </div>
-
-      <div className="form-group-perfil">
-        <label className="form-label-perfil">Delivery Propio</label>
-        <div className="checkbox-container">
-          <input
-            type="checkbox"
-            name="deliveryPropio"
-            checked={comercio.deliveryPropio}
-            onChange={(e) => setComercio(prev => ({ ...prev, deliveryPropio: e.target.checked }))}
-            className="form-checkbox-perfil"
-            disabled={!editando}
-          />
-          <span className="checkbox-label">Tengo delivery propio</span>
-        </div>
-      </div>
-
-      <div className="form-group-perfil">
-        <label className="form-label-perfil">Destacado</label>
-        <div className="checkbox-container">
-          <input
-            type="checkbox"
-            name="destacado"
-            checked={comercio.destacado}
-            onChange={(e) => setComercio(prev => ({ ...prev, destacado: e.target.checked }))}
-            className="form-checkbox-perfil"
-            disabled={!editando}
-          />
-          <span className="checkbox-label">Marcar como comercio destacado</span>
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
-  const renderSeccionInformacion = () => (
-    <div className="seccion-contenido">
-      <div className="seccion-header">
-        <h3 className="seccion-titulo">Información del Comercio</h3>
-        {!editando && (
-          <button 
-            className="btn-editar"
-            onClick={() => setEditando(true)}
-          >
-            <Edit3 size={16} />
-            Editar Información
-          </button>
-        )}
-      </div>
-
-      <form className="form-perfil">
-        <div className="form-grid">
-          <div className="form-group-perfil">
-            <label className="form-label-perfil">Nombre del Comercio</label>
-            <input
-              type="text"
-              name="nombre"
-              value={comercio.nombre}
-              onChange={handleInputChange}
-              className="form-input-perfil"
-              disabled={!editando}
-              placeholder="Ingresa el nombre de tu comercio"
-            />
-          </div>
-
-          <div className="form-group-perfil">
-            <label className="form-label-perfil">Categoría</label>
-            <select
-              name="categoria"
-              value={comercio.categoria}
-              onChange={handleInputChange}
-              className="form-input-perfil"
-              disabled={!editando}
-            >
-              <option value="Restaurante">Restaurante</option>
-              <option value="Cafetería">Cafetería</option>
-              <option value="Pizzería">Pizzería</option>
-              <option value="Heladería">Heladería</option>
-              <option value="Panadería">Panadería</option>
-              <option value="Otro">Otro</option>
-            </select>
-          </div>
-
-          <div className="form-group-perfil full-width">
-            <label className="form-label-perfil">Descripción</label>
-            <textarea
-              name="descripcion"
-              value={comercio.descripcion}
-              onChange={handleInputChange}
-              className="form-textarea-perfil"
-              disabled={!editando}
-              rows="3"
-              placeholder="Describe tu comercio..."
-            />
-          </div>
-
-          <div className="form-group-perfil">
-            <label className="form-label-perfil">Email</label>
-            <div className="input-with-icon">
-              <Mail size={18} />
-              <input
-                type="email"
-                name="email"
-                value={comercio.email}
-                onChange={handleInputChange}
-                className="form-input-perfil"
-                disabled={!editando}
-                placeholder="correo@ejemplo.com"
-              />
-            </div>
-          </div>
-
-          <div className="form-group-perfil">
-            <label className="form-label-perfil">Teléfono</label>
-            <div className="input-with-icon">
-              <Phone size={18} />
-              <input
-                type="tel"
-                name="telefono"
-                value={comercio.telefono}
-                onChange={handleInputChange}
-                className="form-input-perfil"
-                disabled={!editando}
-                placeholder="+54 11 1234-5678"
-              />
-            </div>
-          </div>
-
-          <div className="form-group-perfil full-width">
-            <label className="form-label-perfil">Dirección</label>
-            <div className="input-with-icon">
-              <MapPin size={18} />
-              <input
-                type="text"
-                name="direccion"
-                value={comercio.direccion}
-                onChange={handleInputChange}
-                className="form-input-perfil"
-                disabled={!editando}
-                placeholder="Av. Principal 1234, Ciudad"
-              />
-            </div>
-          </div>
-
-          <div className="form-group-perfil">
-            <label className="form-label-perfil">Horario de Atención</label>
-            <div className="input-with-icon">
-              <Clock size={18} />
-              <input
-                type="text"
-                name="horarioAtencion"
-                value={comercio.horarioAtencion}
-                onChange={handleInputChange}
-                className="form-input-perfil"
-                disabled={!editando}
-                placeholder="Lunes a Domingo: 9:00 - 23:00"
-              />
-            </div>
-          </div>
-
-          <div className="form-group-perfil">
-            <label className="form-label-perfil">Tiempo de Entrega</label>
-            <input
-              type="text"
-              name="tiempoEntrega"
-              value={comercio.tiempoEntrega}
-              onChange={handleInputChange}
-              className="form-input-perfil"
-              disabled={!editando}
-              placeholder="30-45 min"
-            />
-          </div>
-
-          <div className="form-group-perfil">
-            <label className="form-label-perfil">Costo de Envío ($)</label>
-            <input
-              type="number"
-              name="costoEnvio"
-              value={comercio.costoEnvio}
-              onChange={handleInputChange}
-              className="form-input-perfil"
-              disabled={!editando}
-              step="0.01"
-              min="0"
-              placeholder="5.00"
-            />
-          </div>
-        </div>
-
-        {/* ✅ Nueva sección de información bancaria */}
-        {renderInformacionBancaria()}
-
-        {editando && (
-          <div className="acciones-perfil">
-            <button 
-              type="button"
-              className="btn-secundario"
-              onClick={handleCancelar}
-              disabled={guardando}
-            >
-              Cancelar
-            </button>
-            <button 
-              type="button"
-              className="btn-guardar-perfil"
-              onClick={handleGuardar}
-              disabled={guardando}
-            >
-              <Save size={16} />
-              {guardando ? "Guardando..." : "Guardar Cambios"}
-            </button>
-          </div>
-        )}
-      </form>
-    </div>
-  );
-
-  const renderSeccionConfiguracion = () => (
-    <div className="seccion-contenido">
-      <h3 className="seccion-titulo">Configuración</h3>
-      
-      <div className="config-grid">
-        <div className="config-seccion">
-          <h4 className="config-subtitulo">
-            <Bell size={20} />
-            Notificaciones
-          </h4>
-          
-          <div className="config-lista">
-            <div className="config-item-switch">
-              <div className="config-info">
-                <h5>Notificaciones de Pedidos</h5>
-                <p>Recibir alertas por nuevos pedidos</p>
-              </div>
-              <label className="switch">
-                <input
-                  type="checkbox"
-                  checked={configuracion.notificacionesPedidos}
-                  onChange={(e) => handleConfigChange('notificacionesPedidos', e.target.checked)}
-                />
-                <span className="slider"></span>
-              </label>
-            </div>
-
-            <div className="config-item-switch">
-              <div className="config-info">
-                <h5>Alertas de Stock Bajo</h5>
-                <p>Notificaciones cuando productos estén por agotarse</p>
-              </div>
-              <label className="switch">
-                <input
-                  type="checkbox"
-                  checked={configuracion.notificacionesStock}
-                  onChange={(e) => handleConfigChange('notificacionesStock', e.target.checked)}
-                />
-                <span className="slider"></span>
-              </label>
-            </div>
-
-            <div className="config-item-switch">
-              <div className="config-info">
-                <h5>Promociones y Novedades</h5>
-                <p>Recibir información sobre nuevas promociones</p>
-              </div>
-              <label className="switch">
-                <input
-                  type="checkbox"
-                  checked={configuracion.notificacionesPromociones}
-                  onChange={(e) => handleConfigChange('notificacionesPromociones', e.target.checked)}
-                />
-                <span className="slider"></span>
-              </label>
-            </div>
-          </div>
-        </div>
-
-        <div className="config-seccion">
-          <h4 className="config-subtitulo">
-            <CreditCard size={20} />
-            Métodos de Pago
-          </h4>
-          
-          <div className="config-lista">
-            <div className="config-item-switch">
-              <div className="config-info">
-                <h5>Aceptar Efectivo</h5>
-                <p>Permitir pagos en efectivo al momento de la entrega</p>
-              </div>
-              <label className="switch">
-                <input
-                  type="checkbox"
-                  checked={configuracion.aceptaEfectivo}
-                  onChange={(e) => handleConfigChange('aceptaEfectivo', e.target.checked)}
-                />
-                <span className="slider"></span>
-              </label>
-            </div>
-
-            <div className="config-item-switch">
-              <div className="config-info">
-                <h5>Aceptar Tarjetas</h5>
-                <p>Habilitar pagos con tarjeta de crédito/débito</p>
-              </div>
-              <label className="switch">
-                <input
-                  type="checkbox"
-                  checked={configuracion.aceptaTarjeta}
-                  onChange={(e) => handleConfigChange('aceptaTarjeta', e.target.checked)}
-                />
-                <span className="slider"></span>
-              </label>
-            </div>
-          </div>
-        </div>
-
-        <div className="config-seccion">
-          <h4 className="config-subtitulo">
-            <Shield size={20} />
-            Sistema
-          </h4>
-          
-          <div className="config-lista">
-            <div className="config-item-switch">
-              <div className="config-info">
-                <h5>Modo Mantenimiento</h5>
-                <p>Pausar temporalmente la recepción de pedidos</p>
-              </div>
-              <label className="switch">
-                <input
-                  type="checkbox"
-                  checked={configuracion.modoMantenimiento}
-                  onChange={(e) => handleConfigChange('modoMantenimiento', e.target.checked)}
-                />
-                <span className="slider"></span>
-              </label>
-            </div>
-
-            <div className="config-item-switch">
-              <div className="config-info">
-                <h5>Aceptar Pedidos Automáticamente</h5>
-                <p>Los pedidos se aceptan automáticamente sin confirmación</p>
-              </div>
-              <label className="switch">
-                <input
-                  type="checkbox"
-                  checked={configuracion.pedidosAutomaticos}
-                  onChange={(e) => handleConfigChange('pedidosAutomaticos', e.target.checked)}
-                />
-                <span className="slider"></span>
-              </label>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderSeccionEstadisticas = () => (
-    <div className="seccion-contenido">
-      <h3 className="seccion-titulo">Estadísticas</h3>
-      
-      <div className="stats-perfil">
-        <div className="stat-perfil">
-          <div className="stat-icon" style={{ backgroundColor: 'rgba(255, 77, 77, 0.1)' }}>
-            <Store size={24} color="#FF4D4D" />
-          </div>
-          <div className="stat-numero">156</div>
-          <div className="stat-descripcion">Pedidos este mes</div>
-        </div>
-        
-        <div className="stat-perfil">
-          <div className="stat-icon" style={{ backgroundColor: 'rgba(255, 201, 71, 0.1)' }}>
-            <CreditCard size={24} color="#FFC947" />
-          </div>
-          <div className="stat-numero">$3,458</div>
-          <div className="stat-descripcion">Ingresos mensuales</div>
-        </div>
-        
-        <div className="stat-perfil">
-          <div className="stat-icon" style={{ backgroundColor: 'rgba(40, 167, 69, 0.1)' }}>
-            <Store size={24} color="#28a745" />
-          </div>
-          <div className="stat-numero">42</div>
-          <div className="stat-descripcion">Productos activos</div>
-        </div>
-        
-        <div className="stat-perfil">
-          <div className="stat-icon" style={{ backgroundColor: 'rgba(108, 117, 125, 0.1)' }}>
-            <Clock size={24} color="#6c757d" />
-          </div>
-          <div className="stat-numero">4.7</div>
-          <div className="stat-descripcion">Calificación promedio</div>
-        </div>
-      </div>
-
-      <div className="acciones-exportar">
-        <button className="btn-exportar">
-          <Download size={16} />
-          Exportar Reporte
-        </button>
-        <button className="btn-exportar">
-          <Upload size={16} />
-          Importar Datos
-        </button>
-      </div>
-    </div>
-  );
+    );
+  }
 
   return (
     <div className="dashboard-container flex h-screen">
@@ -762,8 +178,8 @@ const renderInformacionBancaria = () => (
                   <div className="avatar-imagen">
                     <Store size={40} />
                   </div>
-                  <h3 className="avatar-nombre">{comercio.nombre || "Mi Comercio"}</h3>
-                  <p className="avatar-categoria">{comercio.categoria}</p>
+                  <h3 className="avatar-nombre">{comercio.nombreComercio}</h3>
+                  <p className="avatar-categoria">{comercio.tipoComercio}</p>
                   
                   <div className="info-adicional">
                     <div className="info-item">
@@ -772,7 +188,10 @@ const renderInformacionBancaria = () => (
                     </div>
                     <div className="info-item">
                       <Phone size={14} />
-                      <span>{comercio.telefono || "No especificado"}</span>
+                      <span>{comercio.celular || "No especificado"}</span>
+                    </div>
+                    <div className="info-item">
+                      <span className="direccion-texto">{obtenerDireccionCompleta() || "Sin dirección"}</span>
                     </div>
                     {comercio.destacado && (
                       <div className="badge-destacado">
@@ -790,7 +209,7 @@ const renderInformacionBancaria = () => (
                 <nav className="menu-perfil">
                   <button 
                     className={`btn-menu ${seccionActiva === 'informacion' ? 'active' : ''}`}
-                    onClick={() => setSeccionActiva('informacion')}
+                    onClick={() => cambiarSeccion('informacion')}
                   >
                     <Store size={18} />
                     Información
@@ -798,7 +217,7 @@ const renderInformacionBancaria = () => (
                   
                   <button 
                     className={`btn-menu ${seccionActiva === 'configuracion' ? 'active' : ''}`}
-                    onClick={() => setSeccionActiva('configuracion')}
+                    onClick={() => cambiarSeccion('configuracion')}
                   >
                     <Settings size={18} />
                     Configuración
@@ -806,7 +225,7 @@ const renderInformacionBancaria = () => (
                   
                   <button 
                     className={`btn-menu ${seccionActiva === 'estadisticas' ? 'active' : ''}`}
-                    onClick={() => setSeccionActiva('estadisticas')}
+                    onClick={() => cambiarSeccion('estadisticas')}
                   >
                     <CreditCard size={18} />
                     Estadísticas
@@ -816,9 +235,7 @@ const renderInformacionBancaria = () => (
 
               {/* Contenido principal */}
               <div className="contenido-perfil">
-                {seccionActiva === 'informacion' && renderSeccionInformacion()}
-                {seccionActiva === 'configuracion' && renderSeccionConfiguracion()}
-                {seccionActiva === 'estadisticas' && renderSeccionEstadisticas()}
+                {renderSeccionActiva()}
               </div>
             </div>
           </div>
