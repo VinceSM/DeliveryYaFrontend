@@ -12,7 +12,8 @@ export const API_CONFIG = {
       DESTACADOS: "/api/Comercios/destacados",
       BY_CIUDAD: "/api/Comercios/ciudad",
       PRODUCTOS: "/api/Comercios/{id}/productos",
-      CATEGORIAS: "/api/Comercios/{id}/categorias"
+      CATEGORIAS: "/api/Comercios/{id}/categorias", // ← Para obtener categorías de un comercio
+      ADD_CATEGORIA: "/api/Comercios/{id}/categorias/{categoriaId}" // ← Para asociar categorías
     },
     PRODUCTOS: {
       BASE: "/api/Producto/list",
@@ -28,13 +29,20 @@ export const API_CONFIG = {
       BASE: "/api/Stock",
       BY_PRODUCTO: "/api/Stock/producto/{productoId}"
     },
-    CATEGORIAS: { // ✅ CORREGIDO: Coincide con backend
-      BASE: "/api/Categoria", // ← CAMBIADO: Singular
-      BY_ID: "/api/Categoria/{id}", // ← CAMBIADO: Singular
-      PRODUCTOS: "/api/Categoria/{id}/productos", // ← CAMBIADO: Singular
-      CREATE: "/api/Categoria", // ← NUEVO
-      UPDATE: "/api/Categoria/{id}", // ← NUEVO
-      DELETE: "/api/Categoria/{id}" // ← NUEVO
+    CATEGORIAS: {
+      BASE: "/api/Categoria",
+      BY_ID: "/api/Categoria/{id}",
+      PRODUCTOS: "/api/Categoria/{id}/productos",
+      CREATE: "/api/Categoria",
+      UPDATE: "/api/Categoria/{id}",
+      DELETE: "/api/Categoria/{id}",
+      // NUEVOS ENDPOINTS PARA RELACIÓN COMERCIO-CATEGORÍA
+      COMERCIO: {
+        BASE: "/api/ComercioCategoria", // ← Endpoint base para relación
+        ADD: "/api/ComercioCategoria/comercio/{comercioId}/categoria/{categoriaId}",
+        REMOVE: "/api/ComercioCategoria/comercio/{comercioId}/categoria/{categoriaId}",
+        BY_COMERCIO: "/api/ComercioCategoria/comercio/{comercioId}" // ← Obtener categorías del comercio
+      }
     },
     ADMINS: {
       BASE: "/api/Admins",
@@ -49,10 +57,9 @@ export const API_CONFIG = {
       POR_COMERCIO: "/api/Pedidos/comercio",
       HOY: "/api/Pedidos/hoy"
     },
-      HORARIOS: {
+    HORARIOS: {
       BASE: "/api/Horarios",
       BY_COMERCIO: "/api/Horarios/comercio/{comercioId}",
-      CHECK_ABIERTO: "/api/Horarios/comercio/{comercioId}/abierto",
       ADD_TO_COMERCIO: "/api/Horarios/comercio/{comercioId}/horario/{horarioId}"
     },
   }

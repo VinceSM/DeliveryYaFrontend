@@ -1,28 +1,9 @@
-// src/api/horarios.js
+// src/api/horarios.js - VERSIÓN CORREGIDA
 import { API_CONFIG } from '../config/config.js';
 import { getToken } from './auth.js';
 
-// Función para construir URLs
-const buildUrl = (endpoint, params = {}) => {
-  // Si endpoint ya es una URL completa, retornarla directamente
-  if (endpoint.startsWith('http')) {
-    return endpoint;
-  }
-  
-  let url = `${API_CONFIG.BASE_URL}${endpoint}`;
-  
-  // Reemplazar parámetros en la URL
-  Object.keys(params).forEach(key => {
-    url = url.replace(`{${key}}`, encodeURIComponent(params[key]));
-  });
-  
-  return url;
-};
-
-// Manejo de respuestas
+// Función auxiliar para manejar respuestas
 const handleResponse = async (response) => {
-  console.log(`📥 Horarios - Status: ${response.status}`);
-  
   if (!response.ok) {
     let errorMessage;
     
@@ -38,8 +19,8 @@ const handleResponse = async (response) => {
         break;
       default:
         try {
-          const errorText = await response.text();
-          errorMessage = errorText || `Error ${response.status}`;
+          const errorData = await response.json();
+          errorMessage = errorData.message || `Error ${response.status}`;
         } catch {
           errorMessage = `Error ${response.status}`;
         }
@@ -51,8 +32,7 @@ const handleResponse = async (response) => {
   return response;
 };
 
-// Obtener todos los horarios
-export const getHorarios = async () => {
+export const guardarHorariosComercio = async (comercioId, horariosEditados) => {
   try {
     const token = getToken();
     
@@ -60,56 +40,149 @@ export const getHorarios = async () => {
       throw new Error('No hay token de autenticación');
     }
 
-    console.log('🕒 Obteniendo horarios...');
-    
-    // ✅ CORREGIDO: Usar string directa en lugar de buildUrl con objeto
-    const url = `${API_CONFIG.BASE_URL}/api/Horarios`;
-    console.log('🔗 URL:', url);
-    
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-    });
+    console.log(`💾 Guardando horarios para comercio ${comercioId}...`, horariosEditados);
 
-    console.log('📥 Horarios - Status:', response.status);
+    // Primero, obtener horarios existentes para saber cuáles eliminar
+    const horariosExistentes = await getHorariosByComercio(comercioId);
     
-    if (!response.ok) {
-      let errorMessage;
-      
-      switch (response.status) {
-        case 401:
-          errorMessage = 'No autorizado';
-          break;
-        case 404:
-          errorMessage = 'Recurso no encontrado';
-          break;
-        case 500:
-          errorMessage = 'Error interno del servidor';
-          break;
-        default:
-          try {
-            const errorText = await response.text();
-            errorMessage = errorText || `Error ${response.status}`;
-          } catch {
-            errorMessage = `Error ${response.status}`;
-          }
-      }
-      
-      throw new Error(errorMessage);
+    // Eliminar horarios existentes
+    for (const horario of horariosExistentes) {
+      await eliminarHorario(horario.idhorarios);
     }
 
-    const data = await response.json();
-    console.log('✅ Horarios obtenidos:', data);
+    // Crear nuevos horarios
+    const resultados = [];
     
-    return Array.isArray(data) ? data : [];
+    for (const [diaId, horariosDia] of Object.entries(horariosEditados)) {
+      for (const horario of horariosDia) {
+        if (horario.abierto) {
+          const horarioData = {
+            apertura: convertirHoraATimeSpan(horario.apertura),
+            cierre: convertirHoraATimeSpan(horario.cierre),
+            dias: diaId.toString(), // Solo un día por horario para simplificar
+            abierto: true
+          };
+          
+          const resultado = await crearYAsignarHorario(comercioId, horarioData);
+          resultados.push(resultado);
+        }
+      }
+    }
+
+    console.log('✅ Horarios guardados exitosamente:', resultados);
+    return { success: true, message: 'Horarios guardados correctamente' };
     
   } catch (error) {
-    console.error('💥 Error en getHorarios:', error);
+    console.error('💥 Error guardando horarios:', error);
     throw error;
   }
+};
+
+// Función auxiliar para convertir HH:MM a TimeSpan
+const convertirHoraATimeSpan = (hora) => {
+  if (!hora) return '08:00:00';
+  
+  // Si ya viene en formato TimeSpan
+  if (hora.includes(':') && hora.split(':').length === 3) {
+    return hora;
+  }
+  
+  // Convertir de HH:MM a HH:MM:00
+  return `${hora}:00`;
+};
+
+// Función para crear múltiples horarios a la vez
+export const crearHorariosBatch = async (comercioId, horariosData) => {
+  try {
+    const token = getToken();
+    
+    if (!token) {
+      throw new Error('No hay token de autenticación');
+    }
+
+    console.log(`🔄 Creando horarios en batch para comercio ${comercioId}...`);
+    
+    const resultados = [];
+    
+    for (const horarioData of horariosData) {
+      const resultado = await crearYAsignarHorario(comercioId, horarioData);
+      resultados.push(resultado);
+    }
+    
+    console.log('✅ Horarios batch creados:', resultados);
+    return resultados;
+    
+  } catch (error) {
+    console.error('💥 Error creando horarios batch:', error);
+    throw error;
+  }
+};
+
+// Función auxiliar para formatear horas para comparación
+const formatearHoraParaComparar = (timeSpan) => {
+  if (!timeSpan) return '00:00';
+  
+  if (typeof timeSpan === 'string') {
+    // Si viene como "08:30:00" o "8:30:00"
+    const parts = timeSpan.split(':');
+    return `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}`;
+  }
+  
+  return '00:00';
+};
+
+// Función auxiliar para determinar si el comercio está abierto
+// Como no hay endpoint específico, lo calculamos en el frontend
+export const calcularComercioAbierto = (horarios) => {
+  if (!horarios || horarios.length === 0) return false;
+  
+  const ahora = new Date();
+  const diaActual = ahora.getDay(); // 0 = Domingo, 1 = Lunes, etc.
+  const horaActual = ahora.getHours().toString().padStart(2, '0') + ':' + 
+                     ahora.getMinutes().toString().padStart(2, '0');
+  
+  console.log('📅 Verificando horarios:', {
+    diaActual,
+    horaActual,
+    totalHorarios: horarios.length
+  });
+  
+  // Buscar horarios para el día actual
+  const horariosHoy = horarios.filter(horario => {
+    // Asumiendo que horario.dias contiene el número del día como string
+    const diasArray = horario.dias ? horario.dias.split(',').map(d => d.trim()) : [];
+    const coincideDia = diasArray.includes(diaActual.toString());
+    
+    console.log('🔍 Horario:', {
+      dias: horario.dias,
+      diasArray,
+      diaActual: diaActual.toString(),
+      coincideDia,
+      abierto: horario.abierto
+    });
+    
+    return coincideDia && horario.abierto;
+  });
+  
+  console.log('📋 Horarios para hoy:', horariosHoy);
+  
+  // Verificar si algún horario está activo ahora
+  const estaAbierto = horariosHoy.some(horario => {
+    const apertura = formatearHoraParaComparar(horario.apertura);
+    const cierre = formatearHoraParaComparar(horario.cierre);
+    
+    console.log('⏰ Comparando:', {
+      apertura,
+      cierre,
+      horaActual,
+      dentroHorario: horaActual >= apertura && horaActual <= cierre
+    });
+    
+    return horaActual >= apertura && horaActual <= cierre;
+  });
+  
+  console.log('🏪 Comercio abierto:', estaAbierto);
+  return estaAbierto;
 };
 
 // Obtener horarios por comercio
@@ -123,7 +196,6 @@ export const getHorariosByComercio = async (comercioId) => {
 
     console.log(`🕒 Obteniendo horarios para comercio ${comercioId}...`);
     
-    // ✅ CORREGIDO: URL directa
     const url = `${API_CONFIG.BASE_URL}/api/Horarios/comercio/${comercioId}`;
     console.log('🔗 URL:', url);
     
@@ -135,101 +207,14 @@ export const getHorariosByComercio = async (comercioId) => {
       },
     });
 
-    console.log('📥 Horarios por comercio - Status:', response.status);
-    
-    if (!response.ok) {
-      let errorMessage;
-      
-      switch (response.status) {
-        case 401:
-          errorMessage = 'No autorizado';
-          break;
-        case 404:
-          errorMessage = 'Comercio no encontrado';
-          break;
-        case 500:
-          errorMessage = 'Error interno del servidor';
-          break;
-        default:
-          try {
-            const errorText = await response.text();
-            errorMessage = errorText || `Error ${response.status}`;
-          } catch {
-            errorMessage = `Error ${response.status}`;
-          }
-      }
-      
-      throw new Error(errorMessage);
-    }
-
+    await handleResponse(response);
     const data = await response.json();
-    console.log('✅ Horarios por comercio obtenidos:', data);
     
+    console.log('✅ Horarios por comercio obtenidos:', data);
     return Array.isArray(data) ? data : [];
     
   } catch (error) {
     console.error('💥 Error en getHorariosByComercio:', error);
-    throw error;
-  }
-};
-
-// Verificar si el comercio está abierto
-export const checkComercioAbierto = async (comercioId) => {
-  try {
-    const token = getToken();
-    
-    if (!token) {
-      throw new Error('No hay token de autenticación');
-    }
-
-    console.log(`🔍 Verificando estado del comercio ${comercioId}...`);
-    
-    // ✅ CORREGIDO: URL directa
-    const url = `${API_CONFIG.BASE_URL}/api/Horarios/comercio/${comercioId}/abierto`;
-    console.log('🔗 URL:', url);
-    
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-    });
-
-    console.log('📥 Estado comercio - Status:', response.status);
-    
-    if (!response.ok) {
-      let errorMessage;
-      
-      switch (response.status) {
-        case 401:
-          errorMessage = 'No autorizado';
-          break;
-        case 404:
-          errorMessage = 'Comercio no encontrado';
-          break;
-        case 500:
-          errorMessage = 'Error interno del servidor';
-          break;
-        default:
-          try {
-            const errorText = await response.text();
-            errorMessage = errorText || `Error ${response.status}`;
-          } catch {
-            errorMessage = `Error ${response.status}`;
-          }
-      }
-      
-      throw new Error(errorMessage);
-    }
-
-    const data = await response.json();
-    console.log('✅ Estado del comercio:', data);
-    
-    return data.Abierto || false;
-    
-  } catch (error) {
-    console.error('💥 Error en checkComercioAbierto:', error);
     throw error;
   }
 };
@@ -252,7 +237,7 @@ export const crearHorario = async (horarioData) => {
       Abierto: horarioData.abierto
     };
     
-    const response = await fetch(buildUrl(API_CONFIG.ENDPOINTS.HORARIOS), {
+    const response = await fetch(`${API_CONFIG.BASE_URL}/api/Horarios`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -262,10 +247,9 @@ export const crearHorario = async (horarioData) => {
     });
 
     await handleResponse(response);
-    
     const data = await response.json();
-    console.log('✅ Horario creado:', data);
     
+    console.log('✅ Horario creado:', data);
     return data;
     
   } catch (error) {
@@ -286,7 +270,7 @@ export const actualizarHorario = async (id, horarioData) => {
     console.log('✏️ Actualizando horario...', { id, horarioData });
     
     const requestBody = {
-      Id: id,
+      IdHorario: id,
       Apertura: horarioData.apertura,
       Cierre: horarioData.cierre,
       Dias: horarioData.dias,
@@ -303,7 +287,6 @@ export const actualizarHorario = async (id, horarioData) => {
     });
 
     await handleResponse(response);
-    
     console.log('✅ Horario actualizado');
     return true;
     
@@ -333,7 +316,6 @@ export const eliminarHorario = async (id) => {
     });
 
     await handleResponse(response);
-    
     console.log('✅ Horario eliminado');
     return true;
     
@@ -343,8 +325,8 @@ export const eliminarHorario = async (id) => {
   }
 };
 
-// Agregar horario a comercio
-export const agregarHorarioAComercio = async (comercioId, horarioId) => {
+// Crear y asignar horario a comercio (endpoint combinado)
+export const crearYAsignarHorario = async (comercioId, horarioData) => {
   try {
     const token = getToken();
     
@@ -352,23 +334,32 @@ export const agregarHorarioAComercio = async (comercioId, horarioId) => {
       throw new Error('No hay token de autenticación');
     }
 
-    console.log(`➕ Agregando horario ${horarioId} al comercio ${comercioId}...`);
+    console.log(`➕ Creando y asignando horario al comercio ${comercioId}...`);
     
-    const response = await fetch(`${API_CONFIG.BASE_URL}/api/Horarios/comercio/${comercioId}/horario/${horarioId}`, {
+    const requestBody = {
+      Apertura: horarioData.apertura,
+      Cierre: horarioData.cierre,
+      Dias: horarioData.dias,
+      Abierto: horarioData.abierto
+    };
+    
+    const response = await fetch(`${API_CONFIG.BASE_URL}/api/Horarios/comercio/${comercioId}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       },
+      body: JSON.stringify(requestBody),
     });
 
     await handleResponse(response);
+    const data = await response.json();
     
-    console.log('✅ Horario agregado al comercio');
-    return true;
+    console.log('✅ Horario creado y asignado:', data);
+    return data;
     
   } catch (error) {
-    console.error('💥 Error en agregarHorarioAComercio:', error);
+    console.error('💥 Error en crearYAsignarHorario:', error);
     throw error;
   }
 };

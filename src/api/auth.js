@@ -1,5 +1,78 @@
+// src/api/auth.js (VERSIÓN ACTUALIZADA)
 import { API_CONFIG } from '../config/config.js';
 
+// 🔄 AGREGAR: Función para obtener el ID del comercio del token
+export const getComercioId = () => {
+  try {
+    const token = getToken();
+    if (!token) {
+      console.log('🔐 No hay token disponible');
+      return null;
+    }
+    
+    // Decodificar el token JWT para obtener el payload
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    console.log('🔐 Payload del token:', payload);
+    
+    // Buscar el comercioId en diferentes posibles propiedades
+    const comercioId = payload.comercioId || 
+                      payload.ComercioId || 
+                      payload.idComercio ||
+                      payload.IdComercio ||
+                      payload.nameid || // Algunos tokens usan nameid
+                      null;
+    
+    console.log('🔐 ComercioId obtenido del token:', comercioId);
+    return comercioId;
+    
+  } catch (error) {
+    console.error('❌ Error decodificando token para obtener comercioId:', error);
+    return null;
+  }
+};
+
+// 🔄 AGREGAR: Función para obtener datos del usuario desde el token
+export const getUserFromToken = () => {
+  try {
+    const token = getToken();
+    if (!token) return null;
+    
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return {
+      email: payload.email || payload.unique_name || payload.sub,
+      comercioId: payload.comercioId || payload.ComercioId,
+      role: payload.role || 'comercio'
+    };
+  } catch (error) {
+    console.error('Error obteniendo usuario del token:', error);
+    return null;
+  }
+};
+
+// 🔄 MODIFICAR: Función para obtener datos del comercio (mejorada)
+export const getComercioData = () => {
+  try {
+    const comercioData = localStorage.getItem('comercioData');
+    const data = comercioData ? JSON.parse(comercioData) : null;
+    console.log('🔐 Datos del comercio obtenidos:', !!data);
+    
+    // Si no hay datos en localStorage, intentar obtener del token
+    if (!data) {
+      const userData = getUserFromToken();
+      if (userData && userData.comercioId) {
+        console.log('🔐 ComercioId obtenido del token:', userData.comercioId);
+        return { idComercio: userData.comercioId };
+      }
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('💥 Error obteniendo datos del comercio:', error);
+    return null;
+  }
+};
+
+// Las demás funciones permanecen igual...
 // Función para registrar comercio
 export const registerComercio = async (comercioData) => {
   try {
@@ -290,19 +363,6 @@ export const isAuthenticated = () => {
   const isAuth = !!token;
   console.log('🔐 Usuario autenticado:', isAuth);
   return isAuth;
-};
-
-// Función para obtener datos del comercio
-export const getComercioData = () => {
-  try {
-    const comercioData = localStorage.getItem('comercioData');
-    const data = comercioData ? JSON.parse(comercioData) : null;
-    console.log('🔐 Datos del comercio obtenidos:', !!data);
-    return data;
-  } catch (error) {
-    console.error('💥 Error obteniendo datos del comercio:', error);
-    return null;
-  }
 };
 
 // Función para validar token (opcional)

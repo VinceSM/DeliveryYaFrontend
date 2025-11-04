@@ -2,133 +2,151 @@
 import { useState, useEffect } from "react";
 import "../../styles/screens/HorariosScreen.css";
 import Sidebar from "../../components/screens/Sidebar";
-import { Clock, Save, Plus, Trash2, RefreshCw, AlertCircle, CheckCircle, XCircle } from "lucide-react";
+import { 
+  Clock, 
+  Save, 
+  Plus, 
+  Trash2, 
+  RefreshCw, 
+  AlertCircle, 
+  CheckCircle, 
+  XCircle,
+  ChevronDown,
+  ChevronUp 
+} from "lucide-react";
 import { useHorarios } from "../../hooks/useHorarios";
 
 export default function HorariosScreen() {
   const { 
-    horariosComercio, 
+    horarios, 
     comercioAbierto, 
     diasSemana, 
     loading, 
     error, 
-    recargarHorariosComercio,
-    formatearHora
-  } = useHorarios(1); // ID fijo por ahora
+    recargarHorarios,
+    formatearHora 
+  } = useHorarios(1);
 
   const [horariosEditados, setHorariosEditados] = useState({});
   const [guardando, setGuardando] = useState(false);
-  const [mensajeExito, setMensajeExito] = useState('');
+  const [mensaje, setMensaje] = useState({ tipo: '', texto: '' });
+  const [diasExpandidos, setDiasExpandidos] = useState({});
 
-  // ✅ CORREGIDO: Inicializar horarios una sola vez
+  // Inicializar horarios
   useEffect(() => {
-    if (horariosComercio.length > 0) {
+    if (horarios.length > 0) {
       const horariosIniciales = {};
       
       diasSemana.forEach(dia => {
-        const horariosDia = horariosComercio.filter(h => 
-          h.dias && h.dias.includes(dia.id)
+        const horariosDia = horarios.filter(h => 
+          h.dias && h.dias.includes(dia.id.toString())
         );
         
         horariosIniciales[dia.id] = horariosDia.length > 0 
           ? horariosDia.map(h => ({
               id: h.idhorarios,
-              apertura: formatearHora(h.apertura) || '09:00',
-              cierre: formatearHora(h.cierre) || '18:00',
+              apertura: formatearHora(h.apertura),
+              cierre: formatearHora(h.cierre),
               abierto: h.abierto ?? true
             }))
-          : [{ id: `nuevo-${dia.id}`, apertura: '09:00', cierre: '18:00', abierto: true }];
+          : [{ id: null, apertura: '09:00', cierre: '18:00', abierto: true }];
       });
       
       setHorariosEditados(horariosIniciales);
     }
-  }, [horariosComercio]); // ✅ Solo depende de horariosComercio
+  }, [horarios]);
 
-  const handleCambioHorario = (dia, index, campo, valor) => {
-    setHorariosEditados(prev => ({
+  const toggleDiaExpandido = (diaId) => {
+    setDiasExpandidos(prev => ({
       ...prev,
-      [dia]: prev[dia].map((horario, i) => 
-        i === index ? { ...horario, [campo]: valor } : horario
-      )
+      [diaId]: !prev[diaId]
     }));
   };
 
-  const agregarHorarioDia = (dia) => {
-    setHorariosEditados(prev => ({
-      ...prev,
-      [dia]: [...(prev[dia] || []), { 
-        id: `nuevo-${dia}-${Date.now()}`, 
-        apertura: '09:00', 
-        cierre: '18:00', 
-        abierto: true 
-      }]
-    }));
-  };
-
-  const eliminarHorario = (dia, index) => {
-    const horario = horariosEditados[dia][index];
-    
-    // Si es un horario existente (no nuevo), confirmar eliminación
-    if (horario.id && !horario.id.startsWith('nuevo-')) {
-      if (!window.confirm('¿Estás seguro de que quieres eliminar este horario?')) {
-        return;
-      }
-    }
-    
-    // Eliminar del estado local
-    setHorariosEditados(prev => ({
-      ...prev,
-      [dia]: prev[dia].filter((_, i) => i !== index)
-    }));
-  };
-
-  const toggleDiaAbierto = (dia) => {
-    const horariosDia = horariosEditados[dia] || [];
-    const tieneHorarios = horariosDia.length > 0;
-    
-    if (tieneHorarios) {
-      const nuevoEstado = !horariosDia[0].abierto;
+  // ✅ CORREGIDO: Usar diaId en lugar de dia.id
+  const toggleDiaAbierto = (diaId) => {
+    setHorariosEditados(prev => {
+      const horariosDia = prev[diaId] || [];
+      const nuevoEstado = !(horariosDia.length > 0 && horariosDia[0]?.abierto);
       
-      setHorariosEditados(prev => ({
+      return {
         ...prev,
-        [dia]: prev[dia].map(horario => ({
-          ...horario,
+        [diaId]: [{
+          id: horariosDia[0]?.id || null,
+          apertura: horariosDia[0]?.apertura || '09:00',
+          cierre: horariosDia[0]?.cierre || '18:00',
           abierto: nuevoEstado
-        }))
-      }));
-    }
+        }]
+      };
+    });
+  };
+
+  const actualizarHorarioDia = (diaId, nuevoHorario) => {
+    setHorariosEditados(prev => ({
+      ...prev,
+      [diaId]: [nuevoHorario]
+    }));
+  };
+
+  const mostrarMensaje = (tipo, texto) => {
+    setMensaje({ tipo, texto });
+    setTimeout(() => setMensaje({ tipo: '', texto: '' }), 3000);
   };
 
   const guardarHorarios = async () => {
     setGuardando(true);
-    setMensajeExito('');
     
     try {
-      // Simular guardado (por ahora)
+      // Validar horarios
+      for (const diaId in horariosEditados) {
+        const horariosDia = horariosEditados[diaId];
+        if (horariosDia.length > 0 && horariosDia[0].abierto) {
+          const { apertura, cierre } = horariosDia[0];
+          if (apertura >= cierre) {
+            const diaNombre = diasSemana.find(d => d.id === parseInt(diaId))?.nombre;
+            throw new Error(`Horario inválido para ${diaNombre}: la hora de cierre debe ser posterior a la de apertura`);
+          }
+        }
+      }
+
+      // Aquí iría la llamada real a la API
+      console.log('Guardando horarios:', horariosEditados);
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      setMensajeExito('Horarios guardados exitosamente');
-      setTimeout(() => setMensajeExito(''), 3000);
-      
-      console.log('📤 Horarios a guardar:', horariosEditados);
+      mostrarMensaje('exito', 'Horarios guardados correctamente');
       
     } catch (error) {
-      console.error('❌ Error guardando horarios:', error);
+      mostrarMensaje('error', error.message);
     } finally {
       setGuardando(false);
     }
   };
 
-  if (loading) {
+  const copiarHorarios = (diaOrigenId) => {
+    const horariosOrigen = horariosEditados[diaOrigenId];
+    if (!horariosOrigen || horariosOrigen.length === 0) return;
+
+    const nuevosHorarios = { ...horariosEditados };
+    
+    // Copiar a todos los días de la semana
+    diasSemana.forEach(dia => {
+      if (dia.id !== diaOrigenId) {
+        nuevosHorarios[dia.id] = [...horariosOrigen];
+      }
+    });
+
+    setHorariosEditados(nuevosHorarios);
+    mostrarMensaje('exito', `Horarios copiados de ${diasSemana.find(d => d.id === diaOrigenId)?.nombre} a todos los días`);
+  };
+
+  if (loading && Object.keys(horariosEditados).length === 0) {
     return (
-      <div className="dashboard-container flex h-screen">
+      <div className="dashboard-container">
         <Sidebar />
-        <main className="main-content flex-1 overflow-y-auto">
-          <div className="content-wrapper min-h-full p-8 flex items-center justify-center">
-            <div className="text-center">
-              <RefreshCw size={48} className="animate-spin mx-auto mb-4 text-blue-500" />
-              <p className="text-gray-600">Cargando horarios...</p>
-            </div>
+        <main className="main-content">
+          <div className="loading-container">
+            <RefreshCw className="animate-spin" size={32} />
+            <p>Cargando horarios...</p>
           </div>
         </main>
       </div>
@@ -136,137 +154,139 @@ export default function HorariosScreen() {
   }
 
   return (
-    <div className="dashboard-container flex h-screen">
+    <div className="dashboard-container">
       <Sidebar />
       
-      <main className="main-content flex-1 overflow-y-auto">
-        <div className="content-wrapper min-h-full p-8">
+      <main className="main-content">
+        <div className="horarios-container">
           {/* Header */}
-          <div className="content-header">
-            <div className="flex justify-between items-center">
-              <div>
-                <h1 className="content-title">Configuración de Horarios</h1>
-                <p className="content-subtitle">Gestiona los horarios de atención de tu comercio</p>
+          <div className="horarios-header">
+            <div className="header-info">
+              <h1>Horarios de Atención</h1>
+              <p>Configura los horarios en los que tu comercio está abierto</p>
+            </div>
+            
+            <div className="header-actions">
+              <div className={`estado-comercio ${comercioAbierto ? 'abierto' : 'cerrado'}`}>
+                {comercioAbierto ? (
+                  <>
+                    <CheckCircle size={20} />
+                    <span>Abierto ahora</span>
+                  </>
+                ) : (
+                  <>
+                    <XCircle size={20} />
+                    <span>Cerrado ahora</span>
+                  </>
+                )}
               </div>
               
-              <div className="flex items-center gap-4">
-                {/* Estado del comercio */}
-                <div className={`flex items-center gap-2 px-4 py-2 rounded-lg ${
-                  comercioAbierto 
-                    ? 'bg-green-100 text-green-800' 
-                    : 'bg-red-100 text-red-800'
-                }`}>
-                  {comercioAbierto ? (
-                    <>
-                      <CheckCircle size={20} />
-                      <span className="font-semibold">Abierto</span>
-                    </>
-                  ) : (
-                    <>
-                      <XCircle size={20} />
-                      <span className="font-semibold">Cerrado</span>
-                    </>
-                  )}
-                </div>
-                
-                <button 
-                  onClick={recargarHorariosComercio}
-                  className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg transition-colors"
-                >
-                  <RefreshCw size={16} />
-                  Actualizar
-                </button>
-              </div>
+              <button 
+                onClick={recargarHorarios}
+                className="btn-recargar"
+                disabled={loading}
+              >
+                <RefreshCw size={16} />
+                Actualizar
+              </button>
             </div>
           </div>
 
-          {/* Mostrar error si existe */}
+          {/* Mensajes */}
+          {mensaje.texto && (
+            <div className={`mensaje ${mensaje.tipo}`}>
+              {mensaje.tipo === 'exito' ? <CheckCircle size={16} /> : <AlertCircle size={16} />}
+              <span>{mensaje.texto}</span>
+            </div>
+          )}
+
           {error && (
-            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-              <div className="flex items-center gap-2">
-                <AlertCircle size={16} className="text-red-600" />
-                <p className="text-red-800">{error}</p>
-              </div>
+            <div className="mensaje error">
+              <AlertCircle size={16} />
+              <span>{error}</span>
             </div>
           )}
 
-          {/* Mensaje de éxito */}
-          {mensajeExito && (
-            <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-              <div className="flex items-center gap-2">
-                <CheckCircle size={16} className="text-green-600" />
-                <p className="text-green-800">{mensajeExito}</p>
-              </div>
-            </div>
-          )}
-
-          {/* Grid de días */}
-          <div className="dias-grid">
+          {/* Grid de días simplificado */}
+          <div className="dias-grid-simple">
             {diasSemana.map(dia => {
               const horariosDia = horariosEditados[dia.id] || [];
               const diaAbierto = horariosDia.length > 0 && horariosDia[0]?.abierto;
+              const expandido = diasExpandidos[dia.id];
               
               return (
-                <div key={dia.id} className={`dia-card ${!diaAbierto ? 'dia-cerrado' : ''}`}>
-                  <div className="dia-header">
-                    <h3 className="dia-nombre">{dia.nombre}</h3>
-                    
-                    <div className="estado-dia">
-                      <span className="text-sm text-gray-600">
+                <div key={dia.id} className={`dia-card-simple ${!diaAbierto ? 'cerrado' : ''}`}>
+                  <div className="dia-header-simple" onClick={() => toggleDiaExpandido(dia.id)}>
+                    <div className="dia-info">
+                      <h3>{dia.nombre}</h3>
+                      <span className={`estado ${diaAbierto ? 'abierto' : 'cerrado'}`}>
                         {diaAbierto ? 'Abierto' : 'Cerrado'}
                       </span>
-                      <label className="switch">
-                        <input 
-                          type="checkbox" 
-                          checked={diaAbierto}
-                          onChange={() => toggleDiaAbierto(dia.id)}
-                        />
-                        <span className="slider"></span>
-                      </label>
+                    </div>
+                    
+                    <div className="dia-actions">
+                      {diaAbierto && (
+                        <span className="horario-display">
+                          {horariosDia[0]?.apertura} - {horariosDia[0]?.cierre}
+                        </span>
+                      )}
+                      {expandido ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                     </div>
                   </div>
 
-                  {!diaAbierto ? (
-                    <div className="mensaje-cerrado">
-                      <p>El comercio está cerrado este día</p>
-                    </div>
-                  ) : (
-                    <div className="horarios-list">
-                      {horariosDia.map((horario, index) => (
-                        <div key={horario.id || index} className="horario-item">
-                          <div className="hora-input">
-                            <input
-                              type="time"
-                              value={horario.apertura}
-                              onChange={(e) => handleCambioHorario(dia.id, index, 'apertura', e.target.value)}
-                              className="input-time"
-                            />
-                            <span className="separador">-</span>
-                            <input
-                              type="time"
-                              value={horario.cierre}
-                              onChange={(e) => handleCambioHorario(dia.id, index, 'cierre', e.target.value)}
-                              className="input-time"
-                            />
+                  {expandido && (
+                    <div className="dia-content">
+                      <div className="toggle-container">
+                        <label className="toggle-label">
+                          <span>Comercio abierto este día</span>
+                          <input
+                            type="checkbox"
+                            checked={diaAbierto}
+                            onChange={() => toggleDiaAbierto(dia.id)} 
+                            className="toggle-input"
+                          />
+                        </label>
+                      </div>
+
+                      {diaAbierto && (
+                        <div className="horario-config">
+                          <div className="horario-inputs">
+                            <div className="time-input-group">
+                              <label>Apertura</label>
+                              <input
+                                type="time"
+                                value={horariosDia[0]?.apertura || '09:00'}
+                                onChange={(e) => actualizarHorarioDia(dia.id, {
+                                  ...horariosDia[0],
+                                  apertura: e.target.value
+                                })}
+                                className="time-input"
+                              />
+                            </div>
+                            
+                            <div className="time-input-group">
+                              <label>Cierre</label>
+                              <input
+                                type="time"
+                                value={horariosDia[0]?.cierre || '18:00'}
+                                onChange={(e) => actualizarHorarioDia(dia.id, {
+                                  ...horariosDia[0],
+                                  cierre: e.target.value
+                                })}
+                                className="time-input"
+                              />
+                            </div>
                           </div>
                           
                           <button
-                            onClick={() => eliminarHorario(dia.id, index)}
-                            className="btn-eliminar-horario"
-                            title="Eliminar horario"
+                            onClick={() => copiarHorarios(dia.id)}
+                            className="btn-copiar"
                           >
-                            <Trash2 size={16} />
+                            <Plus size={16} />
+                            Copiar a otros días
                           </button>
                         </div>
-                      ))}
-                      
-                      <button
-                        onClick={() => agregarHorarioDia(dia.id)}
-                        className="btn-agregar-horario"
-                      >
-                        <Plus size={16} />
-                        Agregar otro horario
-                      </button>
+                      )}
                     </div>
                   )}
                 </div>
@@ -274,29 +294,10 @@ export default function HorariosScreen() {
             })}
           </div>
 
-          {/* Configuración avanzada */}
-          <div className="configuracion-avanzada">
-            <h3 className="config-title">Configuración Avanzada</h3>
-            <div className="config-options">
-              <div className="config-option">
-                <input type="checkbox" id="horario-continuo" />
-                <label htmlFor="horario-continuo">Horario continuo</label>
-              </div>
-              <div className="config-option">
-                <input type="checkbox" id="mostrar-horario" defaultChecked />
-                <label htmlFor="mostrar-horario">Mostrar horario en público</label>
-              </div>
-              <div className="config-option">
-                <input type="checkbox" id="permitir-pedidos" defaultChecked />
-                <label htmlFor="permitir-pedidos">Permitir pedidos fuera de horario</label>
-              </div>
-            </div>
-          </div>
-
           {/* Acciones */}
-          <div className="acciones-horarios">
+          <div className="acciones-footer">
             <button className="btn-cancelar">
-              Cancelar
+              Descartar cambios
             </button>
             <button 
               onClick={guardarHorarios}
@@ -305,13 +306,13 @@ export default function HorariosScreen() {
             >
               {guardando ? (
                 <>
-                  <RefreshCw size={16} className="animate-spin" />
+                  <RefreshCw className="animate-spin" size={16} />
                   Guardando...
                 </>
               ) : (
                 <>
                   <Save size={16} />
-                  Guardar Horarios
+                  Guardar horarios
                 </>
               )}
             </button>

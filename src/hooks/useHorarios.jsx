@@ -1,104 +1,88 @@
-// src/hooks/useHorarios.jsx - VERSIÓN CORREGIDA SIN CICLOS
-import { useState, useEffect, useCallback } from 'react';
-import { 
-  getHorariosByComercio, 
-  checkComercioAbierto
-} from '../api/horarios';
+// src/hooks/useHorarios.js
+import { useState, useEffect } from 'react';
+import { getHorariosByComercio, calcularComercioAbierto } from '../api/horarios';
 
-export const useHorarios = (comercioId = 1) => { // Valor por defecto
-  const [horariosComercio, setHorariosComercio] = useState([]);
+export const useHorarios = (comercioId) => {
+  const [horarios, setHorarios] = useState([]);
   const [comercioAbierto, setComercioAbierto] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Días de la semana - constante fuera del efecto
+  // Días de la semana
   const diasSemana = [
-    { id: 'Lunes', nombre: 'Lunes' },
-    { id: 'Martes', nombre: 'Martes' },
-    { id: 'Miércoles', nombre: 'Miércoles' },
-    { id: 'Jueves', nombre: 'Jueves' },
-    { id: 'Viernes', nombre: 'Viernes' },
-    { id: 'Sábado', nombre: 'Sábado' },
-    { id: 'Domingo', nombre: 'Domingo' }
+    { id: 0, nombre: 'Domingo', corto: 'DOM' },
+    { id: 1, nombre: 'Lunes', corto: 'LUN' },
+    { id: 2, nombre: 'Martes', corto: 'MAR' },
+    { id: 3, nombre: 'Miércoles', corto: 'MIE' },
+    { id: 4, nombre: 'Jueves', corto: 'JUE' },
+    { id: 5, nombre: 'Viernes', corto: 'VIE' },
+    { id: 6, nombre: 'Sábado', corto: 'SAB' }
   ];
 
-  // ✅ CORREGIDO: Una sola función de carga
-  const cargarDatos = useCallback(async () => {
-    if (!comercioId) return;
+  // Formatear hora de TimeSpan a HH:MM
+  const formatearHora = (timeSpan) => {
+    if (!timeSpan) return '09:00';
     
+    if (typeof timeSpan === 'string') {
+      // Si ya viene en formato HH:MM
+      if (timeSpan.length === 5 && timeSpan.includes(':')) {
+        return timeSpan;
+      }
+      
+      // Si viene como "08:30:00"
+      const parts = timeSpan.split(':');
+      if (parts.length >= 2) {
+        return `${parts[0].padStart(2, '0')}:${parts[1]}`;
+      }
+    }
+    
+    return '09:00';
+  };
+
+  // Cargar horarios del comercio
+  const cargarHorarios = async () => {
     try {
       setLoading(true);
       setError(null);
       
-      console.log(`🔄 Cargando datos del comercio ${comercioId}...`);
+      // Solo cargamos los horarios, no verificamos el estado de apertura
+      const horariosData = await getHorariosByComercio(comercioId);
       
-      // Cargar ambos datos en paralelo
-      const [horariosData, estadoAbierto] = await Promise.all([
-        getHorariosByComercio(comercioId),
-        checkComercioAbierto(comercioId)
-      ]);
+      setHorarios(horariosData);
       
-      setHorariosComercio(horariosData);
-      setComercioAbierto(estadoAbierto);
-      
-      console.log('✅ Datos cargados exitosamente');
+      // Calculamos si está abierto basado en los horarios
+      const estaAbierto = calcularComercioAbierto(horariosData);
+      setComercioAbierto(estaAbierto);
       
     } catch (err) {
-      console.error('❌ Error cargando datos:', err);
+      console.error('Error cargando horarios:', err);
       setError(err.message);
-      
-      // Datos de ejemplo en caso de error
-      const horariosEjemplo = [
-        {
-          idhorarios: 1,
-          dias: 'Lunes,Martes,Miércoles,Jueves,Viernes',
-          apertura: '09:00:00',
-          cierre: '18:00:00',
-          abierto: true
-        },
-        {
-          idhorarios: 2,
-          dias: 'Sábado',
-          apertura: '10:00:00',
-          cierre: '14:00:00',
-          abierto: true
-        }
-      ];
-      
-      setHorariosComercio(horariosEjemplo);
-      setComercioAbierto(true);
+      setHorarios([]);
+      setComercioAbierto(false);
     } finally {
       setLoading(false);
     }
-  }, [comercioId]); // ✅ Solo depende de comercioId
+  };
 
-  // ✅ CORREGIDO: Un solo useEffect
+  // Recargar horarios
+  const recargarHorarios = async () => {
+    await cargarHorarios();
+  };
+
   useEffect(() => {
-    cargarDatos();
-  }, [cargarDatos]);
+    if (comercioId) {
+      cargarHorarios();
+    }
+  }, [comercioId]);
 
   return {
-    // Datos
-    horariosComercio,
+    horarios,
     comercioAbierto,
     diasSemana,
-    
-    // Estados
     loading,
     error,
-    
-    // Acciones
-    recargarHorariosComercio: cargarDatos,
-    
-    // Utilidades
-    formatearHora: (timeString) => {
-      if (!timeString) return '';
-      try {
-        const [hours, minutes] = timeString.split(':');
-        return `${hours}:${minutes}`;
-      } catch {
-        return timeString;
-      }
-    }
+    formatearHora,
+    recargarHorarios,
+    cargarHorarios
   };
 };
