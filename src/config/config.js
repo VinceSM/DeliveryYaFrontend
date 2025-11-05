@@ -12,17 +12,17 @@ export const API_CONFIG = {
       DESTACADOS: "/api/Comercios/destacados",
       BY_CIUDAD: "/api/Comercios/ciudad",
       PRODUCTOS: "/api/Comercios/{id}/productos",
-      CATEGORIAS: "/api/Comercios/{id}/categorias", // ← Para obtener categorías de un comercio
-      ADD_CATEGORIA: "/api/Comercios/{id}/categorias/{categoriaId}" // ← Para asociar categorías
+      CATEGORIAS: "/api/Comercios/{id}/categorias",
+      ADD_CATEGORIA: "/api/Comercios/{id}/categorias/{categoriaId}"
     },
     PRODUCTOS: {
-      BASE: "/api/Producto/list",
-      BY_ID: "/api/Producto/{id}",
-      CREATE: "/api/Producto/create",
-      UPDATE: "/api/Producto/update/{id}",
-      DELETE: "/api/Producto/delete/{id}",
-      BY_CATEGORIA: "/api/Producto/byCategoria/{categoriaId}",
-      BY_NOMBRE: "/api/Producto/search",
+      BASE: "/api/CategoriaProducto/{idCategoria}/productos",
+      BY_ID: "/api/CategoriaProducto/producto/{id}",
+      CREATE: "/api/CategoriaProducto/{idCategoria}/crear",
+      UPDATE: "/api/CategoriaProducto/producto/{id}/editar", 
+      DELETE: "/api/CategoriaProducto/producto/{id}/eliminar",
+      BY_CATEGORIA: "/api/CategoriaProducto/{idCategoria}/productos",
+      BY_NOMBRE: "/api/CategoriaProducto/buscar",
       OFERTA: "/api/Producto/oferta"
     },
     STOCK: {
@@ -36,12 +36,11 @@ export const API_CONFIG = {
       CREATE: "/api/Categoria",
       UPDATE: "/api/Categoria/{id}",
       DELETE: "/api/Categoria/{id}",
-      // NUEVOS ENDPOINTS PARA RELACIÓN COMERCIO-CATEGORÍA
       COMERCIO: {
-        BASE: "/api/ComercioCategoria", // ← Endpoint base para relación
+        BASE: "/api/ComercioCategoria",
         ADD: "/api/ComercioCategoria/comercio/{comercioId}/categoria/{categoriaId}",
         REMOVE: "/api/ComercioCategoria/comercio/{comercioId}/categoria/{categoriaId}",
-        BY_COMERCIO: "/api/ComercioCategoria/comercio/{comercioId}" // ← Obtener categorías del comercio
+        BY_COMERCIO: "/api/ComercioCategoria/comercio/{comercioId}"
       }
     },
     ADMINS: {
@@ -59,8 +58,13 @@ export const API_CONFIG = {
     },
     HORARIOS: {
       BASE: "/api/Horarios",
-      BY_COMERCIO: "/api/Horarios/comercio/{comercioId}",
-      ADD_TO_COMERCIO: "/api/Horarios/comercio/{comercioId}/horario/{horarioId}"
+      BY_COMERCIO: "/api/ComercioHorarios/{comercioId}/list", 
+      CREATE: "/api/Horarios",
+      UPDATE: "/api/ComercioHorarios/{comercioId}/update/{horarioId}",
+      DELETE: "/api/Horarios/{id}",
+      ADD_TO_COMERCIO: "/api/ComercioHorarios/{comercioId}/add/{horarioId}",
+      REMOVE_FROM_COMERCIO: "/api/ComercioHorarios/{comercioId}/remove/{horarioId}",
+      CHECK_ABIERTO: "/api/ComercioHorarios/{comercioId}/abierto"
     },
   }
 };

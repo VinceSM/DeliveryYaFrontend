@@ -1,7 +1,8 @@
+// src/navigation/AdminRouter.jsx
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAdminAuth } from '../hooks/useAdminAuth';
 import AdminLoginScreen from '../screens/Admin/AdminLoginScreen';
-import AdminDashboardScreen from '../screens/Admin/AdminDashboardScreen'; // Lo crearemos después
+import AdminDashboardScreen from '../screens/Admin/AdminDashboardScreen';
 
 function AdminRouter() {
   const { isAdminAuthenticated } = useAdminAuth();

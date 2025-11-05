@@ -1,4 +1,4 @@
-// src/api/categorias.js (VERSIÓN CORREGIDA)
+// src/api/categorias.js (VERSIÓN CON TODAS LAS CATEGORÍAS)
 import { API_CONFIG } from '../config/config.js';
 import { getToken } from './auth.js';
 
@@ -22,8 +22,8 @@ const mapearCategoriaDesdeBackend = (categoriaData) => {
   };
 };
 
-// Obtener todas las categorías (CORREGIDO)
-export const getCategorias = async () => {
+// 🔄 NUEVO: Obtener TODAS las categorías del sistema
+export const getTodasLasCategorias = async () => {
   try {
     const token = getToken();
     
@@ -31,9 +31,11 @@ export const getCategorias = async () => {
       throw new Error('No hay token de autenticación');
     }
 
-    // ✅ CORREGIDO: Usar /api/Categoria (singular) en lugar de /api/Categorias (plural)
-    const url = `${API_CONFIG.BASE_URL}/api/Categoria`;
-    console.log('📂 Obteniendo categorías desde:', url);
+    console.log('📂 Obteniendo TODAS las categorías del sistema...');
+    
+    // ✅ USAR ENDPOINT DEL ADMIN: /api/admin/categorias
+    const url = `${API_CONFIG.BASE_URL}/api/admin/categorias`;
+    console.log('🔗 URL:', url);
     
     const response = await fetch(url, {
       method: 'GET',
@@ -43,16 +45,16 @@ export const getCategorias = async () => {
       },
     });
 
-    console.log('📥 Status de respuesta categorías:', response.status);
+    console.log('📥 Status de respuesta todas las categorías:', response.status);
     
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('❌ Error obteniendo categorías:', errorText);
-      throw new Error(errorText || 'Error al obtener categorías');
+      console.error('❌ Error obteniendo todas las categorías:', errorText);
+      throw new Error(errorText || 'Error al obtener todas las categorías');
     }
 
     const data = await response.json();
-    console.log('✅ Categorías obtenidas del backend:', data);
+    console.log('✅ Todas las categorías obtenidas:', data);
     
     const categoriasMapeadas = Array.isArray(data) 
       ? data.map(mapearCategoriaDesdeBackend)
@@ -61,12 +63,38 @@ export const getCategorias = async () => {
     return categoriasMapeadas;
     
   } catch (error) {
-    console.error('💥 Error en getCategorias:', error);
+    console.error('💥 Error en getTodasLasCategorias:', error);
     throw error;
   }
 };
 
-// Crear una nueva categoría (CORREGIDO)
+// 🔄 MODIFICAR: Obtener categorías del comercio (mantener para otras pantallas)
+export const getCategorias = async () => {
+  try {
+    // Primero intentar obtener todas las categorías
+    return await getTodasLasCategorias();
+  } catch (error) {
+    console.error('💥 Error obteniendo categorías, usando fallback:', error);
+    
+    // Fallback a categorías por defecto
+    const categoriasPorDefecto = [
+      { idCategoria: 1, nombre: 'Hamburguesas', cantidadProductos: 0 },
+      { idCategoria: 2, nombre: 'Pizzas', cantidadProductos: 0 },
+      { idCategoria: 3, nombre: 'Ensaladas', cantidadProductos: 0 },
+      { idCategoria: 4, nombre: 'Sushi', cantidadProductos: 0 },
+      { idCategoria: 5, nombre: 'Bebidas', cantidadProductos: 0 },
+      { idCategoria: 6, nombre: 'Mexicana', cantidadProductos: 0 },
+      { idCategoria: 7, nombre: 'Postres', cantidadProductos: 0 },
+      { idCategoria: 8, nombre: 'Aperitivos', cantidadProductos: 0 },
+      { idCategoria: 9, nombre: 'Sandwiches', cantidadProductos: 0 },
+      { idCategoria: 10, nombre: 'Pastas', cantidadProductos: 0 }
+    ];
+    
+    return categoriasPorDefecto;
+  }
+};
+
+// Las demás funciones se mantienen igual...
 export const crearCategoria = async (categoriaData) => {
   try {
     const token = getToken();
@@ -81,8 +109,8 @@ export const crearCategoria = async (categoriaData) => {
       Nombre: categoriaData.nombre
     };
     
-    // ✅ CORREGIDO: Usar /api/Categoria (singular)
-    const response = await fetch(`${API_CONFIG.BASE_URL}/api/Categoria`, {
+    // ✅ USAR ENDPOINT DEL ADMIN: /api/admin/categorias
+    const response = await fetch(`${API_CONFIG.BASE_URL}/api/admin/categorias`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -131,8 +159,8 @@ export const actualizarCategoria = async (idCategoria, categoriaData) => {
       Nombre: categoriaData.nombre
     };
     
-    // ✅ CORREGIDO: Usar /api/Categoria/{id} (singular)
-    const response = await fetch(`${API_CONFIG.BASE_URL}/api/Categoria/${idCategoria}`, {
+    // ✅ USAR ENDPOINT DEL ADMIN: /api/admin/categorias/{id}
+    const response = await fetch(`${API_CONFIG.BASE_URL}/api/admin/categorias/${idCategoria}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -175,8 +203,8 @@ export const eliminarCategoria = async (idCategoria) => {
 
     console.log('🗑️ Eliminando categoría...', { idCategoria });
     
-    // ✅ CORREGIDO: Usar /api/Categoria/{id} (singular)
-    const response = await fetch(`${API_CONFIG.BASE_URL}/api/Categoria/${idCategoria}`, {
+    // ✅ USAR ENDPOINT DEL ADMIN: /api/admin/categorias/{id}
+    const response = await fetch(`${API_CONFIG.BASE_URL}/api/admin/categorias/${idCategoria}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
@@ -218,8 +246,8 @@ export const getProductosPorCategoria = async (idCategoria) => {
 
     console.log('📦 Obteniendo productos por categoría...', { idCategoria });
     
-    // ✅ CORREGIDO: Usar /api/Categoria/{id}/productos (singular)
-    const response = await fetch(`${API_CONFIG.BASE_URL}/api/Categoria/${idCategoria}/productos`, {
+    // ✅ USAR ENDPOINT DEL ADMIN: /api/admin/categorias/{id}/productos
+    const response = await fetch(`${API_CONFIG.BASE_URL}/api/admin/categorias/${idCategoria}/productos`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

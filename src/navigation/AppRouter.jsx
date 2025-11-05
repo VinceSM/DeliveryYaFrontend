@@ -1,19 +1,22 @@
+// src/navigation/AppRouter.jsx
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { useAdminAuth } from '../hooks/useAdminAuth'; // ✅ NUEVO
+import { useAdminAuth } from '../hooks/useAdminAuth';
 import AuthRouter from './AuthRouter';
-import AdminRouter from './AdminRouter'; // ✅ NUEVO - Lo crearemos después
+import AdminRouter from './AdminRouter';
 import GestionCategoriasScreen from '../screens/Categorias/GestionCategoriasScreen.jsx';
 import DashboardScreen from '../screens/Dashboard/DashboardScreen';
 import PedidosScreen from '../screens/Pedidos/PedidosScreen';
 import ProductosScreen from '../screens/Productos/ProductosScreen.jsx';
+import CrearProductoScreen from '../screens/Productos/CrearProductoScreen.jsx'; // ✅ NUEVO
 import EditarProductoScreen from '../screens/Productos/EditarProductoScreen.jsx';
+import VerProductoScreen from '../screens/Productos/VerProductoScreen.jsx'; // ✅ NUEVO
 import HorariosScreen from '../screens/Horarios/HorariosScreen';
 import PerfilScreen from '../screens/Perfil/PerfilScreen';
 
 function AppRouter() {
   const { isAuthenticated, loading } = useAuth();
-  const { isAdminAuthenticated, loading: adminLoading } = useAdminAuth(); // ✅ NUEVO
+  const { isAdminAuthenticated, loading: adminLoading } = useAdminAuth();
 
   // Mostrar loading mientras se verifica la autenticación
   if (loading || adminLoading) {
@@ -34,16 +37,20 @@ function AppRouter() {
       {/* Rutas de autenticación de comercio */}
       <Route path="/auth/*" element={<AuthRouter />} />
       
-      {/* ✅ NUEVO: Rutas de admin */}
+      {/* Rutas de admin */}
       <Route path="/admin/*" element={<AdminRouter />} />
 
       {/* Rutas protegidas de comercio */}
       {isAuthenticated && !isAdminAuthenticated ? (
         <>
           <Route path="/dashboard" element={<DashboardScreen />} />
+          
+          {/* ✅ RUTAS DE PRODUCTOS ACTUALIZADAS */}
           <Route path="/productos" element={<ProductosScreen />} />
-          <Route path="/productos/nuevo" element={<EditarProductoScreen />} />
+          <Route path="/productos/crear" element={<CrearProductoScreen />} /> {/* ✅ CAMBIADO: /nuevo → /crear */}
           <Route path="/productos/editar/:id" element={<EditarProductoScreen />} />
+          <Route path="/productos/ver/:id" element={<VerProductoScreen />} /> {/* ✅ NUEVA RUTA */}
+          
           <Route path="/pedidos" element={<PedidosScreen />} />
           <Route path="/horarios" element={<HorariosScreen />} />
           <Route path="/perfil" element={<PerfilScreen />} />
@@ -51,6 +58,9 @@ function AppRouter() {
           
           {/* Redirigir raíz a dashboard si está autenticado como comercio */}
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          
+          {/* Ruta por defecto para comercio */}
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </>
       ) : (
         // Si no está autenticado como comercio Y no es admin, redirigir a login de comercio

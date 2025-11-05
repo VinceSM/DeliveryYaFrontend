@@ -1,28 +1,27 @@
-/* src/styles/screens/HorariosScreen.css - VERSIÓN SIMPLIFICADA */
+/* src/styles/screens/HorariosScreen.css - VERSIÓN MEJORADA */
+
 .horarios-container {
-  max-width: 800px;
-  margin: 0 auto;
   padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-/* Header */
 .horarios-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   margin-bottom: 2rem;
 }
 
 .header-info h1 {
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: 2rem;
+  font-weight: bold;
   color: #1f2937;
-  margin: 0 0 0.5rem 0;
+  margin-bottom: 0.5rem;
 }
 
 .header-info p {
   color: #6b7280;
-  margin: 0;
 }
 
 .header-actions {
@@ -36,18 +35,18 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  border-radius: 8px;
-  font-weight: 600;
+  border-radius: 0.5rem;
+  font-weight: 500;
 }
 
 .estado-comercio.abierto {
-  background: #dcfce7;
+  background-color: #dcfce7;
   color: #166534;
 }
 
 .estado-comercio.cerrado {
-  background: #fee2e2;
-  color: #991b1b;
+  background-color: #fef2f2;
+  color: #dc2626;
 }
 
 .btn-recargar {
@@ -55,15 +54,16 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  background: #f3f4f6;
+  background-color: #f3f4f6;
   border: 1px solid #d1d5db;
-  border-radius: 8px;
+  border-radius: 0.5rem;
+  color: #374151;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .btn-recargar:hover:not(:disabled) {
-  background: #e5e7eb;
+  background-color: #e5e7eb;
 }
 
 .btn-recargar:disabled {
@@ -77,58 +77,61 @@
   align-items: center;
   gap: 0.5rem;
   padding: 1rem;
-  border-radius: 8px;
+  border-radius: 0.5rem;
   margin-bottom: 1.5rem;
   font-weight: 500;
 }
 
 .mensaje.exito {
-  background: #dcfce7;
+  background-color: #dcfce7;
   color: #166534;
   border: 1px solid #bbf7d0;
 }
 
 .mensaje.error {
-  background: #fee2e2;
-  color: #991b1b;
+  background-color: #fef2f2;
+  color: #dc2626;
   border: 1px solid #fecaca;
 }
 
-/* Grid de días simplificado */
-.dias-grid-simple {
+.mensaje.info {
+  background-color: #dbeafe;
+  color: #1e40af;
+  border: 1px solid #bfdbfe;
+}
+
+/* Grid de días */
+.dias-grid {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 1rem;
   margin-bottom: 2rem;
 }
 
-.dia-card-simple {
+.dia-card {
   background: white;
   border: 1px solid #e5e7eb;
-  border-radius: 12px;
+  border-radius: 0.75rem;
   overflow: hidden;
   transition: all 0.2s;
 }
 
-.dia-card-simple:hover {
-  border-color: #d1d5db;
-}
-
-.dia-card-simple.cerrado {
+.dia-card.cerrado {
   opacity: 0.7;
+  background-color: #f9fafb;
 }
 
-.dia-header-simple {
+.dia-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 1.5rem;
+  padding: 1.5rem;
   cursor: pointer;
   transition: background-color 0.2s;
 }
 
-.dia-header-simple:hover {
-  background: #f9fafb;
+.dia-header:hover {
+  background-color: #f9fafb;
 }
 
 .dia-info {
@@ -138,7 +141,7 @@
 }
 
 .dia-info h3 {
-  font-size: 1rem;
+  font-size: 1.125rem;
   font-weight: 600;
   color: #1f2937;
   margin: 0;
@@ -146,18 +149,18 @@
 
 .estado {
   padding: 0.25rem 0.75rem;
-  border-radius: 20px;
+  border-radius: 1rem;
   font-size: 0.875rem;
   font-weight: 500;
 }
 
 .estado.abierto {
-  background: #dcfce7;
+  background-color: #dcfce7;
   color: #166534;
 }
 
 .estado.cerrado {
-  background: #f3f4f6;
+  background-color: #f3f4f6;
   color: #6b7280;
 }
 
@@ -168,18 +171,19 @@
 }
 
 .horario-display {
-  font-weight: 600;
-  color: #1f2937;
+  color: #6b7280;
+  font-size: 0.875rem;
 }
 
 /* Contenido del día */
 .dia-content {
-  padding: 1rem 1.5rem;
-  border-top: 1px solid #f3f4f6;
+  padding: 1.5rem;
+  border-top: 1px solid #e5e7eb;
+  background-color: #fafafa;
 }
 
 .toggle-container {
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .toggle-label {
@@ -191,45 +195,31 @@
 }
 
 .toggle-input {
-  width: 44px;
-  height: 24px;
-  background: #d1d5db;
-  border-radius: 12px;
-  position: relative;
-  cursor: pointer;
-  appearance: none;
-  transition: all 0.2s;
+  width: 2.5rem;
+  height: 1.25rem;
 }
 
-.toggle-input:checked {
-  background: #10b981;
-}
-
-.toggle-input::before {
-  content: '';
-  position: absolute;
-  width: 20px;
-  height: 20px;
-  background: white;
-  border-radius: 50%;
-  top: 2px;
-  left: 2px;
-  transition: all 0.2s;
-}
-
-.toggle-input:checked::before {
-  left: 22px;
-}
-
-.horario-config {
+.horarios-list {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.horario-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
 }
 
 .horario-inputs {
   display: flex;
   gap: 1rem;
+  flex: 1;
 }
 
 .time-input-group {
@@ -247,30 +237,72 @@
 .time-input {
   padding: 0.5rem;
   border: 1px solid #d1d5db;
-  border-radius: 6px;
+  border-radius: 0.375rem;
   font-size: 0.875rem;
-  width: 120px;
 }
 
-.btn-copiar {
+.btn-eliminar-horario {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 0.375rem;
+  color: #dc2626;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-eliminar-horario:hover:not(:disabled) {
+  background-color: #fecaca;
+}
+
+.btn-eliminar-horario:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.horarios-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.btn-agregar-horario {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  background: #f3f4f6;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  background-color: #dbeafe;
+  border: 1px solid #bfdbfe;
+  border-radius: 0.5rem;
+  color: #1e40af;
   cursor: pointer;
-  font-size: 0.875rem;
   transition: all 0.2s;
-  align-self: flex-start;
+  font-weight: 500;
+}
+
+.btn-agregar-horario:hover {
+  background-color: #bfdbfe;
+}
+
+.btn-copiar {
+  padding: 0.75rem 1rem;
+  background-color: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
 }
 
 .btn-copiar:hover {
-  background: #e5e7eb;
+  background-color: #e5e7eb;
 }
 
-/* Footer de acciones */
+/* Acciones footer */
 .acciones-footer {
   display: flex;
   justify-content: flex-end;
@@ -281,17 +313,17 @@
 
 .btn-cancelar {
   padding: 0.75rem 1.5rem;
-  background: #6b7280;
-  color: white;
-  border: none;
-  border-radius: 8px;
+  background-color: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  color: #374151;
   cursor: pointer;
+  transition: all 0.2s;
   font-weight: 500;
-  transition: background-color 0.2s;
 }
 
 .btn-cancelar:hover {
-  background: #4b5563;
+  background-color: #e5e7eb;
 }
 
 .btn-guardar {
@@ -299,17 +331,17 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.5rem;
-  background: #ef4444;
+  background-color: #10b981;
+  border: 1px solid #059669;
+  border-radius: 0.5rem;
   color: white;
-  border: none;
-  border-radius: 8px;
   cursor: pointer;
+  transition: all 0.2s;
   font-weight: 500;
-  transition: background-color 0.2s;
 }
 
 .btn-guardar:hover:not(:disabled) {
-  background: #dc2626;
+  background-color: #059669;
 }
 
 .btn-guardar:disabled {
@@ -317,7 +349,7 @@
   cursor: not-allowed;
 }
 
-/* Estados de carga */
+/* Loading */
 .loading-container {
   display: flex;
   flex-direction: column;
@@ -327,27 +359,6 @@
   color: #6b7280;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .horarios-container {
-    padding: 1rem;
-  }
-  
-  .horarios-header {
-    flex-direction: column;
-    gap: 1rem;
-  }
-  
-  .header-actions {
-    width: 100%;
-    justify-content: space-between;
-  }
-  
-  .horario-inputs {
-    flex-direction: column;
-  }
-  
-  .acciones-footer {
-    flex-direction: column;
-  }
+.loading-container p {
+  margin-top: 1rem;
 }

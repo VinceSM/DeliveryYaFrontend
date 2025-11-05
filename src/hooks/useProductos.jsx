@@ -1,12 +1,12 @@
-// src/hooks/useProductos.jsx (VERSIÓN COMPLETA)
+// src/hooks/useProductos.jsx (VERSIÓN CON TODAS LAS CATEGORÍAS)
 import { useState, useEffect } from 'react';
 import { 
   getProductosComercio, 
   crearProducto, 
   actualizarProducto, 
-  eliminarProducto,
-  getCategoriasComercio 
+  eliminarProducto
 } from '../api/productos';
+import { getTodasLasCategorias } from '../api/categorias'; // ✅ Cambiar a la nueva función
 
 export const useProductos = () => {
   const [productos, setProductos] = useState([]);
@@ -22,37 +22,69 @@ export const useProductos = () => {
     categoriasCount: [...new Set(productos.map(p => p.categoria))].length
   };
 
+  // Cargar categorías desde el backend - MODIFICADO
+  const cargarCategorias = async () => {
+    try {
+      console.log('📂 Cargando TODAS las categorías desde el backend...');
+      const categoriasData = await getTodasLasCategorias();
+      
+      // Mapear las categorías para obtener solo los nombres
+      const nombresCategorias = categoriasData.map(cat => cat.nombre);
+      
+      console.log('✅ Todas las categorías cargadas:', nombresCategorias);
+      return nombresCategorias;
+      
+    } catch (err) {
+      console.error('❌ Error cargando todas las categorías:', err);
+      
+      // Categorías por defecto como fallback
+      const categoriasPorDefecto = [
+        'Hamburguesas', 'Pizzas', 'Ensaladas', 'Sushi', 
+        'Bebidas', 'Mexicana', 'Postres', 'Aperitivos',
+        'Sandwiches', 'Pastas', 'Asados', 'Vegetariano',
+        'Mariscos', 'Sopas', 'Entradas', 'Especialidades'
+      ];
+      
+      console.log('🔄 Usando categorías por defecto');
+      return categoriasPorDefecto;
+    }
+  };
+
   // Cargar productos y categorías
   const cargarProductos = async () => {
     try {
       setLoading(true);
       setError(null);
       
-      console.log('🔄 Cargando productos y categorías...');
+      console.log('🔄 Cargando productos y TODAS las categorías...');
       
       // Cargar productos y categorías en paralelo
       const [productosData, categoriasData] = await Promise.all([
         getProductosComercio(),
-        getCategoriasComercio()
+        cargarCategorias() // ✅ Ahora carga TODAS las categorías
       ]);
       
       setProductos(productosData);
       setCategorias(categoriasData);
       
-      console.log('✅ Datos cargados exitosamente');
+      console.log('✅ Datos cargados exitosamente:', {
+        productos: productosData.length,
+        categorias: categoriasData.length
+      });
       
     } catch (err) {
       console.error('❌ Error cargando datos:', err);
       setError(err.message);
       
-      // Cargar categorías por defecto si hay error
-      setCategorias(['Hamburguesas', 'Pizzas', 'Ensaladas', 'Sushi', 'Bebidas', 'Mexicana', 'Postres', 'Aperitivos']);
+      // Cargar categorías por defecto si hay error general
+      const categoriasPorDefecto = await cargarCategorias();
+      setCategorias(categoriasPorDefecto);
     } finally {
       setLoading(false);
     }
   };
 
-  // Crear nuevo producto
+  // Las demás funciones se mantienen igual...
   const agregarProducto = async (productoData) => {
     try {
       setError(null);
@@ -60,7 +92,6 @@ export const useProductos = () => {
       
       const nuevoProducto = await crearProducto(productoData);
       
-      // Actualizar lista local
       setProductos(prev => [...prev, nuevoProducto]);
       
       console.log('✅ Producto creado exitosamente');
@@ -73,7 +104,6 @@ export const useProductos = () => {
     }
   };
 
-  // Editar producto existente
   const editarProducto = async (id, productoData) => {
     try {
       setError(null);
@@ -81,7 +111,6 @@ export const useProductos = () => {
       
       const productoActualizado = await actualizarProducto(id, productoData);
       
-      // Actualizar lista local
       setProductos(prev => 
         prev.map(p => p.idProducto === id ? productoActualizado : p)
       );
@@ -96,7 +125,6 @@ export const useProductos = () => {
     }
   };
 
-  // Eliminar producto
   const borrarProducto = async (id) => {
     try {
       setError(null);
@@ -104,7 +132,6 @@ export const useProductos = () => {
       
       await eliminarProducto(id);
       
-      // Actualizar lista local
       setProductos(prev => prev.filter(p => p.idProducto !== id));
       
       console.log('✅ Producto eliminado exitosamente');
@@ -116,7 +143,17 @@ export const useProductos = () => {
     }
   };
 
-  // Cargar datos al montar el componente
+  const recargarCategorias = async () => {
+    try {
+      console.log('🔄 Recargando TODAS las categorías...');
+      const nuevasCategorias = await cargarCategorias();
+      setCategorias(nuevasCategorias);
+      console.log('✅ Todas las categorías recargadas');
+    } catch (err) {
+      console.error('❌ Error recargando categorías:', err);
+    }
+  };
+
   useEffect(() => {
     cargarProductos();
   }, []);
@@ -130,6 +167,7 @@ export const useProductos = () => {
     agregarProducto,
     editarProducto,
     borrarProducto,
-    recargarProductos: cargarProductos
+    recargarProductos: cargarProductos,
+    recargarCategorias
   };
 };

@@ -1,63 +1,91 @@
-// src/api/productos.js (versión completa)
+// src/api/productos.js (VERSIÓN CORREGIDA)
 import { API_CONFIG } from '../config/config.js';
 import { getToken } from './auth.js';
 import { getCategorias } from './categorias.js';
 
+// Función para construir URLs
+const buildUrl = (endpoint, params = {}) => {
+  let url = `${API_CONFIG.BASE_URL}${endpoint}`;
+  Object.keys(params).forEach(key => {
+    url = url.replace(`{${key}}`, encodeURIComponent(params[key]));
+  });
+  return url;
+};
+
+// Función auxiliar para manejar respuestas
+const handleResponse = async (response) => {
+  if (!response.ok) {
+    let errorText;
+    try {
+      errorText = await response.text();
+      console.error('❌ Error en respuesta:', errorText);
+    } catch (e) {
+      errorText = `Error ${response.status}: ${response.statusText}`;
+    }
+    throw new Error(errorText);
+  }
+};
+
 // Función mapearProductoParaBackend CORREGIDA
 const mapearProductoParaBackend = async (productoData) => {
   // Obtener el ID de la categoría seleccionada
-  let categoriaId = 1; // Por defecto
+  let categoriaId = 1; // Valor por defecto seguro
   
   if (productoData.categoria) {
     try {
       console.log('🔍 Buscando categoría:', productoData.categoria);
       const categorias = await getCategorias();
       const categoriaSeleccionada = categorias.find(cat => 
-        cat.nombre === productoData.categoria
+        cat.nombre.toLowerCase() === productoData.categoria.toLowerCase()
       );
       
       if (categoriaSeleccionada) {
         categoriaId = categoriaSeleccionada.idCategoria;
         console.log('✅ Categoría encontrada, ID:', categoriaId);
       } else {
-        console.warn('⚠️ Categoría no encontrada, usando ID por defecto');
+        console.warn('⚠️ Categoría no encontrada, usando ID por defecto (1)');
       }
     } catch (error) {
       console.warn('⚠️ No se pudieron obtener las categorías, usando ID por defecto. Error:', error.message);
-      // Continuamos con ID por defecto
     }
   }
 
   // ✅ CORREGIDO: Usar los nombres de propiedades que espera el backend
-  return {
-    nombre: productoData.nombre, // ← minúscula (como espera el backend)
-    descripcion: productoData.descripcion || '', // ← minúscula
-    unidadMedida: productoData.unidadMedida || 'unidad', // ← minúscula
+  const productoMapeado = {
+    nombre: productoData.nombre,
+    descripcion: productoData.descripcion || '',
+    unidadMedida: productoData.unidadMedida || 'unidad',
     precioUnitario: parseFloat(productoData.precio),
-    oferta: productoData.oferta || false, // ← minúscula
-    fotoPortada: productoData.imagen || 'default.jpg', // ← minúscula
-    StockIdStock: 1, // ← Valor por defecto temporal (deberías obtenerlo de algún lugar)
-    CategoriaId: categoriaId
+    oferta: productoData.oferta || false,
+    fotoPortada: productoData.imagen || 'default.jpg',
+    StockIdStock: 1, // Valor por defecto temporal
+    CategoriaId: categoriaId // ✅ IMPORTANTE: El backend espera esto
   };
+
+  console.log('📤 Producto mapeado para backend:', productoMapeado);
+  return productoMapeado;
 };
 
 // Función para mapear datos del backend al frontend
 const mapearProductoDesdeBackend = (productoData) => {
-  return {
-    idProducto: productoData.idproducto,
+  const productoMapeado = {
+    idProducto: productoData.idproducto || productoData.idProducto || productoData.id,
     nombre: productoData.nombre,
     descripcion: productoData.descripcion,
-    precio: productoData.precioUnitario,
-    imagen: productoData.fotoPortada,
-    categoria: 'General', // Por defecto hasta que el backend incluya el nombre
+    precio: productoData.precioUnitario || productoData.precio,
+    imagen: productoData.fotoPortada || productoData.imagen,
+    categoria: productoData.categoria?.nombre || 'General',
     stock: productoData.stock || 0,
     estado: (productoData.stock || 0) > 0 ? 'activo' : 'agotado',
     unidadMedida: productoData.unidadMedida,
     oferta: productoData.oferta
   };
+
+  console.log('📥 Producto mapeado desde backend:', productoMapeado);
+  return productoMapeado;
 };
 
-// Obtener todos los productos
+// Obtener todos los productos del comercio
 export const getProductosComercio = async () => {
   try {
     const token = getToken();
@@ -66,33 +94,49 @@ export const getProductosComercio = async () => {
       throw new Error('No hay token de autenticación');
     }
 
-    console.log('📦 Obteniendo productos desde backend...');
+    console.log('📦 Obteniendo productos del comercio...');
     
-    const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.PRODUCTOS.BASE}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-    });
+    // Obtener categorías primero para luego obtener productos por cada categoría
+    const categorias = await getCategorias();
+    console.log('📂 Categorías obtenidas:', categorias);
+    
+    let todosLosProductos = [];
+    
+    // Obtener productos de cada categoría
+    for (const categoria of categorias) {
+      try {
+        const url = buildUrl(API_CONFIG.ENDPOINTS.PRODUCTOS.BASE, { 
+          idCategoria: categoria.idCategoria 
+        });
+        
+        console.log(`🔗 Obteniendo productos de categoría ${categoria.nombre}:`, url);
+        
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+        });
 
-    console.log('📥 Status de respuesta productos:', response.status);
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('❌ Error obteniendo productos:', errorText);
-      throw new Error(errorText || 'Error al obtener productos');
+        if (response.ok) {
+          const productosCategoria = await response.json();
+          const productosMapeados = Array.isArray(productosCategoria) 
+            ? productosCategoria.map(prod => ({
+                ...mapearProductoDesdeBackend(prod),
+                categoria: categoria.nombre // Asignar nombre de categoría
+              }))
+            : [];
+          
+          todosLosProductos = [...todosLosProductos, ...productosMapeados];
+        }
+      } catch (error) {
+        console.warn(`⚠️ Error obteniendo productos de categoría ${categoria.nombre}:`, error.message);
+      }
     }
-
-    const data = await response.json();
-    console.log('✅ Productos obtenidos del backend:', data);
     
-    // Mapear los datos al formato del frontend
-    const productosMapeados = Array.isArray(data) 
-      ? data.map(mapearProductoDesdeBackend)
-      : [];
-    
-    return productosMapeados;
+    console.log(`✅ ${todosLosProductos.length} productos obtenidos en total`);
+    return todosLosProductos;
     
   } catch (error) {
     console.error('💥 Error en getProductosComercio:', error);
@@ -100,7 +144,7 @@ export const getProductosComercio = async () => {
   }
 };
 
-// Crear un nuevo producto
+// Crear un nuevo producto - CORREGIDO
 export const crearProducto = async (productoData) => {
   try {
     const token = getToken();
@@ -111,10 +155,30 @@ export const crearProducto = async (productoData) => {
 
     console.log('🆕 Creando nuevo producto...', productoData);
     
-    const requestBody = await mapearProductoParaBackend(productoData);
-    console.log('📤 Request body mapeado:', requestBody);
+    // Obtener el ID de la categoría seleccionada
+    const categorias = await getCategorias();
+    const categoriaSeleccionada = categorias.find(cat => 
+      cat.nombre.toLowerCase() === productoData.categoria.toLowerCase()
+    );
     
-    const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.PRODUCTOS.CREATE}`, {
+    if (!categoriaSeleccionada) {
+      throw new Error('Categoría no encontrada');
+    }
+
+    const categoriaId = categoriaSeleccionada.idCategoria;
+    console.log('✅ Usando categoría ID:', categoriaId);
+
+    const requestBody = await mapearProductoParaBackend(productoData);
+    
+    // ✅ USAR ENDPOINT CORRECTO: /api/CategoriaProducto/{idCategoria}/crear
+    const url = buildUrl(API_CONFIG.ENDPOINTS.PRODUCTOS.CREATE, { 
+      idCategoria: categoriaId 
+    });
+    
+    console.log('🔗 URL crear producto:', url);
+    console.log('📤 Request body:', requestBody);
+    
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -125,22 +189,13 @@ export const crearProducto = async (productoData) => {
 
     console.log('📥 Status de respuesta crear producto:', response.status);
     
-    if (!response.ok) {
-      let errorText;
-      try {
-        errorText = await response.text();
-        console.error('❌ Error creando producto:', errorText);
-      } catch (e) {
-        errorText = `Error ${response.status}: ${response.statusText}`;
-      }
-      
-      throw new Error(errorText || 'Error al crear producto');
-    }
+    await handleResponse(response);
 
     const data = await response.json();
-    console.log('✅ Producto creado en backend:', data);
+    console.log('✅ Respuesta del backend:', data);
     
-    return mapearProductoDesdeBackend(data);
+    // El backend retorna { mensaje: "...", data: producto }
+    return mapearProductoDesdeBackend(data.data || data);
     
   } catch (error) {
     console.error('💥 Error en crearProducto:', error);
@@ -148,7 +203,7 @@ export const crearProducto = async (productoData) => {
   }
 };
 
-// Actualizar un producto
+// Actualizar un producto - CORREGIDO
 export const actualizarProducto = async (idProducto, productoData) => {
   try {
     const token = getToken();
@@ -159,18 +214,16 @@ export const actualizarProducto = async (idProducto, productoData) => {
 
     console.log('✏️ Actualizando producto:', idProducto);
     
-    // ✅ CORREGIDO: Usar los nombres de propiedades que espera el backend
-    const requestBody = {
-      idproducto: idProducto,
-      nombre: productoData.nombre, // ← minúscula
-      descripcion: productoData.descripcion || '', // ← minúscula
-      unidadMedida: productoData.unidadMedida || 'unidad', // ← minúscula
-      precioUnitario: parseFloat(productoData.precio),
-      oferta: productoData.oferta || false, // ← minúscula
-      fotoPortada: productoData.imagen || 'default.jpg' // ← minúscula
-    };
+    const requestBody = await mapearProductoParaBackend(productoData);
     
-    const response = await fetch(buildUrl(API_CONFIG.ENDPOINTS.PRODUCTOS.UPDATE, { id: idProducto }), {
+    // ✅ USAR ENDPOINT CORRECTO: /api/CategoriaProducto/producto/{id}/editar
+    const url = buildUrl(API_CONFIG.ENDPOINTS.PRODUCTOS.UPDATE, { 
+      id: idProducto 
+    });
+    
+    console.log('🔗 URL actualizar producto:', url);
+    
+    const response = await fetch(url, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -184,7 +237,7 @@ export const actualizarProducto = async (idProducto, productoData) => {
     const data = await response.json();
     console.log('✅ Producto actualizado:', data);
     
-    return mapearProductoDesdeBackend(data);
+    return mapearProductoDesdeBackend(data.data || data);
     
   } catch (error) {
     console.error('💥 Error en actualizarProducto:', error);
@@ -192,31 +245,7 @@ export const actualizarProducto = async (idProducto, productoData) => {
   }
 };
 
-// Función auxiliar para obtener producto por ID
-const getProductoById = async (idProducto) => {
-  try {
-    const token = getToken();
-    const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.PRODUCTOS.BASE}/${idProducto}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error('Error al obtener producto actualizado');
-    }
-
-    const data = await response.json();
-    return mapearProductoDesdeBackend(data);
-  } catch (error) {
-    console.error('Error obteniendo producto por ID:', error);
-    throw error;
-  }
-};
-
-// Eliminar un producto
+// Eliminar un producto - CORREGIDO
 export const eliminarProducto = async (idProducto) => {
   try {
     const token = getToken();
@@ -225,9 +254,16 @@ export const eliminarProducto = async (idProducto) => {
       throw new Error('No hay token de autenticación');
     }
 
-    console.log('🗑️ Eliminando producto del backend...', { idProducto });
+    console.log('🗑️ Eliminando producto...', { idProducto });
     
-    const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.PRODUCTOS.BASE}/${idProducto}`, {
+    // ✅ USAR ENDPOINT CORRECTO: /api/CategoriaProducto/producto/{id}/eliminar
+    const url = buildUrl(API_CONFIG.ENDPOINTS.PRODUCTOS.DELETE, { 
+      id: idProducto 
+    });
+    
+    console.log('🔗 URL eliminar producto:', url);
+    
+    const response = await fetch(url, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
@@ -237,17 +273,7 @@ export const eliminarProducto = async (idProducto) => {
 
     console.log('📥 Status de respuesta eliminar producto:', response.status);
     
-    if (!response.ok) {
-      let errorText;
-      try {
-        errorText = await response.text();
-        console.error('❌ Error eliminando producto:', errorText);
-      } catch (e) {
-        errorText = `Error ${response.status}: ${response.statusText}`;
-      }
-      
-      throw new Error(errorText || 'Error al eliminar producto');
-    }
+    await handleResponse(response);
 
     console.log('✅ Producto eliminado del backend');
     return true;
@@ -261,11 +287,20 @@ export const eliminarProducto = async (idProducto) => {
 // Obtener categorías para productos
 export const getCategoriasComercio = async () => {
   try {
+    console.log('📂 Obteniendo categorías para productos...');
     const categorias = await getCategorias();
-    return categorias.map(cat => cat.nombre);
+    const nombresCategorias = categorias.map(cat => cat.nombre);
+    
+    console.log('✅ Categorías obtenidas:', nombresCategorias);
+    return nombresCategorias;
+    
   } catch (error) {
     console.error('💥 Error en getCategoriasComercio:', error);
-    // Retornar categorías por defecto si hay error
-    return ['Hamburguesas', 'Pizzas', 'Ensaladas', 'Sushi', 'Bebidas', 'Mexicana', 'Postres', 'Aperitivos'];
+    const categoriasPorDefecto = [
+      'Hamburguesas', 'Pizzas', 'Ensaladas', 'Sushi', 
+      'Bebidas', 'Mexicana', 'Postres', 'Aperitivos'
+    ];
+    console.log('🔄 Usando categorías por defecto:', categoriasPorDefecto);
+    return categoriasPorDefecto;
   }
 };
