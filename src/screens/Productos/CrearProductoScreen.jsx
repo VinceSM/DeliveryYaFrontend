@@ -64,40 +64,44 @@ export default function CrearProductoScreen() {
     setBusquedaCategoria('');
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  setError('');
 
-    try {
-      // Validaciones básicas
-      if (!formData.nombre.trim()) {
-        throw new Error('El nombre es requerido');
-      }
-      if (!formData.precio || parseFloat(formData.precio) <= 0) {
-        throw new Error('El precio debe ser mayor a 0');
-      }
-      if (!formData.categoria) {
-        throw new Error('La categoría es requerida');
-      }
-
-      console.log('📤 Enviando datos del producto:', formData);
-
-      await agregarProducto({
-        ...formData,
-        precio: parseFloat(formData.precio),
-      });
-
-      // Redirigir a la lista de productos
-      navigate('/productos');
-      
-    } catch (error) {
-      console.error('❌ Error creando producto:', error);
-      setError(error.message);
-    } finally {
-      setLoading(false);
+  try {
+    // Validaciones básicas
+    if (!formData.nombre.trim()) {
+      throw new Error('El nombre es requerido');
     }
-  };
+    if (!formData.precio || parseFloat(formData.precio) <= 0) {
+      throw new Error('El precio debe ser mayor a 0');
+    }
+    if (!formData.categoria) {
+      throw new Error('La categoría es requerida');
+    }
+
+    console.log('📤 Enviando datos del producto:', formData);
+
+    // Debug: obtener comercioId antes de enviar
+    const comercioId = await obtenerComercioIdAutenticado();
+    console.log('🏪 ComercioId que se enviará:', comercioId);
+
+    await agregarProducto({
+      ...formData,
+      precio: parseFloat(formData.precio),
+    });
+
+    // Redirigir a la lista de productos
+    navigate('/productos');
+    
+  } catch (error) {
+    console.error('❌ Error creando producto:', error);
+    setError(error.message);
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="dashboard-container flex h-screen">

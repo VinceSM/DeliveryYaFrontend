@@ -29,7 +29,7 @@ const handleResponse = async (response) => {
 // Función mapearProductoParaBackend CORREGIDA
 const mapearProductoParaBackend = async (productoData) => {
   // Obtener el ID de la categoría seleccionada
-  let categoriaId = 1; // Valor por defecto seguro
+  let categoriaId = 1;
   
   if (productoData.categoria) {
     try {
@@ -50,17 +50,19 @@ const mapearProductoParaBackend = async (productoData) => {
     }
   }
 
-  // ✅ CORREGIDO: Incluir el campo stock
+  // ✅ OBTENER EL COMERCIO ID DEL USUARIO AUTENTICADO
+  const comercioId = await obtenerComercioIdAutenticado();
+
   const productoMapeado = {
     nombre: productoData.nombre,
     descripcion: productoData.descripcion || '',
     unidadMedida: productoData.unidadMedida || 'unidad',
     precioUnitario: parseFloat(productoData.precio),
     oferta: productoData.oferta || false,
-    stock: productoData.stock !== undefined ? productoData.stock : true, // ✅ AGREGADO
+    stock: productoData.stock !== undefined ? productoData.stock : true,
     fotoPortada: productoData.imagen || 'default.jpg',
-    StockIdStock: 1, // Valor por defecto temporal
-    CategoriaId: categoriaId
+    categoriaId: categoriaId,
+    comercioId: comercioId // ✅ AGREGAR COMERCIO ID
   };
 
   console.log('📤 Producto mapeado para backend:', productoMapeado);
@@ -318,5 +320,104 @@ export const getCategoriasComercio = async () => {
     ];
     console.log('🔄 Usando categorías por defecto:', categoriasPorDefecto);
     return categoriasPorDefecto;
+  }
+};
+
+const obtenerComercioIdAutenticado = async () => {
+  try {
+    const token = getToken();
+    if (!token) {
+      console.warn('⚠️ No hay token de autenticación');
+      return 1;
+    }
+
+    console.log('🔍 Obteniendo comercioId del token...');
+
+    // Opción 1: Intentar obtener del endpoint mi-comercio
+    try {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/comercios/mi-comercio`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('✅ ComercioId obtenido de mi-comercio:', data.idcomercio);
+        
+        // Guardar en localStorage para futuras peticiones
+        try {
+          const userData = localStorage.getItem('userData');
+          if (userData) {
+            const user = JSON.parse(userData);
+            user.comercioId = data.idcomercio;
+            localStorage.setItem('userData', JSON.stringify(user));
+          } else {
+            // Si no existe userData, crearlo
+            localStorage.setItem('userData', JSON.stringify({
+              comercioId: data.idcomercio,
+              nombreComercio: data.nombreComercio
+            }));
+          }
+        } catch (e) {
+          console.warn('⚠️ No se pudo guardar comercioId en localStorage');
+        }
+        
+        return data.idcomercio;
+      } else {
+        console.warn(`⚠️ Error ${response.status} al obtener mi-comercio`);
+      }
+    } catch (error) {
+      console.warn('⚠️ Error en endpoint mi-comercio:', error.message);
+    }
+
+    // Opción 2: Intentar obtener directamente del token
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      console.log('🔍 Payload del token:', payload);
+      
+      // El NameIdentifier debería ser el idcomercio
+      if (payload.nameid) {
+        console.log('✅ ComercioId obtenido del token (nameid):', payload.nameid);
+        return parseInt(payload.nameid);
+      }
+      
+      // Buscar en otros claims comunes
+      if (payload.sub) {
+        console.log('✅ ComercioId obtenido del token (sub):', payload.sub);
+        return parseInt(payload.sub);
+      }
+      
+      if (payload.comercioId) {
+        console.log('✅ ComercioId obtenido del token (comercioId):', payload.comercioId);
+        return payload.comercioId;
+      }
+      
+    } catch (e) {
+      console.warn('⚠️ No se pudo decodificar el token:', e.message);
+    }
+
+    // Opción 3: Intentar del localStorage
+    try {
+      const userData = localStorage.getItem('userData');
+      if (userData) {
+        const user = JSON.parse(userData);
+        if (user.comercioId) {
+          console.log('✅ ComercioId obtenido del localStorage:', user.comercioId);
+          return user.comercioId;
+        }
+      }
+    } catch (e) {
+      console.warn('⚠️ Error al parsear userData:', e.message);
+    }
+
+    console.warn('⚠️ No se pudo obtener el ComercioId, usando valor por defecto 1');
+    return 1;
+    
+  } catch (error) {
+    console.error('❌ Error crítico al obtener ComercioId:', error);
+    return 1;
   }
 };
