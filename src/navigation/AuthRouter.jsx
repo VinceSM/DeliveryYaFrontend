@@ -1,13 +1,13 @@
 // src/navigation/AuthRouter.jsx
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { useAdminAuth } from '../hooks/useAdminAuth'; // ✅ AGREGAR
+import { useAdminAuth } from '../hooks/useAdminAuth';
 import LoginScreen from '../screens/Auth/LoginScreen';
 import RegisterScreen from '../screens/Auth/RegisterScreen';
 
 function AuthRouter() {
   const { isAuthenticated } = useAuth();
-  const { isAdminAuthenticated } = useAdminAuth(); // ✅ AGREGAR
+  const { isAdminAuthenticated } = useAdminAuth();
 
   // Si ya está autenticado como comercio, redirigir al dashboard
   if (isAuthenticated && !isAdminAuthenticated) {
@@ -21,10 +21,9 @@ function AuthRouter() {
 
   return (
     <Routes>
-      <Route path="login" element={<LoginScreen />} />
-      <Route path="register" element={<RegisterScreen />} />
-      
-      {/* Ruta por defecto dentro de auth redirige a login */}
+      <Route path="/login" element={<LoginScreen />} />
+      <Route path="/register" element={<RegisterScreen />} />
+      <Route path="/" element={<Navigate to="/auth/login" replace />} />
       <Route path="*" element={<Navigate to="/auth/login" replace />} />
     </Routes>
   );

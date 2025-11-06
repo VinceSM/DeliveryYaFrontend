@@ -22,7 +22,7 @@ const mapearCategoriaDesdeBackend = (categoriaData) => {
   };
 };
 
-// 🔄 NUEVO: Obtener TODAS las categorías del sistema
+// Obtener TODAS las categorías del sistema
 export const getTodasLasCategorias = async () => {
   try {
     const token = getToken();
@@ -68,7 +68,7 @@ export const getTodasLasCategorias = async () => {
   }
 };
 
-// 🔄 MODIFICAR: Obtener categorías del comercio (mantener para otras pantallas)
+// Obtener categorías del comercio (mantener para otras pantallas)
 export const getCategorias = async () => {
   try {
     // Primero intentar obtener todas las categorías
@@ -270,6 +270,51 @@ export const getProductosPorCategoria = async (idCategoria) => {
     
   } catch (error) {
     console.error('💥 Error en getProductosPorCategoria:', error);
+    throw error;
+  }
+};
+
+// Obtener categorías con productos del comercio
+export const getCategoriasConProductos = async () => {
+  try {
+    const token = getToken();
+    
+    if (!token) {
+      throw new Error('No hay token de autenticación');
+    }
+
+    console.log('📂 Obteniendo categorías con productos del comercio...');
+    
+    // Primero obtener todas las categorías
+    const todasLasCategorias = await getTodasLasCategorias();
+    console.log('📦 Todas las categorías:', todasLasCategorias);
+    
+    // Luego obtener productos por cada categoría para contar
+    const categoriasConConteo = await Promise.all(
+      todasLasCategorias.map(async (categoria) => {
+        try {
+          const productos = await getProductosPorCategoria(categoria.idCategoria);
+          return {
+            ...categoria,
+            cantidadProductos: productos.length,
+            productos: productos // Opcional: guardar los productos si los necesitas
+          };
+        } catch (error) {
+          console.warn(`⚠️ Error obteniendo productos para categoría ${categoria.nombre}:`, error.message);
+          return {
+            ...categoria,
+            cantidadProductos: 0,
+            productos: []
+          };
+        }
+      })
+    );
+    
+    console.log('✅ Categorías con conteo de productos:', categoriasConConteo);
+    return categoriasConConteo;
+    
+  } catch (error) {
+    console.error('💥 Error en getCategoriasConProductos:', error);
     throw error;
   }
 };

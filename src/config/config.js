@@ -1,4 +1,4 @@
-// src/config/config.js
+// src/config/config.js 
 export const API_CONFIG = {
   BASE_URL: import.meta.env.VITE_API_URL || "http://localhost:5189",
   ENDPOINTS: {
@@ -15,15 +15,22 @@ export const API_CONFIG = {
       CATEGORIAS: "/api/Comercios/{id}/categorias",
       ADD_CATEGORIA: "/api/Comercios/{id}/categorias/{categoriaId}"
     },
+    ADMIN_COMERCIOS: {
+      BASE: "/api/admin/comercios",
+      PENDIENTES: "/api/admin/comercios/pendientes",
+      ACTIVOS: "/api/admin/comercios/activos",
+      APROBAR: "/api/admin/comercios/{id}/aprobar",
+      DESTACAR: "/api/admin/comercios/{id}/destacar",
+      DETALLE: "/api/admin/comercios/{id}/detalle"
+    },
     PRODUCTOS: {
-      BASE: "/api/CategoriaProducto/{idCategoria}/productos",
-      BY_ID: "/api/CategoriaProducto/producto/{id}",
-      CREATE: "/api/CategoriaProducto/{idCategoria}/crear",
-      UPDATE: "/api/CategoriaProducto/producto/{id}/editar", 
-      DELETE: "/api/CategoriaProducto/producto/{id}/eliminar",
-      BY_CATEGORIA: "/api/CategoriaProducto/{idCategoria}/productos",
-      BY_NOMBRE: "/api/CategoriaProducto/buscar",
-      OFERTA: "/api/Producto/oferta"
+      BASE: "/api/categorias/{idCategoria}/productos",
+      BY_ID: "/api/categorias/products/{idProducto}",
+      CREATE: "/api/categorias/{idCategoria}/productos",
+      UPDATE: "/api/categorias/products/{idProducto}",
+      DELETE: "/api/categorias/products/{idProducto}",
+      SEARCH: "/api/categorias/products/buscar",
+      BY_CATEGORIA: "/api/categorias/{idCategoria}/productos"
     },
     STOCK: {
       BASE: "/api/Stock",

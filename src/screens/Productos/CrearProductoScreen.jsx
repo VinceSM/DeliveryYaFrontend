@@ -14,7 +14,7 @@ export default function CrearProductoScreen() {
     descripcion: '',
     precio: '',
     categoria: '',
-    stock: '',
+    stock: true, 
     imagen: '',
     unidadMedida: 'unidad',
     oferta: false
@@ -86,7 +86,6 @@ export default function CrearProductoScreen() {
       await agregarProducto({
         ...formData,
         precio: parseFloat(formData.precio),
-        stock: parseInt(formData.stock) || 0
       });
 
       // Redirigir a la lista de productos
@@ -249,17 +248,17 @@ export default function CrearProductoScreen() {
                 </div>
 
                 {/* Stock */}
-                <div>
-                  <label className="form-label">Stock</label>
+                <div className="flex items-center gap-2 p-3 border border-gray-200 rounded-lg">
                   <input
-                    type="number"
+                    type="checkbox"
                     name="stock"
-                    value={formData.stock}
+                    checked={formData.stock}
                     onChange={handleChange}
-                    className="form-input"
-                    placeholder="0"
-                    min="0"
+                    className="rounded border-gray-300"
                   />
+                  <label className="form-label mb-0">
+                    {formData.stock ? "✅ Disponible" : "❌ Sin stock"}
+                  </label>
                 </div>
 
                 {/* Unidad de Medida */}

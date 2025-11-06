@@ -1,4 +1,4 @@
-// src/api/productos.js (VERSIÓN CORREGIDA)
+// src/api/productos.js
 import { API_CONFIG } from '../config/config.js';
 import { getToken } from './auth.js';
 import { getCategorias } from './categorias.js';
@@ -50,16 +50,17 @@ const mapearProductoParaBackend = async (productoData) => {
     }
   }
 
-  // ✅ CORREGIDO: Usar los nombres de propiedades que espera el backend
+  // ✅ CORREGIDO: Incluir el campo stock
   const productoMapeado = {
     nombre: productoData.nombre,
     descripcion: productoData.descripcion || '',
     unidadMedida: productoData.unidadMedida || 'unidad',
     precioUnitario: parseFloat(productoData.precio),
     oferta: productoData.oferta || false,
+    stock: productoData.stock !== undefined ? productoData.stock : true, // ✅ AGREGADO
     fotoPortada: productoData.imagen || 'default.jpg',
     StockIdStock: 1, // Valor por defecto temporal
-    CategoriaId: categoriaId // ✅ IMPORTANTE: El backend espera esto
+    CategoriaId: categoriaId
   };
 
   console.log('📤 Producto mapeado para backend:', productoMapeado);
@@ -68,17 +69,23 @@ const mapearProductoParaBackend = async (productoData) => {
 
 // Función para mapear datos del backend al frontend
 const mapearProductoDesdeBackend = (productoData) => {
+  // Asegurar que tenemos los datos básicos
+  if (!productoData) {
+    console.warn('⚠️ ProductoData es null o undefined');
+    return null;
+  }
+
   const productoMapeado = {
-    idProducto: productoData.idproducto || productoData.idProducto || productoData.id,
-    nombre: productoData.nombre,
-    descripcion: productoData.descripcion,
-    precio: productoData.precioUnitario || productoData.precio,
-    imagen: productoData.fotoPortada || productoData.imagen,
-    categoria: productoData.categoria?.nombre || 'General',
-    stock: productoData.stock || 0,
-    estado: (productoData.stock || 0) > 0 ? 'activo' : 'agotado',
-    unidadMedida: productoData.unidadMedida,
-    oferta: productoData.oferta
+    idProducto: productoData.idProducto || productoData.idproducto || productoData.id,
+    nombre: productoData.nombre || 'Sin nombre',
+    descripcion: productoData.descripcion || '',
+    precio: productoData.precioUnitario || productoData.precio || 0,
+    imagen: productoData.fotoPortada || productoData.imagen || 'default.jpg',
+    categoria: productoData.categoria?.nombre || productoData.categoriaNombre || 'General',
+    stock: productoData.stock !== undefined ? productoData.stock : true, // ✅ AGREGADO
+    estado: productoData.stock ? 'activo' : 'agotado', // ✅ CORREGIDO: usar booleano directamente
+    unidadMedida: productoData.unidadMedida || 'unidad',
+    oferta: productoData.oferta || false
   };
 
   console.log('📥 Producto mapeado desde backend:', productoMapeado);
@@ -96,7 +103,7 @@ export const getProductosComercio = async () => {
 
     console.log('📦 Obteniendo productos del comercio...');
     
-    // Obtener categorías primero para luego obtener productos por cada categoría
+    // Obtener categorías primero
     const categorias = await getCategorias();
     console.log('📂 Categorías obtenidas:', categorias);
     
@@ -120,7 +127,13 @@ export const getProductosComercio = async () => {
         });
 
         if (response.ok) {
-          const productosCategoria = await response.json();
+          const result = await response.json();
+          console.log(`📥 Respuesta completa de ${categoria.nombre}:`, result);
+          
+          // ✅ CORREGIDO: Extraer los productos de la propiedad "data"
+          const productosCategoria = result.data || [];
+          console.log(`📦 Productos extraídos de ${categoria.nombre}:`, productosCategoria);
+          
           const productosMapeados = Array.isArray(productosCategoria) 
             ? productosCategoria.map(prod => ({
                 ...mapearProductoDesdeBackend(prod),
@@ -129,13 +142,16 @@ export const getProductosComercio = async () => {
             : [];
           
           todosLosProductos = [...todosLosProductos, ...productosMapeados];
+          console.log(`✅ ${productosMapeados.length} productos agregados de ${categoria.nombre}`);
+        } else {
+          console.warn(`⚠️ Error HTTP ${response.status} para categoría ${categoria.nombre}`);
         }
       } catch (error) {
         console.warn(`⚠️ Error obteniendo productos de categoría ${categoria.nombre}:`, error.message);
       }
     }
     
-    console.log(`✅ ${todosLosProductos.length} productos obtenidos en total`);
+    console.log(`🎉 ${todosLosProductos.length} productos obtenidos en total:`, todosLosProductos);
     return todosLosProductos;
     
   } catch (error) {

@@ -200,21 +200,6 @@ export default function PerfilInformacion({ comercio, onActualizarComercio, onRe
             <span className="checkbox-label">Tengo delivery propio</span>
           </div>
         </div>
-
-        <div className="form-group-perfil">
-          <label className="form-label-perfil">Destacado</label>
-          <div className="checkbox-container">
-            <input
-              type="checkbox"
-              name="destacado"
-              checked={datosLocales.destacado}
-              onChange={handleInputChange}
-              className="form-checkbox-perfil"
-              disabled={!editando}
-            />
-            <span className="checkbox-label">Marcar como comercio destacado</span>
-          </div>
-        </div>
       </div>
     </div>
   );

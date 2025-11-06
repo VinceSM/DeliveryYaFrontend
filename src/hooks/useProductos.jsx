@@ -1,12 +1,12 @@
-// src/hooks/useProductos.jsx (VERSIÓN CON TODAS LAS CATEGORÍAS)
-import { useState, useEffect } from 'react';
+// src/hooks/useProductos.jsx (NOMBRE CORREGIDO)
+import { useState, useEffect, useCallback } from 'react';
 import { 
   getProductosComercio, 
   crearProducto, 
   actualizarProducto, 
   eliminarProducto
 } from '../api/productos';
-import { getTodasLasCategorias } from '../api/categorias'; // ✅ Cambiar a la nueva función
+import { getTodasLasCategorias } from '../api/categorias';
 
 export const useProductos = () => {
   const [productos, setProductos] = useState([]);
@@ -22,8 +22,8 @@ export const useProductos = () => {
     categoriasCount: [...new Set(productos.map(p => p.categoria))].length
   };
 
-  // Cargar categorías desde el backend - MODIFICADO
-  const cargarCategorias = async () => {
+  // Cargar categorías desde el backend
+  const cargarCategorias = useCallback(async () => {
     try {
       console.log('📂 Cargando TODAS las categorías desde el backend...');
       const categoriasData = await getTodasLasCategorias();
@@ -48,10 +48,10 @@ export const useProductos = () => {
       console.log('🔄 Usando categorías por defecto');
       return categoriasPorDefecto;
     }
-  };
+  }, []);
 
   // Cargar productos y categorías
-  const cargarProductos = async () => {
+  const cargarProductos = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -61,8 +61,11 @@ export const useProductos = () => {
       // Cargar productos y categorías en paralelo
       const [productosData, categoriasData] = await Promise.all([
         getProductosComercio(),
-        cargarCategorias() // ✅ Ahora carga TODAS las categorías
+        cargarCategorias()
       ]);
+      
+      console.log('📦 Productos recibidos en hook:', productosData);
+      console.log('📂 Categorías recibidas en hook:', categoriasData);
       
       setProductos(productosData);
       setCategorias(categoriasData);
@@ -79,12 +82,13 @@ export const useProductos = () => {
       // Cargar categorías por defecto si hay error general
       const categoriasPorDefecto = await cargarCategorias();
       setCategorias(categoriasPorDefecto);
+      setProductos([]); // Asegurar que productos sea un array vacío en caso de error
     } finally {
       setLoading(false);
     }
-  };
+  }, [cargarCategorias]);
 
-  // Las demás funciones se mantienen igual...
+  // Agregar producto
   const agregarProducto = async (productoData) => {
     try {
       setError(null);
@@ -104,6 +108,7 @@ export const useProductos = () => {
     }
   };
 
+  // Editar producto
   const editarProducto = async (id, productoData) => {
     try {
       setError(null);
@@ -125,6 +130,7 @@ export const useProductos = () => {
     }
   };
 
+  // Eliminar producto
   const borrarProducto = async (id) => {
     try {
       setError(null);
@@ -143,6 +149,7 @@ export const useProductos = () => {
     }
   };
 
+  // Recargar categorías
   const recargarCategorias = async () => {
     try {
       console.log('🔄 Recargando TODAS las categorías...');
@@ -154,9 +161,10 @@ export const useProductos = () => {
     }
   };
 
+  // Efecto para cargar datos iniciales
   useEffect(() => {
     cargarProductos();
-  }, []);
+  }, [cargarProductos]);
 
   return {
     productos,

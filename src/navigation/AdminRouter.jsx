@@ -12,14 +12,18 @@ function AdminRouter() {
       {/* Si está autenticado como admin */}
       {isAdminAuthenticated ? (
         <>
-          <Route path="dashboard" element={<AdminDashboardScreen />} />
+          <Route path="/dashboard" element={<AdminDashboardScreen />} />
+          {/* Redirigir /admin/ a /admin/dashboard */}
+          <Route path="/" element={<Navigate to="/admin/dashboard" replace />} />
           {/* Agrega más rutas de admin aquí */}
           <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
         </>
       ) : (
         /* Si no está autenticado como admin */
         <>
-          <Route path="login" element={<AdminLoginScreen />} />
+          <Route path="/login" element={<AdminLoginScreen />} />
+          {/* Redirigir /admin/ a /admin/login */}
+          <Route path="/" element={<Navigate to="/admin/login" replace />} />
           <Route path="*" element={<Navigate to="/admin/login" replace />} />
         </>
       )}
