@@ -323,7 +323,7 @@ export const getCategoriasComercio = async () => {
   }
 };
 
-const obtenerComercioIdAutenticado = async () => {
+export const obtenerComercioIdAutenticado = async () => {
   try {
     const token = getToken();
     if (!token) {

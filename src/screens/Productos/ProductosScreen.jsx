@@ -183,7 +183,7 @@ export default function ProductosScreen() {
                               ? 'bg-green-100 text-green-800' 
                               : 'bg-red-100 text-red-800'
                           }`}>
-                            {producto.estado === 'activo' ? 'En stock' : 'Agotado'}
+                            
                           </span>
                         </div>
                       </div>
@@ -192,7 +192,7 @@ export default function ProductosScreen() {
                     <div className="flex items-center gap-4">
                       <div className="text-right">
                         <div className="font-semibold text-gray-800">${producto.precio}</div>
-                        <div className="text-sm text-gray-500">Stock: {producto.stock}</div>
+                        {producto.estado === 'activo' ? 'En stock' : 'Agotado'}
                       </div>
                       
                       <div className="flex gap-2">

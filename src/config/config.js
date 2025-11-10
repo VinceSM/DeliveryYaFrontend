@@ -64,11 +64,11 @@ export const API_CONFIG = {
       HOY: "/api/Pedidos/hoy"
     },
     HORARIOS: {
+      BY_COMERCIO: "/api/ComercioHorarios/{comercioId}/horarios",
+      CREATE: "/api/ComercioHorarios/{comercioId}/horarios/crear",
+      UPDATE: "/api/ComercioHorarios/{comercioId}/horarios/{horarioId}/editar",
+      DELETE: "/api/ComercioHorarios/{comercioId}/horarios/{horarioId}/eliminar",
       BASE: "/api/Horarios",
-      BY_COMERCIO: "/api/ComercioHorarios/{comercioId}/list", 
-      CREATE: "/api/Horarios",
-      UPDATE: "/api/ComercioHorarios/{comercioId}/update/{horarioId}",
-      DELETE: "/api/Horarios/{id}",
       ADD_TO_COMERCIO: "/api/ComercioHorarios/{comercioId}/add/{horarioId}",
       REMOVE_FROM_COMERCIO: "/api/ComercioHorarios/{comercioId}/remove/{horarioId}",
       CHECK_ABIERTO: "/api/ComercioHorarios/{comercioId}/abierto"

@@ -62,8 +62,6 @@ export default function VerProductoScreen() {
               </button>
             </div>
           </div>
-
-          {/* ... (copiar el contenido completo de la vista de detalles) */}
         </div>
       </main>
     </div>
