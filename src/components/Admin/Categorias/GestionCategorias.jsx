@@ -1,8 +1,8 @@
-// src/components/Admin/Categorias/GestionCategorias.jsx
+// src/components/Admin/Categorias/GestionCategorias.jsx - VERSIÓN SIMPLIFICADA
 import { useState, useEffect } from 'react';
 import CategoriasList from './CategoriasList';
 import CategoriaForm from './CategoriaForm';
-import { categoriaAdminService } from '../../../api/categoriaAdminService'; // Ruta corregida
+import { categoriaAdminService } from '../../../api/categoriaAdminService';
 
 export default function GestionCategorias() {
   const [categorias, setCategorias] = useState([]);
@@ -11,7 +11,6 @@ export default function GestionCategorias() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Cargar categorías al montar el componente
   useEffect(() => {
     cargarCategorias();
   }, []);
@@ -22,13 +21,9 @@ export default function GestionCategorias() {
       setError(null);
       const categoriasData = await categoriaAdminService.getAll();
       
-      // Adaptar los datos al formato que espera tu componente
       const categoriasAdaptadas = categoriasData.map(cat => ({
         idcategoria: cat.idCategoria,
         nombre: cat.nombre,
-        descripcion: cat.descripcion || `Categoría ${cat.nombre}`,
-        estado: 'activo', // Por defecto activo
-        icono: cat.icono || '📁',
         cantidadProductos: cat.cantidadProductos || 0
       }));
       
@@ -36,11 +31,10 @@ export default function GestionCategorias() {
     } catch (err) {
       console.error('Error cargando categorías:', err);
       setError('Error al cargar las categorías');
-      // Datos de ejemplo como fallback
       setCategorias([
-        { idcategoria: 1, nombre: 'Restaurante', descripcion: 'Comida y restaurantes', estado: 'activo', icono: '🍽️', cantidadProductos: 0 },
-        { idcategoria: 2, nombre: 'Farmacia', descripcion: 'Medicamentos y productos de salud', estado: 'activo', icono: '💊', cantidadProductos: 0 },
-        { idcategoria: 3, nombre: 'Supermercado', descripcion: 'Productos de supermercado', estado: 'activo', icono: '🛒', cantidadProductos: 0 }
+        { idcategoria: 1, nombre: 'Hamburguesa', cantidadProductos: 0 },
+        { idcategoria: 2, nombre: 'Pizza', cantidadProductos: 0 },
+        { idcategoria: 3, nombre: 'Carne', cantidadProductos: 0 }
       ]);
     } finally {
       setLoading(false);
@@ -57,47 +51,69 @@ export default function GestionCategorias() {
     setShowForm(true);
   };
 
-  const handleSaveCategoria = async (categoriaData) => {
-    try {
-      setError(null);
+const handleSaveCategoria = async (categoriaData) => {
+  try {
+    setError(null);
+    
+    if (categoriaEdit) {
+      // Editar categoría existente - SOLO NOMBRE
+      await categoriaAdminService.update(categoriaEdit.idcategoria, {
+        nombre: categoriaData.nombre
+      });
       
-      if (categoriaEdit) {
-        // Editar categoría existente
-        await categoriaAdminService.update(categoriaEdit.idcategoria, categoriaData);
-        
-        // Actualizar estado local
-        setCategorias(prev => prev.map(cat => 
-          cat.idcategoria === categoriaEdit.idcategoria 
-            ? { ...cat, ...categoriaData }
-            : cat
-        ));
-      } else {
-        // Crear nueva categoría
-        const nuevaCategoria = await categoriaAdminService.create(categoriaData);
-        
-        // Agregar al estado local con ID generado (si el backend no lo devuelve)
-        const categoriaConId = {
-          idcategoria: Date.now(), // Temporal, hasta que el backend devuelva el ID real
-          ...categoriaData,
-          estado: 'activo',
-          cantidadProductos: 0
-        };
-        
-        setCategorias(prev => [...prev, categoriaConId]);
+      // Actualizar estado local
+      setCategorias(prev => prev.map(cat => 
+        cat.idcategoria === categoriaEdit.idcategoria 
+          ? { ...cat, nombre: categoriaData.nombre }
+          : cat
+      ));
+    } else {
+      // Crear nueva categoría - SOLO NOMBRE
+      const nuevaCategoria = await categoriaAdminService.create({
+        nombre: categoriaData.nombre
+      });
+      
+      // Agregar al estado local
+      const categoriaConId = {
+        idcategoria: nuevaCategoria.idCategoria || Date.now(),
+        nombre: categoriaData.nombre,
+        estado: 'activo',
+        cantidadProductos: 0
+      };
+      
+      setCategorias(prev => [...prev, categoriaConId]);
+      
+      // 🔥 MOSTRAR MENSAJE INFORMATIVO SI HUBO ERROR DE ROUTING
+      if (!nuevaCategoria.idCategoria || nuevaCategoria.idCategoria === Date.now()) {
+        console.log('ℹ️ Categoría creada con ID temporal debido a error de backend');
       }
+    }
+    
+    setShowForm(false);
+    setCategoriaEdit(null);
+    
+    // Recargar categorías para obtener datos actualizados del backend
+    cargarCategorias();
+    
+  } catch (err) {
+    console.error('Error guardando categoría:', err);
+    
+    // 🔥 MANEJO ESPECÍFICO PARA ERROR DE ROUTING
+    if (err.message.includes('No route matches') || 
+        err.message.includes('CreatedAtActionResult')) {
+      setError('La categoría se creó correctamente, pero hubo un error técnico en el servidor. La categoría debería estar disponible.');
       
-      setShowForm(false);
-      setCategoriaEdit(null);
-      
-      // Recargar categorías para obtener datos actualizados del backend
-      cargarCategorias();
-      
-    } catch (err) {
-      console.error('Error guardando categoría:', err);
+      // Cerrar el formulario de todas formas
+      setTimeout(() => {
+        setShowForm(false);
+        setCategoriaEdit(null);
+        cargarCategorias(); // Recargar para ver si la categoría se creó
+      }, 3000);
+    } else {
       setError('Error al guardar la categoría: ' + (err.message || 'Error desconocido'));
     }
-  };
-
+  }
+};
   const handleDeleteCategoria = async (idcategoria) => {
     if (window.confirm('¿Estás seguro de que quieres eliminar esta categoría?')) {
       try {
@@ -115,22 +131,16 @@ export default function GestionCategorias() {
     try {
       setError(null);
       const categoria = categorias.find(cat => cat.idcategoria === idcategoria);
-      const nuevoEstado = categoria.estado === 'activo' ? 'inactivo' : 'activo';
       
-      // Actualizar estado localmente primero para mejor UX
       setCategorias(prev => prev.map(cat => 
         cat.idcategoria === idcategoria 
           ? { ...cat, estado: nuevoEstado }
           : cat
       ));
       
-      // Si quieres persistir el estado en el backend, necesitarías una función adicional
-      // await categoriaAdminService.updateEstado(idcategoria, nuevoEstado);
-      
     } catch (err) {
       console.error('Error cambiando estado:', err);
       setError('Error al cambiar el estado');
-      // Revertir cambio en caso de error
       cargarCategorias();
     }
   };

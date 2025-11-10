@@ -6,7 +6,7 @@ import { useAuth } from "../../hooks/useAuth";
 const menuItems = [
   { id: "home", label: "Inicio", icon: <Home size={20} />, path: "/dashboard" },
   { id: "productos", label: "Productos", icon: <Package size={20} />, path: "/productos" },
-  { id: "categorias", label: "Categorías", icon: <Tag size={20} />, path: "/categorias" }, // ✅ NUEVO
+  { id: "categorias", label: "Categorías", icon: <Tag size={20} />, path: "/categorias" },
   { id: "pedidos", label: "Pedidos", icon: <ShoppingCart size={20} />, path: "/pedidos" },
   { id: "horarios", label: "Horarios", icon: <Clock size={20} />, path: "/horarios" },
   { id: "perfil", label: "Perfil", icon: <Settings size={20} />, path: "/perfil" },
@@ -20,11 +20,10 @@ export default function Sidebar() {
   const getActiveItem = () => {
     const currentPath = location.pathname;
     
-    // Verificar rutas específicas primero
     if (currentPath.startsWith('/productos')) {
       return "productos";
     }
-    if (currentPath.startsWith('/categorias')) { // ✅ NUEVO
+    if (currentPath.startsWith('/categorias')) { 
       return "categorias";
     }
     if (currentPath.startsWith('/pedidos')) {
@@ -120,7 +119,7 @@ export default function Sidebar() {
       {/* Navegación Principal */}
       <nav className="sidebar-nav">
         <div className="nav-section">
-          <h3 className="sidebar-section-title">Gestión</h3> {/* ✅ ACTUALIZADO: Cambié el título */}
+          <h3 className="sidebar-section-title">Gestión</h3>
           <div className="nav-items">
             {menuItems.map((item) => (
               <button

@@ -1,42 +1,129 @@
-// src/screens/Categorias/GestionCategoriasScreen.jsx
+// src/screens/Categorias/GestionCategoriasScreen.jsx - VERSIÓN ACTUALIZADA
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Package, ArrowLeft, Eye, ShoppingBag } from "lucide-react";
+import { 
+  Package, 
+  ArrowLeft, 
+  Eye, 
+  ShoppingBag, 
+  Settings,
+  RefreshCw,
+  AlertCircle,
+  CheckCircle
+} from "lucide-react";
 import { getCategoriasConProductos, getProductosPorCategoria } from "../../api/categorias";
+import { getCategoriasPorComercio } from "../../api/comercioCategorias";
 import Sidebar from "../../components/screens/Sidebar";
 
 export default function GestionCategoriasScreen() {
   const navigate = useNavigate();
+  const [comercioId] = useState(1); 
+  
   const [categorias, setCategorias] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [productosPorCategoria, setProductosPorCategoria] = useState({});
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState(null);
   const [cargandoProductos, setCargandoProductos] = useState(false);
 
-  const cargarCategorias = async () => {
+const cargarCategoriasDelComercio = async () => {
+  try {
+    setLoading(true);
+    setError("");
+    setSuccess("");
+    console.log('🔄 Cargando categorías del comercio...');
+    
+    let categoriasAsignadas = [];
+    let usandoFallback = false;
+    
+    // 1. Intentar con el API real
     try {
-      setLoading(true);
-      setError("");
-      console.log('🔄 Cargando categorías con productos...');
+      categoriasAsignadas = await getCategoriasPorComercio(comercioId);
+      console.log('✅ Categorías del API:', categoriasAsignadas);
+    } catch (apiError) {
+      console.warn('⚠️ Error con API principal:', apiError.message);
       
-      const data = await getCategoriasConProductos();
-      
-      // Filtrar solo categorías que tienen productos
-      const categoriasConProductos = data.filter(categoria => 
-        categoria.cantidadProductos > 0
-      );
-      
-      console.log('✅ Categorías con productos:', categoriasConProductos);
-      setCategorias(categoriasConProductos);
-      
-    } catch (err) {
-      console.error('❌ Error cargando categorías:', err);
-      setError(err.message || 'Error al cargar las categorías');
-    } finally {
-      setLoading(false);
+      // Si el endpoint no existe, usar datos de fallback
+      if (apiError.message.includes('404') || apiError.message.includes('Not Found')) {
+        console.log('🔄 Usando datos de fallback para desarrollo');
+        categoriasAsignadas = await getCategoriasPorComercioFallback(comercioId);
+        usandoFallback = true;
+        setSuccess('Modo desarrollo: usando datos de ejemplo. El endpoint del backend no está disponible.');
+      } else {
+        throw apiError;
+      }
     }
-  };
+    
+    if (!categoriasAsignadas || categoriasAsignadas.length === 0) {
+      setCategorias([]);
+      if (!usandoFallback) {
+        setSuccess('No tienes categorías asignadas a tu comercio. Usa "Gestionar Categorías" para agregar algunas.');
+      }
+      return;
+    }
+    
+    // 2. Obtener información detallada de cada categoría
+    const categoriasConDetalles = await Promise.all(
+      categoriasAsignadas.map(async (categoria) => {
+        try {
+          // Si estamos en modo fallback, usar datos simulados
+          if (usandoFallback) {
+            return {
+              idCategoria: categoria.id,
+              nombre: categoria.nombre,
+              cantidadProductos: categoria.cantidadProductos,
+              productos: [] // No cargamos productos reales en fallback
+            };
+          }
+          
+          // Cargar productos reales
+          const productos = await getProductosPorCategoria(categoria.id || categoria.idCategoria);
+          return {
+            idCategoria: categoria.id || categoria.idCategoria,
+            nombre: categoria.nombre,
+            cantidadProductos: productos.length,
+            productos: productos
+          };
+        } catch (error) {
+          console.warn(`⚠️ Error obteniendo productos para categoría ${categoria.nombre}:`, error.message);
+          return {
+            idCategoria: categoria.id || categoria.idCategoria,
+            nombre: categoria.nombre,
+            cantidadProductos: 0,
+            productos: []
+          };
+        }
+      })
+    );
+    
+    // 3. Filtrar solo categorías que tienen productos (excepto en fallback)
+    const categoriasConProductos = usandoFallback 
+      ? categoriasConDetalles // En fallback, mostrar todas
+      : categoriasConDetalles.filter(categoria => categoria.cantidadProductos > 0);
+    
+    console.log('✅ Categorías del comercio con productos:', categoriasConProductos);
+    setCategorias(categoriasConProductos);
+    
+    if (categoriasConProductos.length === 0 && !usandoFallback) {
+      setSuccess('Tienes categorías asignadas pero ninguna tiene productos. Ve a "Productos" para agregar productos a tus categorías.');
+    }
+    
+  } catch (err) {
+    console.error('❌ Error cargando categorías del comercio:', err);
+    
+    // Mensajes de error específicos
+    if (err.message.includes('404') || err.message.includes('Not Found')) {
+      setError('El endpoint de categorías del comercio no está disponible en el backend. Contacta al administrador.');
+    } else if (err.message.includes('HTML') || err.message.includes('doctype')) {
+      setError('Error de conexión: El servidor está devolviendo HTML en lugar de JSON. Verifica la URL del backend.');
+    } else {
+      setError(err.message || 'Error al cargar las categorías de tu comercio');
+    }
+  } finally {
+    setLoading(false);
+  }
+};
 
   const cargarProductosDeCategoria = async (categoriaId) => {
     try {
@@ -65,8 +152,12 @@ export default function GestionCategoriasScreen() {
     setCategoriaSeleccionada(null);
   };
 
+  const gestionarCategoriasComercio = () => {
+    navigate('/categorias-comercio');
+  };
+
   useEffect(() => {
-    cargarCategorias();
+    cargarCategoriasDelComercio();
   }, []);
 
   return (
@@ -87,49 +178,81 @@ export default function GestionCategoriasScreen() {
                   <span>Volver a Productos</span>
                 </button>
                 <div>
-                  <h1 className="content-title">Categorías con Productos</h1>
+                  <h1 className="content-title">Mis Categorías</h1>
                   <p className="content-subtitle">
-                    Visualiza las categorías que contienen productos en tu comercio
+                    Categorías de tu comercio que contienen productos
                   </p>
                 </div>
               </div>
-              <div className="text-sm text-gray-500">
-                {categorias.length} categoría{categorias.length !== 1 ? 's' : ''} con productos
+              <div className="flex items-center gap-4">
+                <div className="text-sm text-gray-500">
+                  {categorias.length} categoría{categorias.length !== 1 ? 's' : ''} con productos
+                </div>
+                <button
+                  onClick={gestionarCategoriasComercio}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  <Settings size={16} />
+                  <span>Gestionar Categorías</span>
+                </button>
               </div>
             </div>
           </div>
 
+          {/* Mensajes */}
           {error && (
-            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3">
+              <AlertCircle size={20} className="text-red-600" />
               <p className="text-red-800">{error}</p>
               <button 
-                onClick={cargarCategorias}
-                className="mt-2 text-sm text-red-700 hover:text-red-800 underline"
+                onClick={() => setError("")}
+                className="ml-auto text-red-700 hover:text-red-800"
               >
-                Reintentar
+                ×
               </button>
             </div>
           )}
 
-          {/* Lista de Categorías */}
+          {success && (
+            <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3">
+              <CheckCircle size={20} className="text-green-600" />
+              <p className="text-green-800">{success}</p>
+              <button 
+                onClick={() => setSuccess("")}
+                className="ml-auto text-green-700 hover:text-green-800"
+              >
+                ×
+              </button>
+            </div>
+          )}
+
+          {/* Lista de Categorías del Comercio */}
           <div className="content-card">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-gray-800">
-                Categorías con Productos
-              </h3>
-              <button
-                onClick={cargarCategorias}
-                className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
-                disabled={loading}
-              >
-                {loading ? 'Cargando...' : 'Actualizar'}
-              </button>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800">
+                  Categorías de Mi Comercio
+                </h3>
+                <p className="text-sm text-gray-600 mt-1">
+                  Estas son las categorías asignadas a tu comercio que contienen productos
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={cargarCategoriasDelComercio}
+                  className="flex items-center gap-2 px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors disabled:opacity-50"
+                  disabled={loading}
+                >
+                  <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
+                  {loading ? 'Cargando...' : 'Actualizar'}
+                </button>
+              </div>
             </div>
             
             {loading ? (
               <div className="text-center py-12">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                <p className="text-gray-600">Cargando categorías...</p>
+                <p className="text-gray-600">Cargando categorías de tu comercio...</p>
               </div>
             ) : categorias.length === 0 ? (
               <div className="text-center py-12">
@@ -137,16 +260,26 @@ export default function GestionCategoriasScreen() {
                 <h4 className="text-lg font-medium text-gray-700 mb-2">
                   No hay categorías con productos
                 </h4>
-                <p className="text-gray-500 max-w-md mx-auto">
-                  Las categorías aparecerán aquí cuando tengan productos asociados. 
-                  Agrega productos a las categorías para verlas en esta lista.
+                <p className="text-gray-500 max-w-md mx-auto mb-6">
+                  {success 
+                    ? success 
+                    : 'No tienes categorías asignadas a tu comercio o no contienen productos.'
+                  }
                 </p>
-                <button
-                  onClick={() => navigate('/productos')}
-                  className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Ir a Gestión de Productos
-                </button>
+                <div className="flex gap-3 justify-center">
+                  <button
+                    onClick={gestionarCategoriasComercio}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Gestionar Categorías
+                  </button>
+                  <button
+                    onClick={() => navigate('/productos')}
+                    className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                  >
+                    Ir a Productos
+                  </button>
+                </div>
               </div>
             ) : (
               <div className="grid gap-4">
@@ -158,17 +291,19 @@ export default function GestionCategoriasScreen() {
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
                         <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                        <h4 className="font-semibold text-gray-800 text-lg">
-                          {categoria.nombre}
-                        </h4>
-                      </div>
-                      <div className="flex items-center gap-4 text-sm text-gray-600">
-                        <span className="flex items-center gap-1">
-                          <ShoppingBag size={16} />
-                          {categoria.cantidadProductos} producto{categoria.cantidadProductos !== 1 ? 's' : ''}
-                        </span>
-                        <span>•</span>
-                        <span>ID: {categoria.idCategoria}</span>
+                        <div>
+                          <h4 className="font-semibold text-gray-800 text-lg">
+                            {categoria.nombre}
+                          </h4>
+                          <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
+                            <span className="flex items-center gap-1">
+                              <ShoppingBag size={14} />
+                              {categoria.cantidadProductos} producto{categoria.cantidadProductos !== 1 ? 's' : ''}
+                            </span>
+                            <span>•</span>
+                            <span>ID: {categoria.idCategoria}</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
                     <div className="flex gap-2">
@@ -234,6 +369,11 @@ export default function GestionCategoriasScreen() {
                                 <p className="text-sm text-gray-600">
                                   ${(producto.precio || producto.Precio || 0).toFixed(2)}
                                 </p>
+                                {producto.descripcion && (
+                                  <p className="text-sm text-gray-500 mt-1">
+                                    {producto.descripcion}
+                                  </p>
+                                )}
                               </div>
                             </div>
                             <div className="text-right">
@@ -280,11 +420,13 @@ export default function GestionCategoriasScreen() {
                 <Eye size={18} className="text-blue-600" />
               </div>
               <div>
-                <h4 className="font-medium text-blue-800">Información</h4>
-                <p className="text-sm text-blue-700 mt-1">
-                  Esta pantalla muestra solo las categorías que tienen productos asociados. 
-                  Para agregar productos a una categoría, ve a la gestión de productos.
-                </p>
+                <h4 className="font-medium text-blue-800">Información sobre Categorías</h4>
+                <ul className="text-sm text-blue-700 mt-2 space-y-1">
+                  <li>Solo ves las categorías asignadas a tu comercio</li>
+                  <li>Los clientes podrán filtrar productos por estas categorías</li>
+                  <li>Para agregar más categorías, usa "Gestionar Categorías"</li>
+                  <li>Los productos se asignan a categorías en la gestión de productos</li>
+                </ul>
               </div>
             </div>
           </div>

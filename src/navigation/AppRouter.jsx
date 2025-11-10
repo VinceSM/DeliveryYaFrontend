@@ -5,12 +5,13 @@ import { useAdminAuth } from '../hooks/useAdminAuth';
 import AuthRouter from './AuthRouter';
 import AdminRouter from './AdminRouter';
 import GestionCategoriasScreen from '../screens/Categorias/GestionCategoriasScreen.jsx';
+import GestionCategoriasComercioScreen from '../screens/Categorias/GestionCategoriasComercioScreen.jsx'; // ✅ NUEVO
 import DashboardScreen from '../screens/Dashboard/DashboardScreen';
 import PedidosScreen from '../screens/Pedidos/PedidosScreen';
 import ProductosScreen from '../screens/Productos/ProductosScreen.jsx';
-import CrearProductoScreen from '../screens/Productos/CrearProductoScreen.jsx'; // ✅ NUEVO
+import CrearProductoScreen from '../screens/Productos/CrearProductoScreen.jsx';
 import EditarProductoScreen from '../screens/Productos/EditarProductoScreen.jsx';
-import VerProductoScreen from '../screens/Productos/VerProductoScreen.jsx'; // ✅ NUEVO
+import VerProductoScreen from '../screens/Productos/VerProductoScreen.jsx';
 import HorariosScreen from '../screens/Horarios/HorariosScreen';
 import PerfilScreen from '../screens/Perfil/PerfilScreen';
 
@@ -45,16 +46,19 @@ function AppRouter() {
         <>
           <Route path="/dashboard" element={<DashboardScreen />} />
           
-          {/* ✅ RUTAS DE PRODUCTOS ACTUALIZADAS */}
+          {/* ✅ RUTAS DE PRODUCTOS */}
           <Route path="/productos" element={<ProductosScreen />} />
-          <Route path="/productos/crear" element={<CrearProductoScreen />} /> {/* ✅ CAMBIADO: /nuevo → /crear */}
+          <Route path="/productos/crear" element={<CrearProductoScreen />} />
           <Route path="/productos/editar/:id" element={<EditarProductoScreen />} />
-          <Route path="/productos/ver/:id" element={<VerProductoScreen />} /> {/* ✅ NUEVA RUTA */}
+          <Route path="/productos/ver/:id" element={<VerProductoScreen />} />
+          
+          {/* ✅ RUTAS DE CATEGORÍAS */}
+          <Route path="/categorias" element={<GestionCategoriasScreen />} />
+          <Route path="/categorias-comercio" element={<GestionCategoriasComercioScreen />} /> {/* ✅ NUEVA RUTA */}
           
           <Route path="/pedidos" element={<PedidosScreen />} />
           <Route path="/horarios" element={<HorariosScreen />} />
           <Route path="/perfil" element={<PerfilScreen />} />
-          <Route path="/categorias" element={<GestionCategoriasScreen />} />
           
           {/* Redirigir raíz a dashboard si está autenticado como comercio */}
           <Route path="/" element={<Navigate to="/dashboard" replace />} />

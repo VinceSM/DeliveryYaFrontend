@@ -1,12 +1,9 @@
-// src/components/Admin/Categorias/CategoriaCard.jsx
 export default function CategoriaCard({ categoria, onEdit, onDelete, onToggleEstado }) {
   return (
     <div className={`categoria-card ${categoria.estado === 'inactivo' ? 'inactive' : ''}`}>
       <div className="categoria-header">
-        <span className="categoria-icono">{categoria.icono || '📁'}</span>
         <div className="categoria-info">
           <h4>{categoria.nombre}</h4>
-          <p>{categoria.descripcion}</p>
           <span className="productos-count">
             {categoria.cantidadProductos || 0} productos
           </span>
@@ -17,12 +14,6 @@ export default function CategoriaCard({ categoria, onEdit, onDelete, onToggleEst
       </div>
       
       <div className="categoria-actions">
-        <button 
-          className="btn-action"
-          onClick={() => onToggleEstado(categoria.idcategoria)}
-        >
-          {categoria.estado === 'activo' ? 'Desactivar' : 'Activar'}
-        </button>
         <button 
           className="btn-action"
           onClick={() => onEdit(categoria)}

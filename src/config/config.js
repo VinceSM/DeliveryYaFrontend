@@ -73,5 +73,11 @@ export const API_CONFIG = {
       REMOVE_FROM_COMERCIO: "/api/ComercioHorarios/{comercioId}/remove/{horarioId}",
       CHECK_ABIERTO: "/api/ComercioHorarios/{comercioId}/abierto"
     },
+    COMERCIO_CATEGORIAS: {
+      BY_COMERCIO: "/api/comercios/{comercioId}/categorias",
+      ADD: "/api/comercios/{comercioId}/categorias/{categoriaId}",
+      REMOVE: "/api/comercios/{comercioId}/categorias/{categoriaId}",
+      BY_CATEGORIA: "/api/categorias/{categoriaId}/comercios"
+    }
   }
 };

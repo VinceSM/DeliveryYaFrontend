@@ -1,4 +1,4 @@
-import { useAdminAuth } from '../../../hooks/useAdminAuth'; // Ruta corregida
+import { useAdminAuth } from '../../../hooks/useAdminAuth';
 
 const sections = {
   dashboard: 'Dashboard',

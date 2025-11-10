@@ -84,7 +84,6 @@ export default function CrearProductoScreen() {
 
       console.log('📤 Enviando datos del producto:', formData);
 
-      // ✅ AHORA la función está disponible
       const comercioId = await obtenerComercioIdAutenticado();
       console.log('🏪 ComercioId que se enviará:', comercioId);
 
@@ -137,7 +136,6 @@ export default function CrearProductoScreen() {
             )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
-                            {/* ... (el mismo formulario que tenías antes) */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Nombre */}
                 <div>
@@ -171,7 +169,15 @@ export default function CrearProductoScreen() {
 
                 {/* Categoría */}
                 <div className="relative">
-                  <label className="form-label">Categoría *</label>
+                  <label className="form-label flex items-center gap-2">
+                    Categoría *
+                    <div className="group relative">
+                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-blue-600 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-20">
+                        Solo categorías de tu comercio
+                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-blue-600"></div>
+                      </div>
+                    </div>
+                  </label>
                   <div className="relative">
                     <input
                       type="text"
@@ -186,7 +192,6 @@ export default function CrearProductoScreen() {
                       className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer"
                       onClick={abrirSelectorCategorias}
                     >
-                      <Search size={16} className="text-gray-400" />
                     </div>
                   </div>
 
@@ -262,7 +267,7 @@ export default function CrearProductoScreen() {
                     className="rounded border-gray-300"
                   />
                   <label className="form-label mb-0">
-                    {formData.stock ? "✅ Disponible" : "❌ Sin stock"}
+                    {formData.stock ? "✅ Disponible(Stock)" : "❌ Sin stock"}
                   </label>
                 </div>
 

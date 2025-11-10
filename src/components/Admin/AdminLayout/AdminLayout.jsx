@@ -1,6 +1,6 @@
 import AdminSidebar from './AdminSidebar';
 import AdminHeader from './AdminHeader';
-import '../../../styles/screens/Admin/AdminDashboard.css'; // Ruta corregida
+import '../../../styles/screens/Admin/AdminDashboard.css';
 
 export default function AdminLayout({ children, activeSection, onSectionChange }) {
   return (

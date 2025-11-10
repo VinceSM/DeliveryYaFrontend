@@ -2,17 +2,17 @@ import { useState, useEffect } from 'react';
 
 export default function CategoriaForm({ categoria, onSave, onCancel }) {
   const [formData, setFormData] = useState({
-    nombre: '',
-    descripcion: '',
-    icono: ''
+    nombre: ''
   });
 
   useEffect(() => {
     if (categoria) {
       setFormData({
-        nombre: categoria.nombre || '',
-        descripcion: categoria.descripcion || '',
-        icono: categoria.icono || ''
+        nombre: categoria.nombre || ''
+      });
+    } else {
+      setFormData({
+        nombre: ''
       });
     }
   }, [categoria]);
@@ -30,8 +30,6 @@ export default function CategoriaForm({ categoria, onSave, onCancel }) {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const iconosDisponibles = ['🍽️', '💊', '🛒', '🏪', '☕', '🍕', '🍦', '📚', '🎁', '👕'];
-
   return (
     <div className="form-container">
       <h3>{categoria ? 'Editar Categoría' : 'Nueva Categoría'}</h3>
@@ -43,44 +41,10 @@ export default function CategoriaForm({ categoria, onSave, onCancel }) {
             type="text"
             value={formData.nombre}
             onChange={(e) => handleChange('nombre', e.target.value)}
-            placeholder="Ej: Restaurante, Farmacia..."
+            placeholder="Ej: Hamburguesa, Carne..."
             required
           />
         </div>
-
-        <div className="form-group">
-          <label>Descripción</label>
-          <textarea
-            value={formData.descripcion}
-            onChange={(e) => handleChange('descripcion', e.target.value)}
-            placeholder="Describe esta categoría..."
-            rows="3"
-          />
-        </div>
-
-        <div className="form-group">
-          <label>Icono</label>
-          <div className="iconos-grid">
-            {iconosDisponibles.map(icono => (
-              <button
-                key={icono}
-                type="button"
-                className={`icono-option ${formData.icono === icono ? 'selected' : ''}`}
-                onClick={() => handleChange('icono', icono)}
-              >
-                {icono}
-              </button>
-            ))}
-          </div>
-          <input
-            type="text"
-            value={formData.icono}
-            onChange={(e) => handleChange('icono', e.target.value)}
-            placeholder="O escribe un emoji manualmente"
-            maxLength="2"
-          />
-        </div>
-
         <div className="form-actions">
           <button type="button" className="btn-secondary" onClick={onCancel}>
             Cancelar

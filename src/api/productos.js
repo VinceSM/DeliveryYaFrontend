@@ -421,3 +421,74 @@ export const obtenerComercioIdAutenticado = async () => {
     return 1;
   }
 };
+
+export const getCategoriasDelComercio = async () => {
+  try {
+    const token = getToken();
+    
+    if (!token) {
+      throw new Error('No hay token de autenticación');
+    }
+
+    console.log('📂 Obteniendo categorías del comercio actual...');
+    
+    const comercioId = await obtenerComercioIdAutenticado();
+    console.log('🏪 Comercio ID para categorías:', comercioId);
+    
+    // Intentar obtener categorías del comercio específico
+    try {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/comercios/${comercioId}/categorias`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+      });
+
+      console.log('📥 Status de respuesta categorías del comercio:', response.status);
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('✅ Categorías del comercio obtenidas:', data);
+        
+        // Manejar diferentes formatos de respuesta
+        let categoriasData = [];
+        if (Array.isArray(data)) {
+          categoriasData = data;
+        } else if (data.data && Array.isArray(data.data)) {
+          categoriasData = data.data;
+        } else if (data.categorias && Array.isArray(data.categorias)) {
+          categoriasData = data.categorias;
+        }
+        
+        const nombresCategorias = categoriasData.map(cat => cat.nombre);
+        console.log('📝 Nombres de categorías del comercio:', nombresCategorias);
+        return nombresCategorias;
+      } else {
+        console.warn(`⚠️ Error ${response.status} obteniendo categorías del comercio`);
+      }
+    } catch (apiError) {
+      console.warn('⚠️ Error con endpoint específico de comercio:', apiError.message);
+    }
+
+    // Fallback: obtener todas las categorías del sistema
+    console.log('🔄 Usando todas las categorías como fallback');
+    const todasLasCategorias = await getTodasLasCategorias();
+    const nombresTodasCategorias = todasLasCategorias.map(cat => cat.nombre);
+    
+    console.log('📝 Todas las categorías disponibles:', nombresTodasCategorias);
+    return nombresTodasCategorias;
+    
+  } catch (error) {
+    console.error('💥 Error en getCategoriasDelComercio:', error);
+    
+    // Último fallback: categorías por defecto
+    const categoriasPorDefecto = [
+      'Hamburguesas', 'Pizzas', 'Ensaladas', 'Sushi', 
+      'Bebidas', 'Mexicana', 'Postres', 'Aperitivos'
+    ];
+    
+    console.log('🔄 Usando categorías por defecto por error:', categoriasPorDefecto);
+    return categoriasPorDefecto;
+  }
+};
