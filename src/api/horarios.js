@@ -45,17 +45,21 @@ const handleResponse = async (response) => {
   return response.json();
 };
 
-// ✅ FORMATO CORRECTO para TimeSpan en .NET
 // TimeSpan espera formato: "HH:MM:SS" o "DD.HH:MM:SS"
 const crearTimeSpanParaNET = (horaString) => {
   if (!horaString) return "09:00:00";
   
+  // Asegurar formato HH:MM
   const [hoursStr, minutesStr] = horaString.split(':');
   const hours = parseInt(hoursStr) || 9;
   const minutes = parseInt(minutesStr) || 0;
   
-  // Formato: "HH:MM:SS"
-  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00`;
+  // Validar rangos
+  const horasValidas = Math.max(0, Math.min(23, hours));
+  const minutosValidos = Math.max(0, Math.min(59, minutes));
+  
+  // Formato: "HH:MM:00" - TimeSpan espera horas:minutos:segundos
+  return `${horasValidas.toString().padStart(2, '0')}:${minutosValidos.toString().padStart(2, '0')}:00`;
 };
 
 // Obtener horarios por comercio
@@ -113,30 +117,15 @@ export const crearHorarioParaComercio = async (comercioId, horarioData) => {
     
     const url = buildUrl(API_CONFIG.ENDPOINTS.HORARIOS.CREATE, { comercioId });
     
-    // 🔄 PRUEBA: Enviar como objeto que .NET pueda entender
     const datosParaBackend = {
-      apertura: {
-        ticks: 324000000000, // 9 horas en ticks
-        days: 0,
-        hours: 9,
-        minutes: 0,
-        seconds: 0,
-        milliseconds: 0
-      },
-      cierre: {
-        ticks: 648000000000, // 18 horas en ticks  
-        days: 0,
-        hours: 18,
-        minutes: 0,
-        seconds: 0,
-        milliseconds: 0
-      },
+      apertura: crearTimeSpanParaNET(horarioData.apertura), // "09:00:00"
+      cierre: crearTimeSpanParaNET(horarioData.cierre),     // "18:00:00"
       dias: horarioData.dias,
       abierto: horarioData.abierto
     };
     
     console.log('📤 URL de creación:', url);
-    console.log('📦 Datos enviados (FORMATO OBJETO):', JSON.stringify(datosParaBackend, null, 2));
+    console.log('📦 Datos enviados (FORMATO CORREGIDO):', datosParaBackend);
     
     const response = await fetch(url, {
       method: 'POST',
@@ -156,7 +145,6 @@ export const crearHorarioParaComercio = async (comercioId, horarioData) => {
     throw error;
   }
 };
-
 // Eliminar horario
 export const eliminarHorario = async (comercioId, horarioId) => {
   try {
@@ -216,15 +204,15 @@ export const guardarHorariosComercio = async (comercioId, horariosEditados) => {
       }
     }
 
-    // 3. Preparar nuevos horarios en formato CORRECTO
+    // 3. Preparar nuevos horarios en formato CORREGIDO
     const horariosParaGuardar = [];
     
     for (const [diaId, horariosDia] of Object.entries(horariosEditados)) {
       for (const horario of horariosDia) {
         if (horario.abierto) {
           const horarioParaBackend = {
-            apertura: horario.apertura, // Se convertirá a formato TimeSpan
-            cierre: horario.cierre,     // Se convertirá a formato TimeSpan
+            apertura: horario.apertura, // Se convertirá a "HH:MM:00"
+            cierre: horario.cierre,     // Se convertirá a "HH:MM:00"  
             dias: DIAS_MAP[parseInt(diaId)] || 'Lunes',
             abierto: true
           };
@@ -247,7 +235,7 @@ export const guardarHorariosComercio = async (comercioId, horariosEditados) => {
       };
     }
 
-    // 5. Crear todos los horarios nuevos
+    // 5. Crear todos los horarios nuevos CON FORMATO CORRECTO
     const resultados = [];
     for (const horarioData of horariosParaGuardar) {
       try {
@@ -258,10 +246,11 @@ export const guardarHorariosComercio = async (comercioId, horariosEditados) => {
       } catch (error) {
         console.error('❌ Error creando horario individual:', error.message);
         console.error('📋 Datos que fallaron:', horarioData);
+        // Continuar con los demás horarios en lugar de fallar completamente
       }
     }
 
-    console.log('✅ Horarios guardados exitosamente:', resultados);
+    console.log('✅ Horarios guardados exitosamente:', resultados.length);
     return { 
       success: true, 
       message: `${resultados.length} horarios guardados correctamente`, 
@@ -273,7 +262,6 @@ export const guardarHorariosComercio = async (comercioId, horariosEditados) => {
     throw error;
   }
 };
-
 // Resto de funciones auxiliares...
 export const formatearHoraDesdeTimeSpan = (timeSpan) => {
   if (!timeSpan) return '09:00';
