@@ -1,9 +1,11 @@
 // src/screens/Productos/ProductosScreen.jsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Package, Search, Filter, Edit, Trash2, Eye } from "lucide-react";
+import { Plus, Package, Search, Edit, Trash2, Eye, Box, CheckCircle, XCircle, Tags } from "lucide-react";
 import { useProductos } from "../../hooks/useProductos";
 import Sidebar from "../../components/screens/Sidebar";
+import "../../styles/components/BotonesAccion.css";
+import "../../styles/screens/ProductosScreen.css";
 
 export default function ProductosScreen() {
   const navigate = useNavigate();
@@ -53,20 +55,21 @@ export default function ProductosScreen() {
       
       <main className="main-content flex-1 overflow-y-auto">
         <div className="content-wrapper min-h-full p-8">
-          {/* Header */}
-          <div className="content-header mb-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="content-title">Gestión de Productos</h1>
-                <p className="content-subtitle">Administra tu inventario de productos</p>
+          {/* Header Mejorado */}
+          <div className="productos-header">
+            <div className="flex items-center justify-between w-full">
+              <div className="flex items-center gap-4">
+                <div>
+                  <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                    Gestión de Productos
+                  </h1>
+                  <p className="text-gray-600 text-lg mt-1 flex items-center gap-2">
+                    <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                    Administra y controla tu inventario de productos
+                  </p>
+                </div>
               </div>
-              <button
-                onClick={() => navigate('/productos/crear')}
-                className="btn-primary"
-              >
-                <Plus size={18} />
-                Nuevo Producto
-              </button>
+              
             </div>
           </div>
 
@@ -76,64 +79,90 @@ export default function ProductosScreen() {
             </div>
           )}
 
-          {/* Estadísticas */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div className="content-card text-center">
-              <div className="text-2xl font-bold text-blue-600">{estadisticas.totalProductos}</div>
-              <div className="text-sm text-gray-600">Total Productos</div>
+          {/* Estadísticas con tus clases CSS */}
+          <div className="stats-productos">
+            <div className="stat-producto primary">
+              <div className="flex items-center justify-center gap-3 mb-2">
+                <Box size={24} className="text-blue-600" />
+                <div>
+                  <div className="stat-number">{estadisticas.totalProductos}</div>
+                  <div className="stat-label">Total Productos</div>
+                </div>
+              </div>
             </div>
-            <div className="content-card text-center">
-              <div className="text-2xl font-bold text-green-600">{estadisticas.productosActivos}</div>
-              <div className="text-sm text-gray-600">En Stock</div>
+            
+            <div className="stat-producto success">
+              <div className="flex items-center justify-center gap-3 mb-2">
+                <CheckCircle size={24} className="text-green-600" />
+                <div>
+                  <div className="stat-number text-green-600">{estadisticas.productosActivos}</div>
+                  <div className="stat-label">En Stock</div>
+                </div>
+              </div>
             </div>
-            <div className="content-card text-center">
-              <div className="text-2xl font-bold text-red-600">{estadisticas.productosAgotados}</div>
-              <div className="text-sm text-gray-600">Agotados</div>
+            
+            <div className="stat-producto secondary">
+              <div className="flex items-center justify-center gap-3 mb-2">
+                <XCircle size={24} className="text-red-600" />
+                <div>
+                  <div className="stat-number text-red-600">{estadisticas.productosAgotados}</div>
+                  <div className="stat-label">Agotados</div>
+                </div>
+              </div>
             </div>
-            <div className="content-card text-center">
-              <div className="text-2xl font-bold text-purple-600">{estadisticas.categoriasCount}</div>
-              <div className="text-sm text-gray-600">Categorías</div>
+            
+            <div className="stat-producto">
+              <div className="flex items-center justify-center gap-3 mb-2">
+                <Tags size={24} className="text-purple-600" />
+                <div>
+                  <div className="stat-number text-purple-600">{estadisticas.categoriasCount}</div>
+                  <div className="stat-label">Categorías</div>
+                </div>
+              </div>
             </div>
           </div>
+          <button
+            onClick={() => navigate('/productos/crear')}
+            className="btn-accion btn-crear btn-grande"
+            >
+            <Plus size={18} />
+            Nuevo Producto
+          </button>
 
           {/* Filtros */}
           <div className="content-card mb-6">
-            <div className="flex flex-col md:flex-row gap-4">
+            <div className="header-actions">
               {/* Búsqueda */}
-              <div className="flex-1">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-                  <input
-                    type="text"
-                    placeholder="Buscar productos..."
-                    value={busqueda}
-                    onChange={(e) => setBusqueda(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
+              <div className="search-container">
+                <Search className="text-gray-400" size={20} />
+                <input
+                  type="text"
+                  placeholder="Buscar productos..."
+                  value={busqueda}
+                  onChange={(e) => setBusqueda(e.target.value)}
+                  className="search-input"
+                />
               </div>
 
               {/* Filtro por categoría */}
-              <div className="w-full md:w-64">
-                <select
-                  value={categoriaFiltro}
-                  onChange={(e) => setCategoriaFiltro(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">Todas las categorías</option>
-                  {categorias.map((categoria, index) => (
-                    <option key={index} value={categoria}>
-                      {categoria}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <select
+                value={categoriaFiltro}
+                onChange={(e) => setCategoriaFiltro(e.target.value)}
+                className="filter-select"
+              >
+                <option value="">Todas las categorías</option>
+                {categorias.map((categoria, index) => (
+                  <option key={index} value={categoria}>
+                    {categoria}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
-          {/* Lista de Productos */}
+          {/* Lista de Productos - MODO LISTA */}
           <div className="content-card">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-semibold">Productos</h3>
               <span className="text-sm text-gray-500">
                 {productosFiltrados.length} de {productos.length} productos
@@ -151,73 +180,77 @@ export default function ProductosScreen() {
                 </p>
               </div>
             ) : (
-              <div className="grid gap-4">
+              <div className="productos-lista">
                 {productosFiltrados.map((producto) => (
-                  <div
-                    key={producto.idProducto}
-                    className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-                  >
-                    <div className="flex items-center gap-4 flex-1">
+                  <div key={producto.idProducto} className="producto-item">
+                    {/* Imagen del producto */}
+                    <div className="producto-imagen">
                       {producto.imagen && producto.imagen !== 'default.jpg' ? (
                         <img
                           src={producto.imagen}
                           alt={producto.nombre}
-                          className="w-16 h-16 object-cover rounded-lg border"
+                          className="w-full h-full object-cover rounded-lg"
                           onError={(e) => {
                             e.target.style.display = 'none';
-                            e.target.nextSibling.style.display = 'block';
+                            e.target.nextSibling.style.display = 'flex';
                           }}
                         />
                       ) : null}
-                      <div className={`w-16 h-16 bg-gray-200 rounded-lg border flex items-center justify-center ${producto.imagen && producto.imagen !== 'default.jpg' ? 'hidden' : 'block'}`}>
+                      <div className={`w-full h-full bg-gray-100 rounded-lg flex items-center justify-center ${producto.imagen && producto.imagen !== 'default.jpg' ? 'hidden' : 'flex'}`}>
                         <Package size={24} className="text-gray-400" />
                       </div>
+                    </div>
+
+                    {/* Información principal */}
+                    <div className="producto-info">
+                      <div className="producto-principal">
+                        <h3 className="producto-nombre">{producto.nombre}</h3>
+                        <p className="producto-descripcion">{producto.descripcion || "Sin descripción"}</p>
+                      </div>
                       
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-gray-800">{producto.nombre}</h4>
-                        <p className="text-sm text-gray-600 line-clamp-1">{producto.descripcion}</p>
-                        <div className="flex items-center gap-4 mt-1">
-                          <span className="text-sm text-gray-500">{producto.categoria}</span>
-                          <span className={`text-sm px-2 py-1 rounded-full ${
-                            producto.estado === 'activo' 
-                              ? 'bg-green-100 text-green-800' 
-                              : 'bg-red-100 text-red-800'
-                          }`}>
-                            
+                      <div className="producto-detalles">
+                        <div className="producto-precio">${producto.precio}</div>
+                        
+                        <div className="producto-estados">
+                          <span className={`estado-badge ${producto.estado === 'activo' ? 'estado-activo' : 'estado-inactivo'}`}>
+                            {producto.estado === 'activo' ? 'Activo' : 'Inactivo'}
                           </span>
+                          
+                          {producto.oferta && (
+                            <span className="oferta-badge">
+                              🏷️ Oferta
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-4">
-                      <div className="text-right">
-                        <div className="font-semibold text-gray-800">${producto.precio}</div>
-                        {producto.estado === 'activo' ? 'En stock' : 'Agotado'}
-                      </div>
-                      
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => navigate(`/productos/ver/${producto.idProducto}`)}
-                          className="p-2 text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                          title="Ver detalles"
-                        >
-                          <Eye size={16} />
-                        </button>
-                        <button
-                          onClick={() => navigate(`/productos/editar/${producto.idProducto}`)}
-                          className="p-2 text-green-600 hover:bg-green-50 rounded transition-colors"
-                          title="Editar producto"
-                        >
-                          <Edit size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleEliminarProducto(producto.idProducto, producto.nombre)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded transition-colors"
-                          title="Eliminar producto"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
+                    {/* Acciones del producto */}
+                    <div className="producto-acciones">
+                      <button
+                        onClick={() => navigate(`/productos/ver/${producto.idProducto}`)}
+                        className="btn-accion btn-ver btn-pequeno"
+                        title="Ver detalles"
+                      >
+                        <Eye size={14} />
+                        Ver
+                      </button>
+                      <button
+                        onClick={() => navigate(`/productos/editar/${producto.idProducto}`)}
+                        className="btn-accion btn-modificar btn-pequeno"
+                        title="Editar producto"
+                      >
+                        <Edit size={14} />
+                        Editar
+                      </button>
+                      <button
+                        onClick={() => handleEliminarProducto(producto.idProducto, producto.nombre)}
+                        className="btn-accion btn-eliminar btn-pequeno"
+                        title="Eliminar producto"
+                      >
+                        <Trash2 size={14} />
+                        Eliminar
+                      </button>
                     </div>
                   </div>
                 ))}

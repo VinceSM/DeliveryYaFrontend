@@ -1,0 +1,118 @@
+/* src/styles/components/BotonesAccion.css */
+
+/* Variables de colores para consistencia */
+:root {
+  --verde-primario: #10b981;
+  --verde-hover: #059669;
+  --naranja-primario: #f59e0b;
+  --naranja-hover: #d97706;
+  --azul-primario: #3b82f6;
+  --azul-hover: #2563eb;
+  --rojo-primario: #ef4444;
+  --rojo-hover: #dc2626;
+  --gris-primario: #6b7280;
+  --gris-hover: #4b5563;
+}
+
+/* Clase base para todos los botones de acción */
+.btn-accion {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  text-decoration: none;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.btn-accion:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn-accion:active {
+  transform: translateY(0);
+}
+
+.btn-accion:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-accion:disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* Tamaños de botones */
+.btn-pequeno {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+}
+
+.btn-mediano {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+}
+
+.btn-grande {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+}
+
+/* Botón CREAR - VERDE */
+.btn-crear {
+  background-color: var(--verde-primario);
+  color: white;
+}
+
+.btn-crear:hover:not(:disabled) {
+  background-color: var(--verde-hover);
+}
+
+/* Botón MODIFICAR/EDITAR - NARANJA */
+.btn-modificar {
+  background-color: var(--naranja-primario);
+  color: white;
+}
+
+.btn-modificar:hover:not(:disabled) {
+  background-color: var(--naranja-hover);
+}
+
+/* Botón VER/DETALLES - AZUL */
+.btn-ver {
+  background-color: var(--azul-primario);
+  color: white;
+}
+
+.btn-ver:hover:not(:disabled) {
+  background-color: var(--azul-hover);
+}
+
+/* Botón ELIMINAR - ROJO */
+.btn-eliminar {
+  background-color: var(--rojo-primario);
+  color: white;
+}
+
+.btn-eliminar:hover:not(:disabled) {
+  background-color: var(--rojo-hover);
+}
+
+/* Botón SECUNDARIO/CANCELAR - GRIS */
+.btn-secundario {
+  background-color: var(--gris-primario);
+  color: white;
+}
+
+.btn-secundario:hover:not(:disabled) {
+  background-color: var(--gris-hover);
+}
