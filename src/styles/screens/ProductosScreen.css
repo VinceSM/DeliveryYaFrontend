@@ -17,19 +17,33 @@
 /* Header */
 .productos-header {
   margin-bottom: 2rem;
+  background: linear-gradient(135deg, #ff6b6b 0%, #ffa726 100%);
+  border-radius: 16px;
+  padding: 2rem;
+  color: white;
+  box-shadow: 0 8px 32px rgba(255, 107, 107, 0.3);
+  position: relative;
+  overflow: hidden;
 }
 
-.content-title {
-  font-size: 1.875rem;
-  font-weight: 700;
-  color: #1a202c;
+.productos-header::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.h1-titulo {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #ffffff;
   margin: 0;
-}
-
-.content-subtitle {
-  font-size: 1rem;
-  color: #718096;
-  margin: 0.25rem 0 0 0;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 /* Cards generales */
@@ -132,235 +146,6 @@
   cursor: pointer;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   min-width: 200px;
-}
-
-/* Grid de productos */
-.productos-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-}
-
-.producto-card {
-  background: white;
-  border-radius: 16px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  border: 1px solid #f1f3f4;
-  transition: all 0.3s ease;
-  position: relative;
-}
-
-.producto-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
-}
-
-.producto-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 1rem;
-}
-
-.producto-image {
-  width: 80px;
-  height: 80px;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2rem;
-  color: #6c757d;
-  margin-right: 1rem;
-  flex-shrink: 0;
-}
-
-.producto-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 12px;
-}
-
-.producto-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.producto-nombre {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #333;
-  margin: 0 0 0.5rem 0;
-  line-clamp: 2;
-  -webkit-line-clamp: 2;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.producto-descripcion {
-  font-size: 0.85rem;
-  color: #6c757d;
-  margin: 0 0 0.5rem 0;
-  line-clamp: 2;
-  -webkit-line-clamp: 2;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.producto-precio {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #ff4d4d;
-}
-
-.producto-estado {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  padding: 0.25rem 0.75rem;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-}
-
-.estado-activo {
-  background: rgba(40, 167, 69, 0.1);
-  color: #28a745;
-  border: 1px solid rgba(40, 167, 69, 0.2);
-}
-
-.estado-inactivo {
-  background: rgba(108, 117, 125, 0.1);
-  color: #6c757d;
-  border: 1px solid rgba(108, 117, 125, 0.2);
-}
-
-.estado-agotado {
-  background: rgba(255, 77, 77, 0.1);
-  color: #ff4d4d;
-  border: 1px solid rgba(255, 77, 77, 0.2);
-}
-
-.producto-detalles {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.75rem;
-  margin: 1rem 0;
-  padding: 1rem;
-  background: #f8f9fa;
-  border-radius: 10px;
-}
-
-.detalle-producto {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-
-.detalle-label {
-  font-size: 0.75rem;
-  color: #6c757d;
-  font-weight: 500;
-  margin-bottom: 0.25rem;
-}
-
-.detalle-valor {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #333;
-}
-
-.producto-acciones {
-  display: flex;
-  gap: 0.5rem;
-}
-
-/* Utilidades para texto */
-.line-clamp-1 {
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 1;
-}
-
-.line-clamp-2 {
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-}
-
-/* Agrega esto al final de tu ProductosScreen.css */
-
-/* Header con fondo rojo amanecer */
-.productos-header {
-  background: linear-gradient(135deg, #ff6b6b 0%, #ffa726 100%);
-  border-radius: 16px;
-  padding: 2rem;
-  margin-bottom: 2rem;
-  color: white;
-  box-shadow: 0 8px 32px rgba(255, 107, 107, 0.3);
-  position: relative;
-  overflow: hidden;
-}
-
-.productos-header::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
-  pointer-events: none;
-}
-
-/* Asegurar que el contenido del header sea blanco */
-.productos-header .text-gray-600 {
-  color: rgba(255, 255, 255, 0.9) !important;
-}
-
-.productos-header .bg-gradient-to-br {
-  background: rgba(255, 255, 255, 0.2) !important;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-/* Quitar el gradiente de texto y ponerlo blanco */
-.productos-header .bg-clip-text {
-  color: white !important;
-  background: none !important;
-  -webkit-background-clip: initial !important;
-  background-clip: initial !important;
-  -webkit-text-fill-color: white !important;
-}
-
-/* Botón dentro del header rojo */
-.productos-header .btn-accion.btn-crear {
-  background: white !important;
-  color: #ff6b6b !important;
-  border: 2px solid white;
-}
-
-.productos-header .btn-accion.btn-crear:hover {
-  background: rgba(255, 255, 255, 0.9) !important;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(255, 255, 255, 0.3);
-}
-
-/* Punto verde más visible sobre el fondo rojo */
-.productos-header .bg-green-400 {
-  background: #4ade80 !important;
-  box-shadow: 0 0 10px rgba(74, 222, 128, 0.5);
 }
 
 /* Lista de productos - MODO LISTA */
@@ -482,179 +267,4 @@
   display: flex;
   gap: 0.5rem;
   flex-shrink: 0;
-}
-
-/* Botones extra grandes para modo lista */
-.producto-acciones {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  flex-shrink: 0;
-  min-width: 140px;
-}
-
-.btn-lista {
-  padding: 1rem 1.25rem !important;
-  font-size: 1rem !important;
-  font-weight: 600 !important;
-  border-radius: 10px !important;
-  width: 100%;
-  justify-content: center;
-  transition: all 0.3s ease;
-  min-height: 50px;
-}
-
-.btn-lista:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
-}
-
-/* Iconos más grandes */
-.btn-lista svg {
-  width: 18px;
-  height: 18px;
-}
-
-/* Estilos para formularios de productos */
-.form-group {
-  margin-bottom: 1.25rem;
-}
-
-.form-label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-  color: #333;
-  font-size: 0.9rem;
-}
-
-.form-input,
-.form-textarea,
-.form-select {
-  width: 100%;
-  padding: 0.625rem 0.875rem;
-  border: 1px solid #d1d5db;
-  border-radius: 0.5rem;
-  font-size: 0.95rem;
-  transition: border-color 0.2s ease;
-  background: white;
-  color: #333;
-  font-family: inherit;
-}
-
-.form-input:focus,
-.form-textarea:focus,
-.form-select:focus {
-  outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
-}
-
-.form-textarea {
-  resize: vertical;
-  min-height: 100px;
-  line-height: 1.5;
-}
-
-input[type="checkbox"],
-input[type="radio"] {
-  width: 1.1rem;
-  height: 1.1rem;
-  cursor: pointer;
-}
-
-/* Estados de error más sutiles */
-.form-input:invalid {
-  border-color: #ef4444;
-}
-
-.upload-area {
-  border: 2px dashed #d1d5db;
-  border-radius: 0.5rem;
-  padding: 1.5rem;
-  text-align: center;
-  transition: all 0.2s ease;
-  background: #fafafa;
-  cursor: pointer;
-}
-
-.upload-area:hover {
-  border-color: #9ca3af;
-  background: #f5f5f5;
-}
-
-/* Vista previa de imagen simple */
-.image-preview {
-  border: 1px solid #e5e7eb;
-  border-radius: 0.5rem;
-  overflow: hidden;
-}
-
-/* Contador de caracteres */
-.char-count {
-  font-size: 0.8rem;
-  color: #6b7280;
-  text-align: right;
-  margin-top: 0.25rem;
-}
-
-.option-group {
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-}
-
-.option-item {
-  flex: 1;
-  min-width: 180px;
-}
-
-/* Estilos para el selector de categorías simplificado */
-.categoria-selector {
-  position: relative;
-}
-
-.categoria-dropdown {
-  position: absolute;
-  z-index: 10;
-  margin-top: 0.5rem;
-  width: 100%;
-  background: white;
-  border: 1px solid #d1d5db;
-  border-radius: 0.5rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  max-height: 300px;
-  overflow: hidden;
-}
-
-.categoria-search {
-  padding: 0.75rem;
-  border-bottom: 1px solid #e5e7eb;
-  background: #fafafa;
-}
-
-.categoria-list {
-  max-height: 240px;
-  overflow-y: auto;
-}
-
-.categoria-item {
-  padding: 0.75rem 1rem;
-  cursor: pointer;
-  transition: background-color 0.15s ease;
-  border-bottom: 1px solid #f3f4f6;
-}
-
-.categoria-item:last-child {
-  border-bottom: none;
-}
-
-.categoria-item:hover {
-  background-color: #f9fafb;
-}
-
-.categoria-item.selected {
-  background-color: #eff6ff;
-  color: #2563eb;
-  font-weight: 500;
 }
