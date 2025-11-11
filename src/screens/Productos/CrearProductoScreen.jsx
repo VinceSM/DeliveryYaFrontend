@@ -1,9 +1,10 @@
 // src/screens/Productos/CrearProductoScreen.jsx
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Package, Plus, Search, X } from "lucide-react";
 import { useProductos } from "../../hooks/useProductos";
 import Sidebar from "../../components/screens/Sidebar";
+import "../../styles/screens/CrearProductoScreen.css";
 import { obtenerComercioIdAutenticado } from "../../api/productos";
 
 export default function CrearProductoScreen() {
@@ -16,27 +17,13 @@ export default function CrearProductoScreen() {
     precio: '',
     categoria: '',
     stock: true, 
-    imagen: '',
+    imagen: null,
     unidadMedida: 'unidad',
     oferta: false
   });
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [busquedaCategoria, setBusquedaCategoria] = useState('');
-  const [mostrarSelectorCategorias, setMostrarSelectorCategorias] = useState(false);
-
-  // Filtrar categorías basado en la búsqueda
-  const categoriasFiltradas = useMemo(() => {
-    if (!busquedaCategoria.trim()) {
-      return categorias;
-    }
-    
-    const busqueda = busquedaCategoria.toLowerCase();
-    return categorias.filter(categoria => 
-      categoria.toLowerCase().includes(busqueda)
-    );
-  }, [categorias, busquedaCategoria]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -46,26 +33,7 @@ export default function CrearProductoScreen() {
     }));
   };
 
-  const seleccionarCategoria = (categoria) => {
-    setFormData(prev => ({
-      ...prev,
-      categoria
-    }));
-    setMostrarSelectorCategorias(false);
-    setBusquedaCategoria('');
-  };
-
-  const abrirSelectorCategorias = () => {
-    setMostrarSelectorCategorias(true);
-    setBusquedaCategoria('');
-  };
-
-  const cerrarSelectorCategorias = () => {
-    setMostrarSelectorCategorias(false);
-    setBusquedaCategoria('');
-  };
-
- const handleSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
@@ -87,10 +55,21 @@ export default function CrearProductoScreen() {
       const comercioId = await obtenerComercioIdAutenticado();
       console.log('🏪 ComercioId que se enviará:', comercioId);
 
-      await agregarProducto({
-        ...formData,
-        precio: parseFloat(formData.precio),
-      });
+      // Crear FormData para enviar el archivo
+      const formDataToSend = new FormData();
+      formDataToSend.append('nombre', formData.nombre);
+      formDataToSend.append('descripcion', formData.descripcion);
+      formDataToSend.append('precio', parseFloat(formData.precio));
+      formDataToSend.append('categoria', formData.categoria);
+      formDataToSend.append('stock', formData.stock);
+      formDataToSend.append('unidadMedida', formData.unidadMedida);
+      formDataToSend.append('oferta', formData.oferta);
+      
+      if (formData.imagenFile) {
+        formDataToSend.append('imagen', formData.imagenFile);
+      }
+
+      await agregarProducto(formDataToSend);
 
       // Redirigir a la lista de productos
       navigate('/productos');
@@ -110,19 +89,20 @@ export default function CrearProductoScreen() {
       <main className="main-content flex-1 overflow-y-auto">
         <div className="content-wrapper min-h-full p-8">
           {/* Header */}
-          <div className="content-header">
-            <div className="productos-header">
-              <div className="flex items-center gap-4">
-                <button 
-                  onClick={() => navigate('/productos')}
-                  className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
-                >
-                  <ArrowLeft size={20} />
-                </button>
-                <div>
-                  <h1 className="content-title">Nuevo Producto</h1>
-                  <p className="content-subtitle">Agrega un nuevo producto a tu inventario</p>
-                </div>
+          <div className="productos-header">
+            <div className="flex items-center gap-4">
+              <button 
+                onClick={() => navigate('/productos')}
+                className="btn-volver"
+              >
+                <ArrowLeft size={18} /> Volver
+              </button>
+              <div>
+                <h1 className="content-title">Nuevo Producto</h1>
+                <p className="text-gray-600 text-lg mt-1 flex items-center gap-2">
+                  <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                  Agrega un nuevo producto a tu menú
+                </p>
               </div>
             </div>
           </div>
@@ -134,12 +114,21 @@ export default function CrearProductoScreen() {
                 <p className="text-red-800">{error}</p>
               </div>
             )}
+            
+            {/* Mensaje de campos requeridos */}
+            <div className="mb-6 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-blue-800 text-sm">
+                <strong>Nota:</strong> Todos los campos marcados con <span className="text-red-500">*</span> son requeridos
+              </p>
+            </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="form-grid">
                 {/* Nombre */}
                 <div>
-                  <label className="form-label">Nombre del Producto *</label>
+                  <label className="form-label">
+                    Nombre del Producto <span className="text-red-500">*</span>
+                  </label>
                   <input
                     type="text"
                     name="nombre"
@@ -153,7 +142,9 @@ export default function CrearProductoScreen() {
 
                 {/* Precio */}
                 <div>
-                  <label className="form-label">Precio *</label>
+                  <label className="form-label">
+                    Precio <span className="text-red-500">*</span>
+                  </label>
                   <input
                     type="number"
                     name="precio"
@@ -167,109 +158,58 @@ export default function CrearProductoScreen() {
                   />
                 </div>
 
-                {/* Categoría */}
-                <div className="relative">
-                  <label className="form-label flex items-center gap-2">
-                    Categoría *
-                    <div className="group relative">
-                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-blue-600 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-20">
-                        Solo categorías de tu comercio
-                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-blue-600"></div>
-                      </div>
-                    </div>
+                {/* Categoría - Cambiado a SELECT clásico */}
+                <div>
+                  <label className="form-label">
+                    Categoría <span className="text-red-500">*</span>
                   </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={formData.categoria}
-                      readOnly
-                      className="form-input cursor-pointer bg-gray-50"
-                      placeholder="Seleccionar categoría"
-                      onClick={abrirSelectorCategorias}
-                      required
-                    />
-                    <div 
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer"
-                      onClick={abrirSelectorCategorias}
-                    >
-                    </div>
-                  </div>
-
-                  {mostrarSelectorCategorias && (
-                    <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-hidden">
-                      <div className="p-3 border-b border-gray-200">
-                        <div className="relative">
-                          <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                          <input
-                            type="text"
-                            value={busquedaCategoria}
-                            onChange={(e) => setBusquedaCategoria(e.target.value)}
-                            className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            placeholder="Buscar categoría..."
-                            autoFocus
-                          />
-                          <button
-                            type="button"
-                            onClick={cerrarSelectorCategorias}
-                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                          >
-                            <X size={16} />
-                          </button>
-                        </div>
-                      </div>
-
-                      <div className="max-h-48 overflow-y-auto">
-                        {categoriasFiltradas.length > 0 ? (
-                          categoriasFiltradas.map((categoria, index) => (
-                            <div
-                              key={index}
-                              className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
-                              onClick={() => seleccionarCategoria(categoria)}
-                            >
-                              <div className="flex items-center justify-between">
-                                <span className="text-gray-800">{categoria}</span>
-                                {formData.categoria === categoria && (
-                                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                                )}
-                              </div>
-                            </div>
-                          ))
-                        ) : (
-                          <div className="px-4 py-3 text-gray-500 text-center">
-                            {busquedaCategoria ? 'No se encontraron categorías' : 'No hay categorías disponibles'}
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="p-3 border-t border-gray-200 bg-gray-50">
-                        <div className="flex justify-between items-center text-sm text-gray-500">
-                          <span>{categoriasFiltradas.length} categorías</span>
-                          <button
-                            type="button"
-                            onClick={cerrarSelectorCategorias}
-                            className="text-blue-600 hover:text-blue-800"
-                          >
-                            Cerrar
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Stock */}
-                <div className="flex items-center gap-2 p-3 border border-gray-200 rounded-lg">
-                  <input
-                    type="checkbox"
-                    name="stock"
-                    checked={formData.stock}
+                  <select
+                    name="categoria"
+                    value={formData.categoria}
                     onChange={handleChange}
-                    className="rounded border-gray-300"
-                  />
-                  <label className="form-label mb-0">
-                    {formData.stock ? "✅ Disponible(Stock)" : "❌ Sin stock"}
-                  </label>
+                    className="form-select"
+                    required
+                  >
+                    <option value="">Seleccionar categoría</option>
+                    {categorias.map((categoria, index) => (
+                      <option key={index} value={categoria}>
+                        {categoria}
+                      </option>
+                    ))}
+                  </select>
                 </div>
+
+                {/* Stock - Mejorado con radio buttons */}
+                  <div className="flex gap-6">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="stock"
+                        value="true"
+                        checked={formData.stock === true}
+                        onChange={() => setFormData(prev => ({ ...prev, stock: true }))}
+                        className="text-green-500 focus:ring-green-500"
+                      />
+                      <span className="flex items-center gap-2">
+                        <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                        Disponible
+                      </span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="stock"
+                        value="false"
+                        checked={formData.stock === false}
+                        onChange={() => setFormData(prev => ({ ...prev, stock: false }))}
+                        className="text-red-500 focus:ring-red-500"
+                      />
+                      <span className="flex items-center gap-2">
+                        <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+                          Sin stock
+                      </span>
+                    </label>
+                  </div>
 
                 {/* Unidad de Medida */}
                 <div>
@@ -278,7 +218,7 @@ export default function CrearProductoScreen() {
                     name="unidadMedida"
                     value={formData.unidadMedida}
                     onChange={handleChange}
-                    className="form-input"
+                    className="form-select"
                   >
                     <option value="unidad">Unidad</option>
                     <option value="kg">Kilogramo</option>
@@ -289,29 +229,74 @@ export default function CrearProductoScreen() {
                   </select>
                 </div>
 
-                {/* Imagen */}
+                {/* Imagen - Selector de archivos simplificado */}
                 <div>
-                  <label className="form-label">URL de Imagen</label>
+                  <label className="form-label">Imagen del Producto</label>
+                  
+                  {/* Input de archivo oculto */}
                   <input
-                    type="text"
+                    type="file"
+                    id="imagen-upload"
                     name="imagen"
-                    value={formData.imagen}
-                    onChange={handleChange}
-                    className="form-input"
-                    placeholder="https://ejemplo.com/imagen.jpg"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files[0];
+                      if (file) {
+                        // Crear URL local para la vista previa
+                        const imageUrl = URL.createObjectURL(file);
+                        setFormData(prev => ({
+                          ...prev,
+                          imagen: imageUrl,
+                          imagenFile: file // Guardar el archivo para enviarlo
+                        }));
+                      }
+                    }}
+                    className="hidden"
                   />
-                  {formData.imagen && (
-                    <div className="mt-2">
-                      <img 
-                        src={formData.imagen} 
-                        alt="Vista previa" 
-                        className="h-20 w-20 object-cover rounded border"
-                        onError={(e) => {
-                          e.target.style.display = 'none';
-                        }}
-                      />
-                    </div>
-                  )}
+                  
+                  {/* Área de carga personalizada */}
+                  <div className="flex flex-col gap-3">
+                    {!formData.imagen ? (
+                      <div 
+                        className="upload-area upload-area-small"
+                        onClick={() => document.getElementById('imagen-upload').click()}
+                      >
+                        <div className="text-center">
+                          <p className="text-gray-600 font-medium text-sm">Haz clic para subir una imagen</p>
+                          <p className="text-gray-500 text-xs mt-1">
+                            PNG, JPG, WEBP hasta 5MB
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-start gap-2">
+                        <div className="relative inline-block">
+                          <div 
+                            className="cursor-pointer"
+                            onClick={() => document.getElementById('imagen-upload').click()}
+                          >
+                            <img 
+                              src={formData.imagen} 
+                              alt="Vista previa" 
+                              className="h-20 w-20 object-cover rounded-lg border border-gray-300 shadow-sm hover:opacity-80 transition-opacity"
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setFormData(prev => ({ ...prev, imagen: '', imagenFile: null }));
+                              // Limpiar el input file
+                              document.getElementById('imagen-upload').value = '';
+                            }}
+                            className="btn-eliminar-imagen"
+                            title="Eliminar imagen"
+                          >
+                            <X size={10} />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -322,37 +307,40 @@ export default function CrearProductoScreen() {
                   name="descripcion"
                   value={formData.descripcion}
                   onChange={handleChange}
-                  className="form-input min-h-[100px]"
-                  placeholder="Describe el producto..."
+                  className="form-textarea"
+                  placeholder="Describe el producto, ingredientes, características especiales..."
                   rows="4"
                 />
               </div>
 
               {/* Oferta */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg bg-orange-50">
                 <input
                   type="checkbox"
                   name="oferta"
                   checked={formData.oferta}
                   onChange={handleChange}
-                  className="rounded border-gray-300"
+                  className="rounded border-orange-300 text-orange-500 focus:ring-orange-500"
                 />
-                <label className="form-label mb-0">¿Producto en oferta?</label>
+                <label className="form-label mb-0 flex items-center gap-2">
+                  <span className="text-orange-600">🏷️ ¿Producto en oferta?</span>
+                </label>
               </div>
 
               {/* Botones */}
-              <div className="flex gap-4 pt-4">
+              <div className="flex gap-4 pt-6 border-t border-gray-200">
                 <button
                   type="button"
                   onClick={() => navigate('/productos')}
-                  className="flex-1 bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 transition-colors"
+                  className="btn-cancelar"
                 >
+                  <ArrowLeft size={18} />
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 disabled:bg-green-300 transition-colors flex items-center justify-center gap-2"
+                  className="btn-crear"
                 >
                   {loading ? (
                     <>
