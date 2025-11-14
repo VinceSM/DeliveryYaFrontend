@@ -1,94 +1,84 @@
+"use client"
+
 // src/screens/Productos/CrearProductoScreen.jsx
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Package, Plus, Search, X } from "lucide-react";
-import { useProductos } from "../../hooks/useProductos";
-import Sidebar from "../../components/screens/Sidebar";
-import "../../styles/screens/CrearProductoScreen.css";
-import { obtenerComercioIdAutenticado } from "../../api/productos";
+import { useState } from "react"
+import { useNavigate } from "react-router-dom"
+import { ArrowLeft, Package, Plus, Search, X, Upload, ImageIcon } from 'lucide-react'
+import { useProductos } from "../../hooks/useProductos"
+import Sidebar from "../../components/screens/Sidebar"
+import { obtenerComercioIdAutenticado } from "../../api/productos"
+import "../../styles/screens/CrearProductoScreen.css"
 
 export default function CrearProductoScreen() {
-  const navigate = useNavigate();
-  const { categorias, agregarProducto } = useProductos();
-  
+  const navigate = useNavigate()
+  const { categorias, agregarProducto } = useProductos()
+
   const [formData, setFormData] = useState({
-    nombre: '',
-    descripcion: '',
-    precio: '',
-    categoria: '',
-    stock: true, 
-    imagen: null,
-    unidadMedida: 'unidad',
-    oferta: false
-  });
-  
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+    nombre: "",
+    descripcion: "",
+    precio: "",
+    categoria: "",
+    stock: true,
+    imagen: "",
+    unidadMedida: "unidad",
+    oferta: false,
+  })
+
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
+    const { name, value, type, checked } = e.target
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
-  };
+      [name]: type === "checkbox" ? checked : value,
+    }))
+  }
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
+    e.preventDefault()
+    setLoading(true)
+    setError("")
 
     try {
       // Validaciones básicas
       if (!formData.nombre.trim()) {
-        throw new Error('El nombre es requerido');
+        throw new Error("El nombre es requerido")
       }
-      if (!formData.precio || parseFloat(formData.precio) <= 0) {
-        throw new Error('El precio debe ser mayor a 0');
+      if (!formData.precio || Number.parseFloat(formData.precio) <= 0) {
+        throw new Error("El precio debe ser mayor a 0")
       }
       if (!formData.categoria) {
-        throw new Error('La categoría es requerida');
+        throw new Error("La categoría es requerida")
       }
 
-      console.log('📤 Enviando datos del producto:', formData);
+      console.log("📤 Enviando datos del producto:", formData)
 
-      const comercioId = await obtenerComercioIdAutenticado();
-      console.log('🏪 ComercioId que se enviará:', comercioId);
+      const comercioId = await obtenerComercioIdAutenticado()
+      console.log("🏪 ComercioId que se enviará:", comercioId)
 
-      // Crear FormData para enviar el archivo
-      const formDataToSend = new FormData();
-      formDataToSend.append('nombre', formData.nombre);
-      formDataToSend.append('descripcion', formData.descripcion);
-      formDataToSend.append('precio', parseFloat(formData.precio));
-      formDataToSend.append('categoria', formData.categoria);
-      formDataToSend.append('stock', formData.stock);
-      formDataToSend.append('unidadMedida', formData.unidadMedida);
-      formDataToSend.append('oferta', formData.oferta);
-      
-      if (formData.imagenFile) {
-        formDataToSend.append('imagen', formData.imagenFile);
-      }
-
-      await agregarProducto(formDataToSend);
+      await agregarProducto({
+        ...formData,
+        precio: Number.parseFloat(formData.precio),
+      })
 
       // Redirigir a la lista de productos
-      navigate('/productos');
-      
+      navigate("/productos")
     } catch (error) {
-      console.error('❌ Error creando producto:', error);
-      setError(error.message);
+      console.error("❌ Error creando producto:", error)
+      setError(error.message)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <div className="dashboard-container flex h-screen">
       <Sidebar />
-      
+
       <main className="main-content flex-1 overflow-y-auto">
         <div className="content-wrapper min-h-full p-8">
-          {/* Header */}
+          {/* Header con fondo rojo amanecer */}
           <div className="productos-header">
             <div className="flex items-center gap-4">
               <button 
@@ -101,7 +91,7 @@ export default function CrearProductoScreen() {
                 <h1 className="content-title">Nuevo Producto</h1>
                 <p className="text-gray-600 text-lg mt-1 flex items-center gap-2">
                   <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-                  Agrega un nuevo producto a tu menú
+                  Agrega un nuevo producto a tu inventario
                 </p>
               </div>
             </div>
@@ -115,7 +105,7 @@ export default function CrearProductoScreen() {
               </div>
             )}
             
-            {/* Mensaje de campos requeridos */}
+            {/* Nota: Campos requeridos */}
             <div className="mb-6 p-3 bg-blue-50 border border-blue-200 rounded-lg">
               <p className="text-blue-800 text-sm">
                 <strong>Nota:</strong> Todos los campos marcados con <span className="text-red-500">*</span> son requeridos
@@ -123,6 +113,7 @@ export default function CrearProductoScreen() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Estructura de grid */}
               <div className="form-grid">
                 {/* Nombre */}
                 <div>
@@ -158,7 +149,7 @@ export default function CrearProductoScreen() {
                   />
                 </div>
 
-                {/* Categoría - Cambiado a SELECT clásico */}
+                {/* Categoría */}
                 <div>
                   <label className="form-label">
                     Categoría <span className="text-red-500">*</span>
@@ -179,7 +170,11 @@ export default function CrearProductoScreen() {
                   </select>
                 </div>
 
-                {/* Stock - Mejorado con radio buttons */}
+                {/* Stock */}
+                <div>
+                  <label className="form-label">
+                    Estado <span className="text-red-500">*</span>
+                  </label>
                   <div className="flex gap-6">
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input
@@ -206,10 +201,11 @@ export default function CrearProductoScreen() {
                       />
                       <span className="flex items-center gap-2">
                         <span className="w-2 h-2 bg-red-500 rounded-full"></span>
-                          Sin stock
+                        Sin stock
                       </span>
                     </label>
                   </div>
+                </div>
 
                 {/* Unidad de Medida */}
                 <div>
@@ -229,7 +225,7 @@ export default function CrearProductoScreen() {
                   </select>
                 </div>
 
-                {/* Imagen - Selector de archivos simplificado */}
+                {/* Imagen */}
                 <div>
                   <label className="form-label">Imagen del Producto</label>
                   
@@ -242,13 +238,14 @@ export default function CrearProductoScreen() {
                     onChange={(e) => {
                       const file = e.target.files[0];
                       if (file) {
-                        // Crear URL local para la vista previa
-                        const imageUrl = URL.createObjectURL(file);
-                        setFormData(prev => ({
-                          ...prev,
-                          imagen: imageUrl,
-                          imagenFile: file // Guardar el archivo para enviarlo
-                        }));
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                          setFormData((prev) => ({
+                            ...prev,
+                            imagen: e.target.result,
+                          }));
+                        };
+                        reader.readAsDataURL(file);
                       }
                     }}
                     className="hidden"
@@ -276,7 +273,7 @@ export default function CrearProductoScreen() {
                             onClick={() => document.getElementById('imagen-upload').click()}
                           >
                             <img 
-                              src={formData.imagen} 
+                              src={formData.imagen || "/placeholder.svg"} 
                               alt="Vista previa" 
                               className="h-20 w-20 object-cover rounded-lg border border-gray-300 shadow-sm hover:opacity-80 transition-opacity"
                             />
@@ -284,8 +281,7 @@ export default function CrearProductoScreen() {
                           <button
                             type="button"
                             onClick={() => {
-                              setFormData(prev => ({ ...prev, imagen: '', imagenFile: null }));
-                              // Limpiar el input file
+                              setFormData(prev => ({ ...prev, imagen: '' }));
                               document.getElementById('imagen-upload').value = '';
                             }}
                             className="btn-eliminar-imagen"
@@ -340,12 +336,12 @@ export default function CrearProductoScreen() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="btn-crear"
+                  className="btn-guardar"
                 >
                   {loading ? (
                     <>
                       <Package className="animate-spin" size={20} />
-                      Creando...
+                      Creando Producto...
                     </>
                   ) : (
                     <>
@@ -360,5 +356,5 @@ export default function CrearProductoScreen() {
         </div>
       </main>
     </div>
-  );
+  )
 }

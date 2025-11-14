@@ -1,9 +1,9 @@
 // src/screens/Productos/EditarProductoScreen.jsx
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import "../../styles/screens/ProductosScreen.css";
+import "../../styles/screens/CrearProductoScreen.css";
 import Sidebar from "../../components/screens/Sidebar";
-import { ArrowLeft, Save, Package } from "lucide-react";
+import { ArrowLeft, Save, Package, X } from "lucide-react";
 import { useProductos } from "../../hooks/useProductos";
 
 export default function EditarProductoScreen() {
@@ -16,8 +16,9 @@ export default function EditarProductoScreen() {
     descripcion: '',
     precio: '',
     categoria: '',
-    stock: '',
+    stock: true,
     imagen: '',
+    imagenFile: null,
     unidadMedida: 'unidad',
     oferta: false
   });
@@ -35,8 +36,9 @@ export default function EditarProductoScreen() {
           descripcion: producto.descripcion || '',
           precio: producto.precio || '',
           categoria: producto.categoria || '',
-          stock: producto.stock || 0,
+          stock: producto.stock !== undefined ? producto.stock > 0 : true,
           imagen: producto.imagen || '',
+          imagenFile: null,
           unidadMedida: producto.unidadMedida || 'unidad',
           oferta: producto.oferta || false
         });
@@ -67,12 +69,25 @@ export default function EditarProductoScreen() {
       if (!formData.precio || parseFloat(formData.precio) <= 0) {
         throw new Error('El precio debe ser mayor a 0');
       }
+      if (!formData.categoria) {
+        throw new Error('La categoría es requerida');
+      }
 
-      await editarProducto(parseInt(id), {
-        ...formData,
-        precio: parseFloat(formData.precio),
-        stock: parseInt(formData.stock) || 0
-      });
+      // Crear FormData para enviar el archivo
+      const formDataToSend = new FormData();
+      formDataToSend.append('nombre', formData.nombre);
+      formDataToSend.append('descripcion', formData.descripcion);
+      formDataToSend.append('precio', parseFloat(formData.precio));
+      formDataToSend.append('categoria', formData.categoria);
+      formDataToSend.append('stock', formData.stock);
+      formDataToSend.append('unidadMedida', formData.unidadMedida);
+      formDataToSend.append('oferta', formData.oferta);
+      
+      if (formData.imagenFile) {
+        formDataToSend.append('imagen', formData.imagenFile);
+      }
+
+      await editarProducto(parseInt(id), formDataToSend);
 
       navigate('/productos');
       
@@ -91,19 +106,20 @@ export default function EditarProductoScreen() {
       <main className="main-content flex-1 overflow-y-auto">
         <div className="content-wrapper min-h-full p-8">
           {/* Header */}
-          <div className="content-header">
-            <div className="productos-header">
-              <div className="flex items-center gap-4">
-                <button 
-                  onClick={() => navigate('/productos')}
-                  className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
-                >
-                  <ArrowLeft size={20} />
-                </button>
-                <div>
-                  <h1 className="content-title">Editar Producto</h1>
-                  <p className="content-subtitle">Modifica la información del producto</p>
-                </div>
+          <div className="productos-header">
+            <div className="flex items-center gap-4">
+              <button 
+                onClick={() => navigate('/productos')}
+                className="btn-volver"
+              >
+                <ArrowLeft size={18} /> Volver
+              </button>
+              <div>
+                <h1 className="content-title">Editar Producto</h1>
+                <p className="text-gray-600 text-lg mt-1 flex items-center gap-2">
+                  <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                  Modifica la información del producto
+                </p>
               </div>
             </div>
           </div>
@@ -115,12 +131,21 @@ export default function EditarProductoScreen() {
                 <p className="text-red-800">{error}</p>
               </div>
             )}
+            
+            {/* Mensaje de campos requeridos */}
+            <div className="mb-6 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-blue-800 text-sm">
+                <strong>Nota:</strong> Todos los campos marcados con <span className="text-red-500">*</span> son requeridos
+              </p>
+            </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="form-grid">
                 {/* Nombre */}
                 <div>
-                  <label className="form-label">Nombre del Producto *</label>
+                  <label className="form-label">
+                    Nombre del Producto <span className="text-red-500">*</span>
+                  </label>
                   <input
                     type="text"
                     name="nombre"
@@ -134,7 +159,9 @@ export default function EditarProductoScreen() {
 
                 {/* Precio */}
                 <div>
-                  <label className="form-label">Precio *</label>
+                  <label className="form-label">
+                    Precio <span className="text-red-500">*</span>
+                  </label>
                   <input
                     type="number"
                     name="precio"
@@ -150,12 +177,14 @@ export default function EditarProductoScreen() {
 
                 {/* Categoría */}
                 <div>
-                  <label className="form-label">Categoría *</label>
+                  <label className="form-label">
+                    Categoría <span className="text-red-500">*</span>
+                  </label>
                   <select
                     name="categoria"
                     value={formData.categoria}
                     onChange={handleChange}
-                    className="form-input"
+                    className="form-select"
                     required
                   >
                     <option value="">Seleccionar categoría</option>
@@ -169,16 +198,39 @@ export default function EditarProductoScreen() {
 
                 {/* Stock */}
                 <div>
-                  <label className="form-label">Stock</label>
-                  <input
-                    type="number"
-                    name="stock"
-                    value={formData.stock}
-                    onChange={handleChange}
-                    className="form-input"
-                    placeholder="0"
-                    min="0"
-                  />
+                  <label className="form-label">
+                    Estado <span className="text-red-500">*</span>
+                  </label>
+                  <div className="flex gap-6">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="stock"
+                        value="true"
+                        checked={formData.stock === true}
+                        onChange={() => setFormData(prev => ({ ...prev, stock: true }))}
+                        className="text-green-500 focus:ring-green-500"
+                      />
+                      <span className="flex items-center gap-2">
+                        <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                        Disponible
+                      </span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="stock"
+                        value="false"
+                        checked={formData.stock === false}
+                        onChange={() => setFormData(prev => ({ ...prev, stock: false }))}
+                        className="text-red-500 focus:ring-red-500"
+                      />
+                      <span className="flex items-center gap-2">
+                        <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+                        Sin stock
+                      </span>
+                    </label>
+                  </div>
                 </div>
 
                 {/* Unidad de Medida */}
@@ -188,27 +240,85 @@ export default function EditarProductoScreen() {
                     name="unidadMedida"
                     value={formData.unidadMedida}
                     onChange={handleChange}
-                    className="form-input"
+                    className="form-select"
                   >
                     <option value="unidad">Unidad</option>
                     <option value="kg">Kilogramo</option>
                     <option value="gr">Gramo</option>
                     <option value="lt">Litro</option>
                     <option value="ml">Mililitro</option>
+                    <option value="porcion">Porción</option>
                   </select>
                 </div>
 
                 {/* Imagen */}
                 <div>
-                  <label className="form-label">URL de Imagen</label>
+                  <label className="form-label">Imagen del Producto</label>
+                  
+                  {/* Input de archivo oculto */}
                   <input
-                    type="text"
+                    type="file"
+                    id="imagen-upload"
                     name="imagen"
-                    value={formData.imagen}
-                    onChange={handleChange}
-                    className="form-input"
-                    placeholder="https://ejemplo.com/imagen.jpg"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files[0];
+                      if (file) {
+                        // Crear URL local para la vista previa
+                        const imageUrl = URL.createObjectURL(file);
+                        setFormData(prev => ({
+                          ...prev,
+                          imagen: imageUrl,
+                          imagenFile: file // Guardar el archivo para enviarlo
+                        }));
+                      }
+                    }}
+                    className="hidden"
                   />
+                  
+                  {/* Área de carga personalizada */}
+                  <div className="flex flex-col gap-3">
+                    {!formData.imagen ? (
+                      <div 
+                        className="upload-area upload-area-small"
+                        onClick={() => document.getElementById('imagen-upload').click()}
+                      >
+                        <div className="text-center">
+                          <p className="text-gray-600 font-medium text-sm">Haz clic para subir una imagen</p>
+                          <p className="text-gray-500 text-xs mt-1">
+                            PNG, JPG, WEBP hasta 5MB
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-start gap-2">
+                        <div className="relative inline-block">
+                          <div 
+                            className="cursor-pointer"
+                            onClick={() => document.getElementById('imagen-upload').click()}
+                          >
+                            <img 
+                              src={formData.imagen} 
+                              alt="Vista previa" 
+                              className="h-20 w-20 object-cover rounded-lg border border-gray-300 shadow-sm hover:opacity-80 transition-opacity"
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setFormData(prev => ({ ...prev, imagen: '', imagenFile: null }));
+                              // Limpiar el input file
+                              document.getElementById('imagen-upload').value = '';
+                            }}
+                            className="btn-eliminar-imagen"
+                            title="Eliminar imagen"
+                          >
+                            <X size={10} />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -219,37 +329,40 @@ export default function EditarProductoScreen() {
                   name="descripcion"
                   value={formData.descripcion}
                   onChange={handleChange}
-                  className="form-input min-h-[100px]"
-                  placeholder="Describe el producto..."
+                  className="form-textarea"
+                  placeholder="Describe el producto, ingredientes, características especiales..."
                   rows="4"
                 />
               </div>
 
               {/* Oferta */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg bg-orange-50">
                 <input
                   type="checkbox"
                   name="oferta"
                   checked={formData.oferta}
                   onChange={handleChange}
-                  className="rounded border-gray-300"
+                  className="rounded border-orange-300 text-orange-500 focus:ring-orange-500"
                 />
-                <label className="form-label mb-0">¿Producto en oferta?</label>
+                <label className="form-label mb-0 flex items-center gap-2">
+                  <span className="text-orange-600">🏷️ ¿Producto en oferta?</span>
+                </label>
               </div>
 
               {/* Botones */}
-              <div className="flex gap-4 pt-4">
+              <div className="flex gap-4 pt-6 border-t border-gray-200">
                 <button
                   type="button"
                   onClick={() => navigate('/productos')}
-                  className="flex-1 bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 transition-colors"
+                  className="btn-cancelar"
                 >
+                  <ArrowLeft size={18} />
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 disabled:bg-blue-300 transition-colors flex items-center justify-center gap-2"
+                  className="btn-guardar"
                 >
                   {loading ? (
                     <>
