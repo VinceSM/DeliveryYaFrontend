@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import "../../styles/screens/CrearProductoScreen.css";
 import Sidebar from "../../components/screens/Sidebar";
-import { ArrowLeft, Save, Package, X } from "lucide-react";
+import { ArrowLeft, Save, Package, X } from 'lucide-react';
 import { useProductos } from "../../hooks/useProductos";
 
 export default function EditarProductoScreen() {
@@ -31,10 +31,14 @@ export default function EditarProductoScreen() {
     if (id && productos.length > 0) {
       const producto = productos.find(p => p.idProducto === parseInt(id));
       if (producto) {
+        const precioFormateado = producto.precio 
+          ? formatearPrecio(producto.precio.toString())
+          : '';
+        
         setFormData({
           nombre: producto.nombre || '',
           descripcion: producto.descripcion || '',
-          precio: producto.precio || '',
+          precio: precioFormateado,
           categoria: producto.categoria || '',
           stock: producto.stock !== undefined ? producto.stock > 0 : true,
           imagen: producto.imagen || '',
@@ -47,6 +51,50 @@ export default function EditarProductoScreen() {
       }
     }
   }, [id, productos]);
+
+  const formatearPrecio = (value) => {
+    // Eliminar todo excepto números y coma
+    let cleaned = value.replace(/[^\d,]/g, '');
+    
+    // Permitir solo una coma
+    const partes = cleaned.split(',');
+    if (partes.length > 2) {
+      cleaned = partes[0] + ',' + partes.slice(1).join('');
+    }
+    
+    // Limitar a 2 decimales después de la coma
+    if (partes.length === 2 && partes[1].length > 2) {
+      cleaned = partes[0] + ',' + partes[1].substring(0, 2);
+    }
+    
+    // Separar parte entera y decimal
+    const [entero, decimal] = cleaned.split(',');
+    
+    // Agregar separadores de miles (puntos)
+    const enteroFormateado = entero.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    
+    // Construir el resultado
+    let resultado = enteroFormateado;
+    if (decimal !== undefined) {
+      resultado += ',' + decimal;
+    }
+    
+    return resultado ? '$' + resultado : '';
+  };
+
+  const handlePrecioChange = (e) => {
+    const value = e.target.value;
+    
+    // Si está vacío, permitir
+    if (value === '' || value === '$') {
+      setFormData(prev => ({ ...prev, precio: '' }));
+      return;
+    }
+    
+    // Formatear el precio
+    const precioFormateado = formatearPrecio(value);
+    setFormData(prev => ({ ...prev, precio: precioFormateado }));
+  };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -66,7 +114,11 @@ export default function EditarProductoScreen() {
       if (!formData.nombre.trim()) {
         throw new Error('El nombre es requerido');
       }
-      if (!formData.precio || parseFloat(formData.precio) <= 0) {
+      
+      const precioLimpio = formData.precio.replace(/[$.,]/g, '').replace(',', '.');
+      const precioNumerico = parseFloat(precioLimpio) / 100; // Dividir por 100 porque contamos los centavos
+      
+      if (!precioLimpio || precioNumerico <= 0) {
         throw new Error('El precio debe ser mayor a 0');
       }
       if (!formData.categoria) {
@@ -77,7 +129,7 @@ export default function EditarProductoScreen() {
       const formDataToSend = new FormData();
       formDataToSend.append('nombre', formData.nombre);
       formDataToSend.append('descripcion', formData.descripcion);
-      formDataToSend.append('precio', parseFloat(formData.precio));
+      formDataToSend.append('precio', precioNumerico);
       formDataToSend.append('categoria', formData.categoria);
       formDataToSend.append('stock', formData.stock);
       formDataToSend.append('unidadMedida', formData.unidadMedida);
@@ -163,14 +215,12 @@ export default function EditarProductoScreen() {
                     Precio <span className="text-red-500">*</span>
                   </label>
                   <input
-                    type="number"
+                    type="text"
                     name="precio"
                     value={formData.precio}
-                    onChange={handleChange}
+                    onChange={handlePrecioChange}
                     className="form-input"
-                    placeholder="0.00"
-                    step="0.01"
-                    min="0"
+                    placeholder="$0,00"
                     required
                   />
                 </div>
@@ -298,7 +348,7 @@ export default function EditarProductoScreen() {
                             onClick={() => document.getElementById('imagen-upload').click()}
                           >
                             <img 
-                              src={formData.imagen} 
+                              src={formData.imagen || "/placeholder.svg"} 
                               alt="Vista previa" 
                               className="h-20 w-20 object-cover rounded-lg border border-gray-300 shadow-sm hover:opacity-80 transition-opacity"
                             />

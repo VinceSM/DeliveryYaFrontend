@@ -7,7 +7,7 @@ import { ArrowLeft, Package, Plus, Search, X, Upload, ImageIcon } from 'lucide-r
 import { useProductos } from "../../hooks/useProductos"
 import Sidebar from "../../components/screens/Sidebar"
 import { obtenerComercioIdAutenticado } from "../../api/productos"
-import "../../styles/screens/CrearProductoScreen.css"
+import "../../styles/screens/ProductosScreen.css"
 
 export default function CrearProductoScreen() {
   const navigate = useNavigate()
@@ -35,6 +35,46 @@ export default function CrearProductoScreen() {
     }))
   }
 
+  const formatearPrecio = (valor) => {
+    if (!valor) return ""
+    
+    // Remove all non-numeric characters except comma
+    const numeros = valor.replace(/[^\d,]/g, "")
+    
+    // Split by comma to handle integer and decimal parts
+    const partes = numeros.split(",")
+    let entero = partes[0]
+    const decimal = partes[1]
+    
+    // Add thousands separator to integer part
+    entero = entero.replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+    
+    // Combine integer and decimal (limit to 2 decimal places)
+    let resultado = entero
+    if (decimal !== undefined) {
+      resultado += "," + decimal.slice(0, 2)
+    }
+    
+    return "$" + resultado
+  }
+
+  const handlePrecioChange = (e) => {
+    const inputValue = e.target.value
+    
+    // Remove all non-numeric characters except comma
+    const valorLimpio = inputValue.replace(/[^\d,]/g, "")
+    
+    // Validate format: allow only one comma and max 2 decimals
+    const partes = valorLimpio.split(",")
+    if (partes.length > 2) return // No allow more than one comma
+    
+    // Store clean value in formData
+    setFormData((prev) => ({
+      ...prev,
+      precio: valorLimpio,
+    }))
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
@@ -45,7 +85,9 @@ export default function CrearProductoScreen() {
       if (!formData.nombre.trim()) {
         throw new Error("El nombre es requerido")
       }
-      if (!formData.precio || Number.parseFloat(formData.precio) <= 0) {
+      
+      const precioParseado = formData.precio.replace(",", ".")
+      if (!precioParseado || Number.parseFloat(precioParseado) <= 0) {
         throw new Error("El precio debe ser mayor a 0")
       }
       if (!formData.categoria) {
@@ -59,7 +101,7 @@ export default function CrearProductoScreen() {
 
       await agregarProducto({
         ...formData,
-        precio: Number.parseFloat(formData.precio),
+        precio: Number.parseFloat(precioParseado),
       })
 
       // Redirigir a la lista de productos
@@ -137,14 +179,12 @@ export default function CrearProductoScreen() {
                     Precio <span className="text-red-500">*</span>
                   </label>
                   <input
-                    type="number"
+                    type="text"
                     name="precio"
-                    value={formData.precio}
-                    onChange={handleChange}
+                    value={formatearPrecio(formData.precio)}
+                    onChange={handlePrecioChange}
                     className="form-input"
-                    placeholder="0.00"
-                    step="0.01"
-                    min="0"
+                    placeholder="$0,00"
                     required
                   />
                 </div>
