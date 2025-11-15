@@ -1,7 +1,7 @@
 /* src/styles/screens/LoginScreen.css */
 .login-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #FF4D4D 0%, #FFC947 100%);
+  background: linear-gradient(135deg, #f8930fde 0%, #f82e0bcc 100%);
   padding: 20px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   display: flex;

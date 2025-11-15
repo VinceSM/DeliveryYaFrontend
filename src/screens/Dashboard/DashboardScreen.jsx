@@ -75,7 +75,7 @@ export default function DashboardScreen() {
               </div>
               <button 
                 onClick={recargarDatos}
-                className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg transition-colors"
+                className="btn-actualizar"
               >
                 <RefreshCw size={16} />
                 Actualizar

@@ -32,7 +32,7 @@
 .avatar-imagen {
   width: 100px;
   height: 100px;
-  background: linear-gradient(135deg, #FF4D4D 0%, #FFC947 100%);
+  background: linear-gradient(135deg, #f8930fde 0%, #f82e0bcc 100%);
   border-radius: 50%;
   margin: 0 auto 1rem;
   display: flex;
