@@ -23,8 +23,7 @@ export default function HorariosScreen() {
     diasSemana, 
     loading, 
     error, 
-    recargarHorarios,
-    formatearHora,
+    //formatearHora,
     guardarHorarios,
     getEstructuraHorariosUI,
     hayCambiosSinGuardar
@@ -52,6 +51,7 @@ export default function HorariosScreen() {
     });
     setDiasExpandidos(nuevosExpandidos);
   }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
 }, [loading, horarios.length]);
 
   const toggleDiaExpandido = (diaId) => {
@@ -277,17 +277,20 @@ export default function HorariosScreen() {
         <div className="horarios-container">
           {/* Header */}
           <div className="horarios-header">
-            <div className="header-info">
-              <h1>Horarios de Atención</h1>
-              <p>Configura los horarios en los que tu comercio está abierto</p>
-              {hayCambios && (
-                <div className="cambios-pendientes">
-                  <AlertCircle size={16} />
-                  <span>Tienes cambios sin guardar</span>
+            <div className="flex items-center justify-between w-full">
+              <div className="flex items-center gap-4">
+                <div>
+                  <h1 className="horarios-title">
+                    Horarios de Atención
+                  </h1>
+                  <p className="text-gray-600 text-lg mt-1 flex items-center gap-2">
+                    <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                    Configura los horarios en los que tu comercio está abierto
+                  </p>
                 </div>
-              )}
+              </div>
             </div>
-            
+          </div>          
             <div className="header-actions">
               <div className={`estado-comercio ${comercioAbierto ? 'abierto' : 'cerrado'}`}>
                 {comercioAbierto ? (
@@ -302,31 +305,29 @@ export default function HorariosScreen() {
                   </>
                 )}
               </div>
+
+              {hayCambios && (
+                    <div className="cambios-pendientes">
+                      <AlertCircle size={16} />
+                      <span>Tienes cambios sin guardar</span>
+                    </div>
+                  )}
               
               <div className="header-buttons">
                 <button 
                   onClick={expandirTodos}
-                  className="btn-secundario"
+                  className="btn-expandir"
                 >
                   Expandir todos
                 </button>
                 <button 
                   onClick={colapsarTodos}
-                  className="btn-secundario"
+                  className="btn-colapsar"
                 >
                   Colapsar todos
                 </button>
-                <button 
-                  onClick={recargarHorarios}
-                  className="btn-recargar"
-                  disabled={loading}
-                >
-                  <RefreshCw size={16} />
-                  Actualizar
-                </button>
               </div>
             </div>
-          </div>
 
           {/* Mensajes */}
           {mensaje.texto && (
@@ -437,7 +438,7 @@ export default function HorariosScreen() {
                               onClick={() => copiarHorarios(dia.id)}
                               className="btn-copiar"
                             >
-                              Copiar a otros días
+                              Copiar a todos los días
                             </button>
                           </div>
                         </div>
