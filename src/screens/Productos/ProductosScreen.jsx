@@ -116,7 +116,7 @@ export default function ProductosScreen() {
                 <Tags size={24} className="text-purple-600" />
                 <div>
                   <div className="stat-number text-purple-600">{estadisticas.categoriasCount}</div>
-                  <div className="stat-label">Categorías</div>
+                  <div className="stat-label">Categorías con Productos</div>
                 </div>
               </div>
             </div>

@@ -16,7 +16,8 @@
 
 /* Header del Sidebar */
 .sidebar-header {
-  padding: 2rem 1.5rem 1.5rem;
+  padding: 2rem;
+  margin-bottom: 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.02);
 }
@@ -258,6 +259,7 @@
   color: rgba(255, 255, 255, 0.8);
   transition: all 0.3s ease;
   cursor: pointer;
+  margin-left: 0;
 }
 
 .logout-btn:hover {

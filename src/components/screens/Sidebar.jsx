@@ -5,9 +5,9 @@ import { useAuth } from "../../hooks/useAuth";
 
 const menuItems = [
   { id: "home", label: "Inicio", icon: <Home size={20} />, path: "/dashboard" },
-  { id: "productos", label: "Productos", icon: <Package size={20} />, path: "/productos" },
-  { id: "categorias", label: "Categorías", icon: <Tag size={20} />, path: "/categorias" },
   { id: "pedidos", label: "Pedidos", icon: <ShoppingCart size={20} />, path: "/pedidos" },
+  { id: "categorias", label: "Categorías", icon: <Tag size={20} />, path: "/categorias" },
+  { id: "productos", label: "Productos", icon: <Package size={20} />, path: "/productos" },
   { id: "horarios", label: "Horarios", icon: <Clock size={20} />, path: "/horarios" },
   { id: "perfil", label: "Perfil", icon: <Settings size={20} />, path: "/perfil" },
 ];
