@@ -1,7 +1,6 @@
 // src/screens/Categorias/GestionCategoriasScreen.jsx - VERSIÓN UNIFICADA
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { Package, Eye, ShoppingBag, RefreshCw, AlertCircle, CheckCircle, Plus, Trash2, Search, X } from 'lucide-react';
+import { Package, ShoppingBag, RefreshCw, AlertCircle, CheckCircle, Plus, Trash2, Search, X, Minus } from 'lucide-react';
 import { getTodasLasCategorias, getProductosPorCategoria } from "../../api/categorias";
 import { 
   getCategoriasPorComercio, 
@@ -12,7 +11,6 @@ import Sidebar from "../../components/screens/Sidebar";
 import "../../styles/screens/GestionCategoriasScreen.css";
 
 export default function GestionCategoriasScreen() {
-  const navigate = useNavigate();
   const [comercioId] = useState(1); 
   
   // Estados principales
@@ -215,7 +213,7 @@ export default function GestionCategoriasScreen() {
                 onClick={() => setMostrarDisponibles(!mostrarDisponibles)}
                 className="btn btn-agregar"
               >
-                <Plus size={16} />
+                {mostrarDisponibles ? <Minus size={16} /> : <Plus size={16} />}
                 <span>{mostrarDisponibles ? 'Ocultar' : 'Agregar Categorías'}</span>
               </button>
             </div>
@@ -265,16 +263,6 @@ export default function GestionCategoriasScreen() {
                       </div>
                     </div>
                     <div className="categoria-acciones">
-                      {categoria.cantidadProductos > 0 && (
-                        <button
-                          onClick={() => navigate("/productos")}
-                          disabled={cargandoProductos}
-                          className="btn btn-ver"
-                        >
-                          <Eye size={16} />
-                          <span>Ver Productos</span>
-                        </button>
-                      )}
                       <button
                         onClick={() => handleEliminarCategoria(categoria.idCategoria)}
                         disabled={procesando}
@@ -467,10 +455,23 @@ export default function GestionCategoriasScreen() {
               <div>
                 <h4 className="info-box-titulo">Información</h4>
                 <ul className="info-box-lista">
-                  <li>Gestiona las categorías asignadas a tu comercio desde esta pantalla</li>
-                  <li>Visualiza los productos de cada categoría haciendo clic en "Ver Productos"</li>
-                  <li>Agrega nuevas categorías usando el botón "Agregar Categorías"</li>
-                  <li>Los clientes podrán filtrar productos por estas categorías</li>
+                  <li>Desde esta sección podés agregar y/o eliminar las categorías que tu comercio utiliza en su carta.</li>
+
+                  <li>Las categorías disponibles provienen del panel del administrador. Si no encontras la tuya, contáctanos!!</li>
+
+                  <li>Las categorías ayudan a organizar tus productos (por ejemplo: Bebidas, Pizzas, Hamburguesas, Empanadas, Postres, etc.).</li>
+
+                  <li>Una vez que agregues una categoría, podrás cargar productos dentro de ella desde el panel de Productos.</li>
+
+                  <li>En la lista de "Categorías Asignadas" verás cuántos productos tiene cada categoría.</li>
+
+                  <li>Podés eliminar una categoría solo si no tiene productos asociados. Si contiene productos, primero deberás editarlos o moverlos a otra categoría.</li>
+
+                  <li>Desde el botón "+ Agregar Categorias" podrás ver el panel inferior para buscar nuevas categorías disponibles y agregarlas fácilmente a tu comercio.</li>
+
+                  <li>También podrás "- Ocultar" el panel inferior para agregar categorias.</li>
+
+                  <li>Si ya agregaste todas las categorías necesarias, no hace falta agregar todas las de la lista.</li>
                 </ul>
               </div>
             </div>
