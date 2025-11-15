@@ -119,7 +119,7 @@ export default function Sidebar() {
       {/* Navegación Principal */}
       <nav className="sidebar-nav">
         <div className="nav-section">
-          <h3 className="sidebar-section-title">Gestión</h3>
+          <h3 className="sidebar-section-title">Administración</h3>
           <div className="nav-items">
             {menuItems.map((item) => (
               <button

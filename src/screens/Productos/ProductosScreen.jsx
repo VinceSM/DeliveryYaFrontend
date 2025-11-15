@@ -69,7 +69,6 @@ export default function ProductosScreen() {
                   </p>
                 </div>
               </div>
-              
             </div>
           </div>
 
