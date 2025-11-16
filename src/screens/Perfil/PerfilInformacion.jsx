@@ -69,6 +69,7 @@ export default function PerfilInformacion({ comercio, onActualizarComercio, onRe
         Encargado: datosLocales.encargado,
         Cvu: datosLocales.cvu,
         Alias: datosLocales.alias,
+        Comision: datosLocales.comision,
         Destacado: datosLocales.destacado,
         DeliveryPropio: datosLocales.deliveryPropio,
         Envio: Number(datosLocales.envio) || 0,
@@ -173,6 +174,20 @@ export default function PerfilInformacion({ comercio, onActualizarComercio, onRe
         </div>
 
         <div className="form-group-perfil">
+          <label className="form-label-perfil">Comisión</label>
+          <input
+            type="text"
+            name="comision"
+            value={datosLocales.comision}
+            onChange={handleInputChange}
+            className="form-input-perfil"
+            readOnly
+            disabled
+            min="0"
+          />
+        </div>
+
+        <div className="form-group-perfil">
           <label className="form-label-perfil">Número de Sucursales</label>
           <input
             type="number"
@@ -181,8 +196,8 @@ export default function PerfilInformacion({ comercio, onActualizarComercio, onRe
             onChange={handleInputChange}
             className="form-input-perfil"
             disabled={!editando}
-            min="1"
-            placeholder="1"
+            min="0"
+            placeholder="0"
           />
         </div>
 
@@ -222,6 +237,38 @@ export default function PerfilInformacion({ comercio, onActualizarComercio, onRe
       <form className="form-perfil">
         <div className="form-grid">
           <div className="form-group-perfil">
+            <label className="form-label-perfil">Email</label>
+            <div className="input-with-icon">
+              <Mail size={18} />
+              <input
+                type="email"
+                name="email"
+                value={datosLocales.email}
+                onChange={handleInputChange}
+                className="form-input-perfil"
+                disabled={!editando}
+                placeholder="correo@ejemplo.com"
+              />
+            </div>
+          </div>
+
+          <div className="form-group-perfil">
+            <label className="form-label-perfil">Teléfono</label>
+            <div className="input-with-icon">
+              <Phone size={18} />
+              <input
+                type="tel"
+                name="celular"
+                value={datosLocales.celular}
+                onChange={handleInputChange}
+                className="form-input-perfil"
+                disabled={!editando}
+                placeholder="+54 11 1234-5678"
+              />
+            </div>
+          </div>
+
+          <div className="form-group-perfil">
             <label className="form-label-perfil">Nombre del Comercio</label>
             <input
               type="text"
@@ -258,88 +305,17 @@ export default function PerfilInformacion({ comercio, onActualizarComercio, onRe
 
           <div className="form-group-perfil full-width">
             <label className="form-label-perfil">Eslogan</label>
-            <textarea
+            <input
+              type="text"
               name="eslogan"
               value={datosLocales.eslogan}
               onChange={handleInputChange}
               className="form-textarea-perfil"
               disabled={!editando}
-              rows="3"
               placeholder="Tu eslogan comercial..."
             />
-          </div>
-
-          <div className="form-group-perfil">
-            <label className="form-label-perfil">Email</label>
-            <div className="input-with-icon">
-              <Mail size={18} />
-              <input
-                type="email"
-                name="email"
-                value={datosLocales.email}
-                onChange={handleInputChange}
-                className="form-input-perfil"
-                disabled={!editando}
-                placeholder="correo@ejemplo.com"
-              />
-            </div>
-          </div>
-
-          <div className="form-group-perfil">
-            <label className="form-label-perfil">Teléfono</label>
-            <div className="input-with-icon">
-              <Phone size={18} />
-              <input
-                type="tel"
-                name="celular"
-                value={datosLocales.celular}
-                onChange={handleInputChange}
-                className="form-input-perfil"
-                disabled={!editando}
-                placeholder="+54 11 1234-5678"
-              />
-            </div>
-          </div>
-
-          <div className="form-group-perfil">
-            <label className="form-label-perfil">Ciudad</label>
-            <input
-              type="text"
-              name="ciudad"
-              value={datosLocales.ciudad}
-              onChange={handleInputChange}
-              className="form-input-perfil"
-              disabled={!editando}
-              placeholder="Ciudad"
-            />
-          </div>
-
-          <div className="form-group-perfil">
-            <label className="form-label-perfil">Calle</label>
-            <input
-              type="text"
-              name="calle"
-              value={datosLocales.calle}
-              onChange={handleInputChange}
-              className="form-input-perfil"
-              disabled={!editando}
-              placeholder="Nombre de la calle"
-            />
-          </div>
-
-          <div className="form-group-perfil">
-            <label className="form-label-perfil">Número</label>
-            <input
-              type="number"
-              name="numero"
-              value={datosLocales.numero}
-              onChange={handleInputChange}
-              className="form-input-perfil"
-              disabled={!editando}
-              placeholder="123"
-            />
-          </div>
-
+          </div>         
+          
           <div className="form-group-perfil full-width">
             <label className="form-label-perfil">Dirección Completa</label>
             <div className="input-with-icon">
@@ -352,6 +328,47 @@ export default function PerfilInformacion({ comercio, onActualizarComercio, onRe
                 placeholder="Se genera automáticamente"
               />
             </div>
+          </div>
+        </div>
+
+        <div className="form-grid-direccion">
+          <div className="form-group-perfil">
+            <label className="form-label-perfil">Ciudad</label>
+            <input
+              type="text"
+              name="ciudad"
+              value={datosLocales.ciudad}
+              onChange={handleInputChange}
+              className="form-input-perfil-ciudad"
+              disabled={!editando}
+              placeholder="Ciudad"
+            />
+          </div>
+
+          <div className="form-group-perfil">
+            <label className="form-label-perfil">Calle</label>
+            <input
+              type="text"
+              name="calle"
+              value={datosLocales.calle}
+              onChange={handleInputChange}
+              className="form-input-perfil-calle"
+              disabled={!editando}
+              placeholder="Nombre de la calle"
+            />
+          </div>
+
+          <div className="form-group-perfil">
+            <label className="form-label-perfil">Número</label>
+            <input
+              type="number"
+              name="numero"
+              value={datosLocales.numero}
+              onChange={handleInputChange}
+              className="form-input-perfil-numero"
+              disabled={!editando}
+              placeholder="123"
+            />
           </div>
         </div>
 

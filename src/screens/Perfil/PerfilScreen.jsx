@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import "../../styles/screens/PerfilScreen.css"
 import Sidebar from "../../components/screens/Sidebar";
-import { Store, Mail, Phone, Settings, CreditCard } from "lucide-react";
+import { Store, Mail, Phone, Settings, CreditCard, Pin, MapPin } from "lucide-react";
 import { getComercioData } from "../../api/auth";
 import { comerciosService } from "../../api/comercio";
 import PerfilInformacion from "./PerfilInformacion";
@@ -25,6 +25,7 @@ export default function PerfilScreen() {
     encargado: "",
     cvu: "",
     alias: "",
+    comision: "",
     destacado: false,
     deliveryPropio: false,
     envio: 0,
@@ -87,6 +88,7 @@ export default function PerfilScreen() {
       encargado: datos.encargado || datos.Encargado || "",
       cvu: datos.cvu || datos.CVU || "",
       alias: datos.alias || datos.Alias || "",
+      comision: datos.comision || datos.Comision || "",
       destacado: datos.destacado || datos.Destacado || false,
       deliveryPropio: datos.deliveryPropio || datos.DeliveryPropio || false,
       envio: datos.envio || datos.Envio || 0,
@@ -165,9 +167,21 @@ export default function PerfilScreen() {
       <main className="main-content flex-1 overflow-y-auto">
         <div className="content-wrapper min-h-full p-8">
           {/* Header */}
-          <div className="content-header">
-            <h1 className="content-title">Perfil del Comercio</h1>
-            <p className="content-subtitle">Configura la información y preferencias de tu negocio</p>
+
+          <div className="gestion-categorias-header">
+            <div className="flex items-center justify-between w-full">
+              <div className="flex items-center gap-4">
+                <div>
+                  <h1 className="gestion-categorias-title">
+                    Perfil del Comercio
+                  </h1>
+                  <p className="text-gray-600 text-lg mt-1 flex items-center gap-2">
+                    <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                    Gestiona la información, configuracion y estadisticas de tu negocio
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div className="perfil-container">
@@ -179,7 +193,9 @@ export default function PerfilScreen() {
                     <Store size={40} />
                   </div>
                   <h3 className="avatar-nombre">{comercio.nombreComercio}</h3>
-                  <p className="avatar-categoria">{comercio.tipoComercio}</p>
+                  <p className="avatar-categoria">
+                    {comercio.eslogan}
+                  </p>
                   
                   <div className="info-adicional">
                     <div className="info-item">
@@ -191,6 +207,7 @@ export default function PerfilScreen() {
                       <span>{comercio.celular || "No especificado"}</span>
                     </div>
                     <div className="info-item">
+                      <MapPin size={14} />
                       <span className="direccion-texto">{obtenerDireccionCompleta() || "Sin dirección"}</span>
                     </div>
                     {comercio.destacado && (
