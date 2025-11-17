@@ -1,112 +1,103 @@
-// src/screens/Perfil/PerfilEstadisticas.jsx
-import { 
-  Store, 
-  CreditCard, 
-  Clock,
-  Download,
-  Upload
-} from "lucide-react";
+import { useState } from "react";
+import { Send, Package } from 'lucide-react';
 
-export default function PerfilEstadisticas() {
-  const estadisticas = {
-    pedidosMes: 156,
-    ingresosMensuales: 3458,
-    productosActivos: 42,
-    calificacionPromedio: 4.7,
-    pedidosCompletados: 128,
-    pedidosCancelados: 4,
-    tiempoPromedioEntrega: "32 min",
-    clientesRecurrentes: 89
+export default function PerfilSoporte() {
+  const [formulario, setFormulario] = useState({
+    asunto: "",
+    mensaje: ""
+  });
+  const [enviando, setEnviando] = useState(false);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormulario(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setEnviando(true);
+    
+    // Aquí enviarías el email a tu API
+    setTimeout(() => {
+      alert("Email enviado correctamente al soporte");
+      setFormulario({ asunto: "", mensaje: "" });
+      setEnviando(false);
+    }, 1500);
   };
 
   return (
     <div className="seccion-contenido">
+      {/* Header */}
       <div className="seccion-header">
-        <h3 className="seccion-titulo">Estadísticas del Comercio</h3>
-        <div className="acciones-exportar">
-          <button className="btn-exportar">
-            <Download size={16} />
-            Exportar Reporte
-          </button>
-          <button className="btn-exportar">
-            <Upload size={16} />
-            Importar Datos
-          </button>
-        </div>
-      </div>
-      
-      <div className="stats-perfil">
-        <div className="stat-perfil">
-          <div className="stat-icon" style={{ backgroundColor: 'rgba(255, 77, 77, 0.1)' }}>
-            <Store size={24} color="#FF4D4D" />
-          </div>
-          <div className="stat-numero">{estadisticas.pedidosMes}</div>
-          <div className="stat-descripcion">Pedidos este mes</div>
-        </div>
-        
-        <div className="stat-perfil">
-          <div className="stat-icon" style={{ backgroundColor: 'rgba(255, 201, 71, 0.1)' }}>
-            <CreditCard size={24} color="#FFC947" />
-          </div>
-          <div className="stat-numero">${estadisticas.ingresosMensuales}</div>
-          <div className="stat-descripcion">Ingresos mensuales</div>
-        </div>
-        
-        <div className="stat-perfil">
-          <div className="stat-icon" style={{ backgroundColor: 'rgba(40, 167, 69, 0.1)' }}>
-            <Store size={24} color="#28a745" />
-          </div>
-          <div className="stat-numero">{estadisticas.productosActivos}</div>
-          <div className="stat-descripcion">Productos activos</div>
-        </div>
-        
-        <div className="stat-perfil">
-          <div className="stat-icon" style={{ backgroundColor: 'rgba(108, 117, 125, 0.1)' }}>
-            <Clock size={24} color="#6c757d" />
-          </div>
-          <div className="stat-numero">{estadisticas.calificacionPromedio}</div>
-          <div className="stat-descripcion">Calificación promedio</div>
-        </div>
-
-        <div className="stat-perfil">
-          <div className="stat-icon" style={{ backgroundColor: 'rgba(0, 123, 255, 0.1)' }}>
-            <Store size={24} color="#007bff" />
-          </div>
-          <div className="stat-numero">{estadisticas.pedidosCompletados}</div>
-          <div className="stat-descripcion">Pedidos completados</div>
-        </div>
-
-        <div className="stat-perfil">
-          <div className="stat-icon" style={{ backgroundColor: 'rgba(220, 53, 69, 0.1)' }}>
-            <Store size={24} color="#dc3545" />
-          </div>
-          <div className="stat-numero">{estadisticas.pedidosCancelados}</div>
-          <div className="stat-descripcion">Pedidos cancelados</div>
-        </div>
-
-        <div className="stat-perfil">
-          <div className="stat-icon" style={{ backgroundColor: 'rgba(253, 126, 20, 0.1)' }}>
-            <Clock size={24} color="#fd7e14" />
-          </div>
-          <div className="stat-numero">{estadisticas.tiempoPromedioEntrega}</div>
-          <div className="stat-descripcion">Tiempo promedio entrega</div>
-        </div>
-
-        <div className="stat-perfil">
-          <div className="stat-icon" style={{ backgroundColor: 'rgba(111, 66, 193, 0.1)' }}>
-            <Store size={24} color="#6f42c1" />
-          </div>
-          <div className="stat-numero">{estadisticas.clientesRecurrentes}</div>
-          <div className="stat-descripcion">Clientes recurrentes</div>
-        </div>
+        <h3 className="seccion-titulo">Contacto Soporte</h3>
       </div>
 
-      <div className="graficos-seccion">
-        <h4 className="seccion-subtitulo">Tendencias y Análisis</h4>
-        <div className="grafico-placeholder">
-          <p>📊 Gráficos de rendimiento y tendencias estarán disponibles próximamente</p>
-          <small>Esta sección mostrará gráficos interactivos de ventas, pedidos y crecimiento</small>
+      <div className="soporte-grid">
+        {/* Formulario de envío */}
+        <div className="soporte-formulario">
+          <div className="soporte-card">
+            <form onSubmit={handleSubmit} className="form-soporte">
+              <div className="form-group-perfil">
+                <label className="form-label-perfil">
+                  Asunto <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="asunto"
+                  value={formulario.asunto}
+                  onChange={handleChange}
+                  className="form-input-perfil"
+                  placeholder="¿En qué podemos ayudarte?"
+                  required
+                />
+              </div>
+
+              <div className="form-group-perfil">
+                <label className="form-label-perfil">
+                  Mensaje <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  name="mensaje"
+                  value={formulario.mensaje}
+                  onChange={handleChange}
+                  className="form-textarea-perfil"
+                  rows="6"
+                  placeholder="Describe tu consulta o problema con el mayor detalle posible..."
+                  required
+                />
+              </div>
+
+              <button 
+                type="submit" 
+                className="btn-enviar-soporte"
+                disabled={enviando}
+              >
+                <Send size={16} />
+                {enviando ? "Enviando..." : "Enviar Consulta"}
+              </button>
+            </form>
+          </div>
         </div>
+        
+        {/* Información */}
+          <div className="info-box">
+            <div className="info-box-contenido">
+              <div className="info-box-icono-wrapper">
+                <Package size={18} className="info-box-icono" />
+              </div>
+              <div>
+                <h4 className="info-box-titulo">Información</h4>
+                <ul className="info-box-lista">
+                  <li>Esta consulta al soporte se hara a través de email, asi que la respuesta llegara a la direccion de email asociada a tu cuenta.</li> 
+                  <li>Por favor, proporciona la mayor cantidad de detalles posibles en tu mensaje para que podamos asistirte de manera efectiva.</li>
+                  <li>Recuerda revisar tu carpeta de spam o correo no deseado si no ves nuestra respuesta en tu bandeja de entrada.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
       </div>
     </div>
   );

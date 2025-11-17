@@ -9,12 +9,12 @@ export default function DashboardScreen() {
   const { estadisticas, pedidosHoy, productos, loading, error, recargarDatos } = useDashboard();
 
   // Función para formatear moneda
-  const formatearMoneda = (monto) => {
-    return new Intl.NumberFormat('es-AR', {
-      style: 'currency',
-      currency: 'ARS'
-    }).format(monto);
-  };
+  // const formatearMoneda = (monto) => {
+  //   return new Intl.NumberFormat('es-AR', {
+  //     style: 'currency',
+  //     currency: 'ARS'
+  //   }).format(monto);
+  // };
 
   // Función para determinar la clase de tendencia
   const getClaseTendencia = (valor) => {
@@ -83,22 +83,7 @@ export default function DashboardScreen() {
             </div>
             
             {/* Grid de Estadísticas */}
-            <div className="stats-grid">
-              {/* Ventas Hoy */}
-              <div className="stat-card stat-primary">
-                <div className="stat-label">Ventas Hoy</div>
-                <div className="stat-value">
-                  {estadisticas ? formatearMoneda(estadisticas.ventasHoy) : '$0'}
-                </div>
-                <div className={`stat-trend ${getClaseTendencia(estadisticas?.crecimientoVentas || 0)}`}>
-                  <TrendingUp size={16} />
-                  <span style={{marginLeft: '4px'}}>
-                    {estadisticas?.crecimientoVentas >= 0 ? '+' : ''}
-                    {estadisticas?.crecimientoVentas || 0}% vs ayer
-                  </span>
-                </div>
-              </div>
-              
+            <div className="stats-grid">             
               {/* Pedidos Activos */}
               <div className="stat-card stat-secondary">
                 <div className="stat-label">Pedidos Activos</div>
@@ -113,14 +98,8 @@ export default function DashboardScreen() {
               
               {/* Productos */}
               <div className="stat-card stat-primary">
-                <div className="stat-label">Productos</div>
+                <div className="stat-label">Productos Activos</div>
                 <div className="stat-value">{productos?.total || 0}</div>
-                <div className="stat-trend trend-warning">
-                  <Package size={16} />
-                  <span style={{marginLeft: '4px'}}>
-                    {productos?.bajosStock || 0} bajos en stock
-                  </span>
-                </div>
               </div>
               
               {/* Clientes Nuevos */}
@@ -135,6 +114,30 @@ export default function DashboardScreen() {
                   </span>
                 </div>
               </div>
+
+              {/* <div className="stat-card stat-secondary">
+                <div className="stat-icon" style={{ backgroundColor: 'rgba(255, 77, 77, 0.1)' }}>
+                  <Store size={24} color="#FF4D4D" />
+                </div>
+                <div className="stat-numero">{estadisticas.pedidosMes}</div>
+                <div className="stat-descripcion">Pedidos este mes</div>
+              </div> */}
+
+              {/* <div className="stat-card stat-secondary">
+                <div className="stat-icon" style={{ backgroundColor: 'rgba(0, 123, 255, 0.1)' }}>
+                  <Store size={24} color="#007bff" />
+                </div>
+                <div className="stat-numero">{estadisticas.pedidosCompletados}</div>
+                <div className="stat-descripcion">Pedidos completados</div>
+              </div> */}
+
+              {/* <div className="stat-card stat-secondary">
+                <div className="stat-icon" style={{ backgroundColor: 'rgba(220, 53, 69, 0.1)' }}>
+                  <Store size={24} color="#dc3545" />
+                </div>
+                <div className="stat-numero">{estadisticas.pedidosCancelados}</div>
+                <div className="stat-descripcion">Pedidos cancelados</div>
+              </div> */}
             </div>
             
             {/* Actividad Reciente */}
