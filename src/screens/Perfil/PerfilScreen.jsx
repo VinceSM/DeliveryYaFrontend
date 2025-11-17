@@ -2,12 +2,12 @@
 import { useState, useEffect } from "react";
 import "../../styles/screens/PerfilScreen.css"
 import Sidebar from "../../components/screens/Sidebar";
-import { Store, Mail, Phone, Settings, CreditCard, Pin, MapPin } from "lucide-react";
+import { Store, Mail, Phone, Settings, CreditCard, Pin, MapPin, LifeBuoy } from "lucide-react";
 import { getComercioData } from "../../api/auth";
 import { comerciosService } from "../../api/comercio";
 import PerfilInformacion from "./PerfilInformacion";
 import PerfilConfiguracion from "./PerfilConfiguracion";
-import PerfilEstadisticas from "./PerfilEstadisticas";
+import PerfilSoporte from "./PerfilSoporte";
 
 export default function PerfilScreen() {
   const [seccionActiva, setSeccionActiva] = useState("informacion");
@@ -136,8 +136,8 @@ export default function PerfilScreen() {
         );
       case "configuracion":
         return <PerfilConfiguracion />;
-      case "estadisticas":
-        return <PerfilEstadisticas />;
+      case "soporte":
+        return <PerfilSoporte />;
       default:
         return (
           <PerfilInformacion 
@@ -177,7 +177,7 @@ export default function PerfilScreen() {
                   </h1>
                   <p className="text-gray-600 text-lg mt-1 flex items-center gap-2">
                     <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-                    Gestiona la información, configuracion y estadisticas de tu negocio
+                    Gestiona la información y configuracion de tu negocio
                   </p>
                 </div>
               </div>
@@ -241,11 +241,11 @@ export default function PerfilScreen() {
                   </button>
                   
                   <button 
-                    className={`btn-menu ${seccionActiva === 'estadisticas' ? 'active' : ''}`}
-                    onClick={() => cambiarSeccion('estadisticas')}
+                    className={`btn-menu ${seccionActiva === 'soporte' ? 'active' : ''}`}
+                    onClick={() => cambiarSeccion('soporte')}
                   >
-                    <CreditCard size={18} />
-                    Estadísticas
+                    <LifeBuoy size={18} />
+                    Soporte
                   </button>
                 </nav>
               </div>

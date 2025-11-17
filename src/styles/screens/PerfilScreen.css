@@ -369,6 +369,7 @@
 /* Switch */
 .switch {
   position: relative;
+  margin-left: auto;
   display: inline-block;
   width: 50px;
   height: 24px;
@@ -387,6 +388,7 @@
   left: 0;
   right: 0;
   bottom: 0;
+  margin-left: auto;
   background-color: #ccc;
   transition: .4s;
   border-radius: 24px;
@@ -487,6 +489,7 @@ input:checked + .slider:before {
 }
 
 .btn-guardar-perfil {
+  margin-left: auto;
   display: flex;
   align-items: center;
   gap: 0.5rem;

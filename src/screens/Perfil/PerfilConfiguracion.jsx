@@ -78,36 +78,6 @@ export default function PerfilConfiguracion() {
                 <span className="slider"></span>
               </label>
             </div>
-
-            <div className="config-item-switch">
-              <div className="config-info">
-                <h5>Alertas de Stock Bajo</h5>
-                <p>Notificaciones cuando productos estén por agotarse</p>
-              </div>
-              <label className="switch">
-                <input
-                  type="checkbox"
-                  checked={configuracion.notificacionesStock}
-                  onChange={(e) => handleConfigChange('notificacionesStock', e.target.checked)}
-                />
-                <span className="slider"></span>
-              </label>
-            </div>
-
-            <div className="config-item-switch">
-              <div className="config-info">
-                <h5>Promociones y Novedades</h5>
-                <p>Recibir información sobre nuevas promociones</p>
-              </div>
-              <label className="switch">
-                <input
-                  type="checkbox"
-                  checked={configuracion.notificacionesPromociones}
-                  onChange={(e) => handleConfigChange('notificacionesPromociones', e.target.checked)}
-                />
-                <span className="slider"></span>
-              </label>
-            </div>
           </div>
         </div>
 
@@ -123,65 +93,26 @@ export default function PerfilConfiguracion() {
                 <h5>Aceptar Efectivo</h5>
                 <p>Permitir pagos en efectivo al momento de la entrega</p>
               </div>
-              <label className="switch">
-                <input
-                  type="checkbox"
-                  checked={configuracion.aceptaEfectivo}
-                  onChange={(e) => handleConfigChange('aceptaEfectivo', e.target.checked)}
-                />
-                <span className="slider"></span>
-              </label>
+                <label className="switch">
+                  <input
+                    type="checkbox"
+                    checked={configuracion.aceptaEfectivo}
+                    onChange={(e) => handleConfigChange('aceptaEfectivo', e.target.checked)}
+                  />
+                  <span className="slider"></span>
+                </label>
             </div>
 
             <div className="config-item-switch">
               <div className="config-info">
-                <h5>Aceptar Tarjetas</h5>
-                <p>Habilitar pagos con tarjeta de crédito/débito</p>
+                <h5>Aceptar Tarjetas y Billeteras Virtuales</h5>
+                <p>Habilitar pagos con tarjeta de crédito/débito y billeteras virtuales</p>
               </div>
               <label className="switch">
                 <input
                   type="checkbox"
                   checked={configuracion.aceptaTarjeta}
                   onChange={(e) => handleConfigChange('aceptaTarjeta', e.target.checked)}
-                />
-                <span className="slider"></span>
-              </label>
-            </div>
-          </div>
-        </div>
-
-        <div className="config-seccion">
-          <h4 className="config-subtitulo">
-            <Shield size={20} />
-            Sistema
-          </h4>
-          
-          <div className="config-lista">
-            <div className="config-item-switch">
-              <div className="config-info">
-                <h5>Modo Mantenimiento</h5>
-                <p>Pausar temporalmente la recepción de pedidos</p>
-              </div>
-              <label className="switch">
-                <input
-                  type="checkbox"
-                  checked={configuracion.modoMantenimiento}
-                  onChange={(e) => handleConfigChange('modoMantenimiento', e.target.checked)}
-                />
-                <span className="slider"></span>
-              </label>
-            </div>
-
-            <div className="config-item-switch">
-              <div className="config-info">
-                <h5>Aceptar Pedidos Automáticamente</h5>
-                <p>Los pedidos se aceptan automáticamente sin confirmación</p>
-              </div>
-              <label className="switch">
-                <input
-                  type="checkbox"
-                  checked={configuracion.pedidosAutomaticos}
-                  onChange={(e) => handleConfigChange('pedidosAutomaticos', e.target.checked)}
                 />
                 <span className="slider"></span>
               </label>
