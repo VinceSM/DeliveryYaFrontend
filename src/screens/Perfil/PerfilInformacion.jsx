@@ -144,20 +144,22 @@ export default function PerfilInformacion({ comercio, onActualizarComercio, onRe
             placeholder="mi.comercio.mp"
           />
         </div>
-
+        
         <div className="form-group-perfil">
-          <label className="form-label-perfil">Encargado</label>
-          <input
-            type="text"
-            name="encargado"
-            value={datosLocales.encargado}
-            onChange={handleInputChange}
-            className="form-input-perfil"
-            disabled={!editando}
-            placeholder="Nombre del encargado"
-          />
+          <label className="form-label-perfil">Delivery Propio</label>
+          <div className="checkbox-container">
+            <input
+              type="checkbox"
+              name="deliveryPropio"
+              checked={datosLocales.deliveryPropio}
+              onChange={handleInputChange}
+              className="form-checkbox-perfil"
+              disabled={!editando}
+            />
+            <span className="checkbox-label">Tengo delivery propio</span>
+          </div>
         </div>
-
+        
         <div className="form-group-perfil">
           <label className="form-label-perfil">Costo de Envío ($)</label>
           <input
@@ -174,47 +176,42 @@ export default function PerfilInformacion({ comercio, onActualizarComercio, onRe
         </div>
 
         <div className="form-group-perfil">
+          <label className="form-label-perfil">Encargado</label>
+          <input
+            type="text"
+            name="encargado"
+            value={datosLocales.encargado}
+            onChange={handleInputChange}
+            className="form-input-perfil-encargado"
+            disabled
+            readOnly
+          />
+        </div>        
+
+        <div className="form-group-perfil-sucursales-comision">
+          <label className="form-label-perfil">Sucursales</label>
+          <input
+            type="number"
+            name="sucursales"
+            value={datosLocales.sucursales}
+            onChange={handleInputChange}
+            className="form-input-perfil-sucursales"
+            disabled
+            readOnly
+            min="0"
+          />
           <label className="form-label-perfil">Comisión</label>
           <input
             type="text"
             name="comision"
             value={datosLocales.comision}
             onChange={handleInputChange}
-            className="form-input-perfil"
+            className="form-input-perfil-comision"
             readOnly
             disabled
             min="0"
           />
-        </div>
-
-        <div className="form-group-perfil">
-          <label className="form-label-perfil">Número de Sucursales</label>
-          <input
-            type="number"
-            name="sucursales"
-            value={datosLocales.sucursales}
-            onChange={handleInputChange}
-            className="form-input-perfil"
-            disabled={!editando}
-            min="0"
-            placeholder="0"
-          />
-        </div>
-
-        <div className="form-group-perfil">
-          <label className="form-label-perfil">Delivery Propio</label>
-          <div className="checkbox-container">
-            <input
-              type="checkbox"
-              name="deliveryPropio"
-              checked={datosLocales.deliveryPropio}
-              onChange={handleInputChange}
-              className="form-checkbox-perfil"
-              disabled={!editando}
-            />
-            <span className="checkbox-label">Tengo delivery propio</span>
-          </div>
-        </div>
+        </div>        
       </div>
     </div>
   );

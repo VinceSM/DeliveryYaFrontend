@@ -173,7 +173,7 @@ export default function PerfilScreen() {
               <div className="flex items-center gap-4">
                 <div>
                   <h1 className="gestion-categorias-title">
-                    Perfil del Comercio
+                    Mi Perfil
                   </h1>
                   <p className="text-gray-600 text-lg mt-1 flex items-center gap-2">
                     <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
