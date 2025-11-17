@@ -1,64 +1,20 @@
 import "../../styles/screens/DashboardScreen.css";
 import Sidebar from "../../components/screens/Sidebar";
-import { TrendingUp, Users, Package, ShoppingCart, RefreshCw, AlertCircle } from "lucide-react";
+import { TrendingUp, Users, Package, ShoppingCart, RefreshCw, AlertCircle, Clock, Tag, FileText, User, Bell } from 'lucide-react';
 import { useDashboard } from "../../hooks/useDashboard";
 import { useAuth } from "../../hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 export default function DashboardScreen() {
   const { user } = useAuth();
-  const { estadisticas, pedidosHoy, productos, loading, error, recargarDatos } = useDashboard();
+  const { estadisticas, pedidosHoy, productos, recargarDatos } = useDashboard();
+  const navigate = useNavigate();
 
-  // Función para formatear moneda
-  // const formatearMoneda = (monto) => {
-  //   return new Intl.NumberFormat('es-AR', {
-  //     style: 'currency',
-  //     currency: 'ARS'
-  //   }).format(monto);
-  // };
-
-  // Función para determinar la clase de tendencia
   const getClaseTendencia = (valor) => {
-    return valor >= 0 ? 'trend-positive' : 'trend-negative';
+    if (valor > 0) return 'trend-success';
+    if (valor < 0) return 'trend-danger';
+    return 'trend-neutral';
   };
-
-  if (loading) {
-    return (
-      <div className="dashboard-container flex h-screen">
-        <Sidebar />
-        <main className="main-content flex-1 overflow-y-auto">
-          <div className="content-wrapper min-h-full p-8 flex items-center justify-center">
-            <div className="text-center">
-              <RefreshCw size={48} className="animate-spin mx-auto mb-4 text-blue-500" />
-              <p className="text-gray-600">Cargando datos del dashboard...</p>
-            </div>
-          </div>
-        </main>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="dashboard-container flex h-screen">
-        <Sidebar />
-        <main className="main-content flex-1 overflow-y-auto">
-          <div className="content-wrapper min-h-full p-8 flex items-center justify-center">
-            <div className="text-center">
-              <AlertCircle size={48} className="mx-auto mb-4 text-red-500" />
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">Error al cargar datos</h3>
-              <p className="text-gray-600 mb-4">{error}</p>
-              <button 
-                onClick={recargarDatos}
-                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
-              >
-                Reintentar
-              </button>
-            </div>
-          </div>
-        </main>
-      </div>
-    );
-  }
 
   return (
     <div className="dashboard-container flex h-screen">
@@ -68,21 +24,27 @@ export default function DashboardScreen() {
         <div className="content-wrapper min-h-full p-8">
           <div className="fade-in">
             {/* Header */}
-            <div className="content-header flex justify-between items-center">
-              <div>
-                <h1 className="content-title">Bienvenido, {user?.NombreComercio || 'Comercio'}</h1>
-                <p className="content-subtitle">Resumen general de tu negocio</p>
+            <div className="content-header">
+              <div className="flex items-center justify-between w-full" >
+                <div className="flex items-center gap-4">
+                  <div>
+                    <h1 className="content-title">Bienvenido, {user?.NombreComercio || 'Comercio'}</h1>
+                    <p className="text-gray-600 text-lg mt-1 flex items-center gap-2">
+                      <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                      Resumen general de tu negocio
+                    </p>
+                  </div>
+                </div>
+                  <button 
+                  onClick={recargarDatos}
+                  className="btn-actualizar"
+                >
+                  <RefreshCw size={16} />
+                  Actualizar
+                </button>
               </div>
-              <button 
-                onClick={recargarDatos}
-                className="btn-actualizar"
-              >
-                <RefreshCw size={16} />
-                Actualizar
-              </button>
             </div>
-            
-            {/* Grid de Estadísticas */}
+
             <div className="stats-grid">             
               {/* Pedidos Activos */}
               <div className="stat-card stat-secondary">
@@ -114,72 +76,115 @@ export default function DashboardScreen() {
                   </span>
                 </div>
               </div>
-
-              {/* <div className="stat-card stat-secondary">
-                <div className="stat-icon" style={{ backgroundColor: 'rgba(255, 77, 77, 0.1)' }}>
-                  <Store size={24} color="#FF4D4D" />
-                </div>
-                <div className="stat-numero">{estadisticas.pedidosMes}</div>
-                <div className="stat-descripcion">Pedidos este mes</div>
-              </div> */}
-
-              {/* <div className="stat-card stat-secondary">
-                <div className="stat-icon" style={{ backgroundColor: 'rgba(0, 123, 255, 0.1)' }}>
-                  <Store size={24} color="#007bff" />
-                </div>
-                <div className="stat-numero">{estadisticas.pedidosCompletados}</div>
-                <div className="stat-descripcion">Pedidos completados</div>
-              </div> */}
-
-              {/* <div className="stat-card stat-secondary">
-                <div className="stat-icon" style={{ backgroundColor: 'rgba(220, 53, 69, 0.1)' }}>
-                  <Store size={24} color="#dc3545" />
-                </div>
-                <div className="stat-numero">{estadisticas.pedidosCancelados}</div>
-                <div className="stat-descripcion">Pedidos cancelados</div>
-              </div> */}
             </div>
             
-            {/* Actividad Reciente */}
-            <div className="content-card" style={{marginTop: '2rem'}}>
-              <h2 style={{color: '#333333', marginBottom: '1rem', fontSize: '1.5rem', fontWeight: '600'}}>
-                Actividad Reciente
-              </h2>
+            <div className="alertas-section">
+              <div className="alertas-header">
+                <Bell size={20} />
+                <h2>Notificaciones</h2>
+              </div>
               
-              {estadisticas?.actividadReciente && estadisticas.actividadReciente.length > 0 ? (
-                <div className="space-y-3">
-                  {estadisticas.actividadReciente.map((actividad) => (
-                    <div key={actividad.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-full ${
-                          actividad.tipo === 'pedido' ? 'bg-blue-100 text-blue-600' :
-                          actividad.tipo === 'producto' ? 'bg-orange-100 text-orange-600' :
-                          'bg-green-100 text-green-600'
-                        }`}>
-                          {actividad.tipo === 'pedido' && <ShoppingCart size={16} />}
-                          {actividad.tipo === 'producto' && <Package size={16} />}
-                          {actividad.tipo === 'cliente' && <Users size={16} />}
-                        </div>
-                        <span className="text-gray-800">{actividad.descripcion}</span>
-                      </div>
-                      <span className="text-sm text-gray-500">{actividad.fecha}</span>
+              <div className="alertas-grid">
+                {pedidosHoy?.pendientes > 0 && (
+                  <div className="alerta-card alerta-warning">
+                    <div className="alerta-icon">
+                      <ShoppingCart size={24} />
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <p style={{color: '#6c757d'}}>No hay actividad reciente para mostrar.</p>
-              )}
+                    <div className="alerta-content">
+                      <h3>Pedidos Pendientes</h3>
+                      <p>Tienes {pedidosHoy.pendientes} pedido{pedidosHoy.pendientes > 1 ? 's' : ''} pendiente{pedidosHoy.pendientes > 1 ? 's' : ''} por procesar</p>
+                    </div>
+                    <button 
+                      className="alerta-btn"
+                      onClick={() => navigate('/pedidos')}
+                    >
+                      Ver Pedidos
+                    </button>
+                  </div>
+                )}
+                
+                {pedidosHoy?.nuevos > 0 && (
+                  <div className="alerta-card alerta-success">
+                    <div className="alerta-icon">
+                      <Bell size={24} />
+                    </div>
+                    <div className="alerta-content">
+                      <h3>Nuevos Pedidos</h3>
+                      <p>{pedidosHoy.nuevos} pedido{pedidosHoy.nuevos > 1 ? 's' : ''} nuevo{pedidosHoy.nuevos > 1 ? 's' : ''} recibido{pedidosHoy.nuevos > 1 ? 's' : ''} hoy</p>
+                    </div>
+                    <button 
+                      className="alerta-btn"
+                      onClick={() => navigate('/pedidos')}
+                    >
+                      Ver Pedidos
+                    </button>
+                  </div>
+                )}
+                
+                {productos?.stockBajo > 0 && (
+                  <div className="alerta-card alerta-danger">
+                    <div className="alerta-icon">
+                      <Package size={24} />
+                    </div>
+                    <div className="alerta-content">
+                      <h3>Stock Bajo</h3>
+                      <p>{productos.stockBajo} producto{productos.stockBajo > 1 ? 's' : ''} con stock bajo</p>
+                    </div>
+                    <button 
+                      className="alerta-btn"
+                      onClick={() => navigate('/productos')}
+                    >
+                      Ver Productos
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
 
-            {/* Información de Prueba */}
-            {estadisticas && (
-              <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <p className="text-yellow-800 text-sm">
-                  <strong>Nota:</strong> Actualmente se muestran datos de prueba. 
-                  Conecta los endpoints reales en el backend para ver información en tiempo real.
-                </p>
+            <div className="accesos-rapidos">
+              <h2 className="accesos-title">Accesos Rápidos</h2>
+              <div className="accesos-grid">
+                <button 
+                  className="acceso-card"
+                  onClick={() => navigate('/productos')}
+                >
+                  <Package size={32} />
+                  <span>Productos</span>
+                </button>
+                
+                <button 
+                  className="acceso-card"
+                  onClick={() => navigate('/categorias')}
+                >
+                  <Tag size={32} />
+                  <span>Categorías</span>
+                </button>
+                
+                <button 
+                  className="acceso-card"
+                  onClick={() => navigate('/pedidos')}
+                >
+                  <ShoppingCart size={32} />
+                  <span>Pedidos</span>
+                </button>
+                
+                <button 
+                  className="acceso-card"
+                  onClick={() => navigate('/horarios')}
+                >
+                  <Clock size={32} />
+                  <span>Horarios</span>
+                </button>
+                
+                <button 
+                  className="acceso-card"
+                  onClick={() => navigate('/perfil')}
+                >
+                  <User size={32} />
+                  <span>Perfil</span>
+                </button>
               </div>
-            )}
+            </div>
           </div>
         </div>
       </main>
