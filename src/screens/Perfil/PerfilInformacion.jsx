@@ -1,5 +1,4 @@
-// src/screens/Perfil/PerfilInformacion.jsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   Mail, 
   Phone, 
@@ -16,7 +15,7 @@ export default function PerfilInformacion({ comercio, onActualizarComercio, onRe
   const [datosLocales, setDatosLocales] = useState({ ...comercio });
 
   // Sincronizar datos locales cuando cambia el prop
-  useState(() => {
+  useEffect(() => {
     setDatosLocales({ ...comercio });
   }, [comercio]);
 
@@ -32,81 +31,60 @@ export default function PerfilInformacion({ comercio, onActualizarComercio, onRe
     return `${datosLocales.calle || ""} ${datosLocales.numero || ""}, ${datosLocales.ciudad || ""}`.trim();
   };
 
-  const handleGuardar = async () => {
-    setGuardando(true);
+const handleGuardar = async () => {
+  setGuardando(true);
+  
+  try {
+    console.log("💾 Guardando datos:", datosLocales);
     
-    try {
-      console.log("💾 Guardando datos:", datosLocales);
-      
-      const datosReales = getComercioData();
-      let comercioId = datosLocales.idcomercio;
-
-      if (!comercioId) {
-        console.log("🔍 Buscando ID en la API...");
-        const todosComercios = await comerciosService.getAll();
-        const comercioEncontrado = todosComercios.find(c => 
-          c.email === datosLocales.email || c.Email === datosLocales.email
-        );
-        
-        if (comercioEncontrado) {
-          comercioId = comercioEncontrado.idcomercio;
-        } else {
-          throw new Error("No se pudo encontrar el comercio en la API");
-        }
-      }
-
-      // Preparar datos para la API
-      const datosParaAPI = {
-        Id: comercioId,
-        NombreComercio: datosLocales.nombreComercio,
-        Email: datosLocales.email,
-        TipoComercio: datosLocales.tipoComercio,
-        Eslogan: datosLocales.eslogan,
-        Celular: datosLocales.celular,
-        Ciudad: datosLocales.ciudad,
-        Calle: datosLocales.calle,
-        Numero: Number(datosLocales.numero) || 0,
-        Encargado: datosLocales.encargado,
-        Cvu: datosLocales.cvu,
-        Alias: datosLocales.alias,
-        Comision: datosLocales.comision,
-        Destacado: datosLocales.destacado,
-        DeliveryPropio: datosLocales.deliveryPropio,
-        Envio: Number(datosLocales.envio) || 0,
-        Sucursales: Number(datosLocales.sucursales) || 1,
-        Latitud: datosLocales.latitud,
-        Longitud: datosLocales.longitud
-      };
-
-      console.log("📤 Enviando datos a la API:", datosParaAPI);
-
-      // Llamar a la API
-      const resultado = await comerciosService.update(comercioId, datosParaAPI);
-      
-      console.log("✅ Datos guardados exitosamente:", resultado);
-      
-      // Actualizar estado padre
-      onActualizarComercio(datosLocales);
-      
-      // Actualizar localStorage
-      const datosActualizados = {
-        ...datosReales,
-        ...datosParaAPI,
-        idcomercio: comercioId
-      };
-      
-      localStorage.setItem('comercioData', JSON.stringify(datosActualizados));
-      
-      alert("✅ Perfil actualizado correctamente");
-      
-    } catch (error) {
-      console.error("❌ Error guardando datos:", error);
-      alert("❌ Error al guardar los cambios: " + error.message);
-    } finally {
-      setGuardando(false);
-      setEditando(false);
+    // ✅ USAR DIRECTAMENTE EL ID DEL COMERCIO
+    const comercioId = datosLocales.idcomercio;
+    
+    if (!comercioId) {
+      throw new Error("No se pudo identificar el comercio");
     }
-  };
+
+    console.log("🔍 Comercio ID:", comercioId);
+
+    const datosParaAPI = {
+      Id: comercioId,
+      NombreComercio: datosLocales.nombreComercio,
+      Email: datosLocales.email,
+      TipoComercio: datosLocales.tipoComercio,
+      Eslogan: datosLocales.eslogan,
+      Celular: datosLocales.celular,
+      Ciudad: datosLocales.ciudad,
+      Calle: datosLocales.calle,
+      Numero: Number(datosLocales.numero) || 0,
+      Encargado: datosLocales.encargado,
+      Cvu: datosLocales.cvu,
+      Alias: datosLocales.alias,
+      Comision: datosLocales.comision,
+      Destacado: datosLocales.destacado,
+      DeliveryPropio: datosLocales.deliveryPropio,
+      Envio: Number(datosLocales.envio) || 0,
+      Sucursales: Number(datosLocales.sucursales) || 1,
+      Latitud: datosLocales.latitud,
+      Longitud: datosLocales.longitud
+    };
+
+    console.log("📤 Enviando a /api/comercios/" + comercioId, datosParaAPI);
+
+    const resultado = await comerciosService.update(comercioId, datosParaAPI);
+    
+    console.log("✅ Datos guardados exitosamente:", resultado);
+    
+    onActualizarComercio(datosLocales);
+    alert("✅ Perfil actualizado correctamente");
+    
+  } catch (error) {
+    console.error("❌ Error guardando datos:", error);
+    alert("❌ Error al guardar los cambios: " + error.message);
+  } finally {
+    setGuardando(false);
+    setEditando(false);
+  }
+};
 
   const handleCancelar = () => {
     setEditando(false);

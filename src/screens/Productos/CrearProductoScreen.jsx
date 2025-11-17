@@ -35,84 +35,93 @@ export default function CrearProductoScreen() {
     }))
   }
 
-  const formatearPrecio = (valor) => {
-    if (!valor) return ""
-    
-    // Remove all non-numeric characters except comma
-    const numeros = valor.replace(/[^\d,]/g, "")
-    
-    // Split by comma to handle integer and decimal parts
-    const partes = numeros.split(",")
-    let entero = partes[0]
-    const decimal = partes[1]
-    
-    // Add thousands separator to integer part
-    entero = entero.replace(/\B(?=(\d{3})+(?!\d))/g, ".")
-    
-    // Combine integer and decimal (limit to 2 decimal places)
-    let resultado = entero
-    if (decimal !== undefined) {
-      resultado += "," + decimal.slice(0, 2)
+const formatearPrecio = (valor) => {
+  if (!valor) return ""
+  
+  // Remove all non-numeric characters
+  const numeros = valor.replace(/[^\d]/g, "")
+  
+  if (numeros === '') return ''
+  
+  // ✅ CORREGIDO: Convertir a formato correcto sin multiplicar
+  const parteEntera = Math.floor(parseInt(numeros) / 100);
+  const parteDecimal = parseInt(numeros) % 100;
+  
+  const enteroFormateado = parteEntera.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+  const decimalFormateado = parteDecimal.toString().padStart(2, '0')
+  
+  return `$${enteroFormateado},${decimalFormateado}`
+}
+
+const handlePrecioChange = (e) => {
+  const inputValue = e.target.value
+  
+  // Remove all non-numeric characters
+  const valorLimpio = inputValue.replace(/[^\d]/g, "")
+  
+  // Store clean value in formData
+  setFormData((prev) => ({
+    ...prev,
+    precio: valorLimpio,
+  }))
+}
+
+ const handleSubmit = async (e) => {
+  e.preventDefault()
+  setLoading(true)
+  setError("")
+
+  try {
+    // Validaciones básicas
+    if (!formData.nombre.trim()) {
+      throw new Error("El nombre es requerido")
     }
     
-    return "$" + resultado
-  }
-
-  const handlePrecioChange = (e) => {
-    const inputValue = e.target.value
-    
-    // Remove all non-numeric characters except comma
-    const valorLimpio = inputValue.replace(/[^\d,]/g, "")
-    
-    // Validate format: allow only one comma and max 2 decimals
-    const partes = valorLimpio.split(",")
-    if (partes.length > 2) return // No allow more than one comma
-    
-    // Store clean value in formData
-    setFormData((prev) => ({
-      ...prev,
-      precio: valorLimpio,
-    }))
-  }
-
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    setLoading(true)
-    setError("")
-
-    try {
-      // Validaciones básicas
-      if (!formData.nombre.trim()) {
-        throw new Error("El nombre es requerido")
-      }
+    // ✅ CORREGIDO: Procesar precio correctamente
+    let precioNumerico = 0;
+    if (formData.precio) {
+      // Eliminar símbolos y mantener el valor real
+      const precioLimpio = formData.precio
+        .replace('$', '')
+        .replace(/\./g, '')
+        .replace(',', '.');
       
-      const precioParseado = formData.precio.replace(",", ".")
-      if (!precioParseado || Number.parseFloat(precioParseado) <= 0) {
+      precioNumerico = parseFloat(precioLimpio);
+      
+      if (isNaN(precioNumerico) || precioNumerico <= 0) {
         throw new Error("El precio debe ser mayor a 0")
       }
-      if (!formData.categoria) {
-        throw new Error("La categoría es requerida")
-      }
-
-      console.log("📤 Enviando datos del producto:", formData)
-
-      const comercioId = await obtenerComercioIdAutenticado()
-      console.log("🏪 ComercioId que se enviará:", comercioId)
-
-      await agregarProducto({
-        ...formData,
-        precio: Number.parseFloat(precioParseado),
-      })
-
-      // Redirigir a la lista de productos
-      navigate("/productos")
-    } catch (error) {
-      console.error("❌ Error creando producto:", error)
-      setError(error.message)
-    } finally {
-      setLoading(false)
+      
+      console.log('💰 Precio procesado (creación):', {
+        original: formData.precio,
+        limpio: precioLimpio,
+        numerico: precioNumerico
+      });
     }
+    
+    if (!formData.categoria) {
+      throw new Error("La categoría es requerida")
+    }
+
+    console.log("📤 Enviando datos del producto:", formData)
+
+    const comercioId = await obtenerComercioIdAutenticado()
+    console.log("🏪 ComercioId que se enviará:", comercioId)
+
+    await agregarProducto({
+      ...formData,
+      precio: precioNumerico, // ✅ Usar el precio ya procesado
+    })
+
+    // Redirigir a la lista de productos
+    navigate("/productos")
+  } catch (error) {
+    console.error("❌ Error creando producto:", error)
+    setError(error.message)
+  } finally {
+    setLoading(false)
   }
+}
 
   return (
     <div className="dashboard-container flex h-screen">

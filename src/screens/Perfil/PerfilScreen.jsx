@@ -3,80 +3,75 @@ import { useState, useEffect } from "react";
 import "../../styles/screens/PerfilScreen.css"
 import Sidebar from "../../components/screens/Sidebar";
 import { Store, Mail, Phone, Settings, CreditCard, Pin, MapPin, LifeBuoy } from "lucide-react";
-import { getComercioData } from "../../api/auth";
+import { useAuth } from "../../hooks/useAuth";
 import { comerciosService } from "../../api/comercio";
 import PerfilInformacion from "./PerfilInformacion";
 import PerfilConfiguracion from "./PerfilConfiguracion";
 import PerfilSoporte from "./PerfilSoporte";
 
 export default function PerfilScreen() {
+  const { user, loading: authLoading } = useAuth();
   const [seccionActiva, setSeccionActiva] = useState("informacion");
   const [loading, setLoading] = useState(true);
-  const [comercio, setComercio] = useState({
-    idcomercio: null,
-    nombreComercio: "",
-    tipoComercio: "",
-    eslogan: "",
-    email: "",
-    celular: "",
-    ciudad: "",
-    calle: "",
-    numero: "",
-    encargado: "",
-    cvu: "",
-    alias: "",
-    comision: "",
-    destacado: false,
-    deliveryPropio: false,
-    envio: 0,
-    sucursales: 1,
-    latitud: 0,
-    longitud: 0
-  });
+  const [comercio, setComercio] = useState(null);
 
-  // Cargar datos del comercio
+  // Cargar datos del comercio cuando el usuario esté disponible
   useEffect(() => {
-    cargarDatosComercio();
-  }, []);
+    if (user && !authLoading) {
+      cargarDatosComercio();
+    } else if (!authLoading) {
+      setLoading(false);
+    }
+  }, [user, authLoading]);
 
   const cargarDatosComercio = async () => {
     try {
       setLoading(true);
-      const datosReales = getComercioData();
       
-      if (datosReales) {
-        console.log("📊 Datos reales del comercio:", datosReales);
+      console.log("👤 User desde AuthContext:", user);
+      
+      // ✅ BUSCAR EL COMERCIO ID - AHORA CON idComercio (C mayúscula)
+      let comercioId = user?.idComercio; // ✅ CORREGIDO: usar idComercio
+      
+      if (comercioId) {
+        console.log("✅ Comercio ID encontrado:", comercioId);
         
-        // Si no tenemos ID, buscar en la API
-        if (!datosReales.idcomercio) {
-          try {
-            const todosComercios = await comerciosService.getAll();
-            const comercioEncontrado = todosComercios.find(c => 
-              c.email === datosReales.email || c.Email === datosReales.email
-            );
-            
-            if (comercioEncontrado) {
-              actualizarEstadoComercio(comercioEncontrado);
-              setLoading(false);
-              return;
-            }
-          } catch (apiError) {
-            console.error("❌ Error obteniendo datos de API:", apiError);
-          }
+        // Cargar datos completos desde la API
+        try {
+          const comercioCompleto = await comerciosService.getById(comercioId);
+          console.log("📊 Comercio completo desde API:", comercioCompleto);
+          actualizarEstadoComercio(comercioCompleto);
+        } catch (apiError) {
+          console.error("❌ Error cargando desde API, usando datos locales:", apiError);
+          // Si falla la API, usar los datos locales del user
+          actualizarEstadoComercio(user);
         }
-        
-        actualizarEstadoComercio(datosReales);
+      } else {
+        console.warn("⚠️ No se pudo obtener comercioId del user, usando datos locales");
+        // Usar directamente los datos del user
+        actualizarEstadoComercio(user);
       }
     } catch (error) {
       console.error("💥 Error cargando datos del comercio:", error);
+      // Último recurso: usar datos del user
+      actualizarEstadoComercio(user);
     } finally {
       setLoading(false);
     }
   };
 
   const actualizarEstadoComercio = (datos) => {
-    setComercio({
-      idcomercio: datos.idcomercio || datos.Id || datos.id || datos.ID,
+    if (!datos) {
+      console.warn("⚠️ No hay datos para actualizar estado");
+      setComercio(null);
+      return;
+    }
+    
+    console.log("📝 Actualizando estado del comercio con:", datos);
+    
+    const comercioActualizado = {
+      // ✅ CORREGIDO: Usar idComercio (con C mayúscula)
+      idcomercio: datos.idComercio || datos.idcomercio || datos.Id || datos.id,
       nombreComercio: datos.nombreComercio || datos.NombreComercio || "Mi Comercio",
       tipoComercio: datos.tipoComercio || datos.TipoComercio || "Restaurante",
       eslogan: datos.eslogan || datos.Eslogan || "",
@@ -95,32 +90,44 @@ export default function PerfilScreen() {
       sucursales: datos.sucursales || datos.Sucursales || 1,
       latitud: datos.latitud || datos.Latitud || 0,
       longitud: datos.longitud || datos.Longitud || 0
-    });
+    };
+    
+    console.log("✅ Comercio actualizado:", comercioActualizado);
+    setComercio(comercioActualizado);
   };
 
   const actualizarComercio = (nuevosDatos) => {
+    console.log("🔄 Actualizando comercio con:", nuevosDatos);
     setComercio(prev => ({ ...prev, ...nuevosDatos }));
   };
 
   const obtenerDireccionCompleta = () => {
+    if (!comercio) return "Sin dirección";
     return `${comercio.calle || ""} ${comercio.numero || ""}, ${comercio.ciudad || ""}`.trim();
   };
 
-  // Función para cambiar sección que también verifica datos
+  // Función para cambiar sección
   const cambiarSeccion = (seccion) => {
     setSeccionActiva(seccion);
-    // Si los datos están vacíos, recargar
-    if (!comercio.idcomercio && !loading) {
-      cargarDatosComercio();
-    }
   };
 
   // Renderizar sección activa
   const renderSeccionActiva = () => {
-    if (loading) {
+    if (loading || authLoading) {
       return (
         <div className="loading-container">
           <div>Cargando información del comercio...</div>
+        </div>
+      );
+    }
+
+    if (!comercio) {
+      return (
+        <div className="error-container">
+          <div>No se pudo cargar la información del comercio</div>
+          <button onClick={cargarDatosComercio} className="btn-reintentar">
+            Reintentar
+          </button>
         </div>
       );
     }
@@ -149,12 +156,23 @@ export default function PerfilScreen() {
     }
   };
 
-  if (loading) {
+  if (authLoading) {
     return (
       <div className="dashboard-container flex h-screen">
         <Sidebar />
         <main className="main-content flex-1 overflow-y-auto flex items-center justify-center">
-          <div>Cargando perfil...</div>
+          <div>Verificando autenticación...</div>
+        </main>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="dashboard-container flex h-screen">
+        <Sidebar />
+        <main className="main-content flex-1 overflow-y-auto flex items-center justify-center">
+          <div>No hay usuario autenticado</div>
         </main>
       </div>
     );
@@ -167,7 +185,6 @@ export default function PerfilScreen() {
       <main className="main-content flex-1 overflow-y-auto">
         <div className="content-wrapper min-h-full p-8">
           {/* Header */}
-
           <div className="gestion-categorias-header">
             <div className="flex items-center justify-between w-full">
               <div className="flex items-center gap-4">
@@ -192,25 +209,25 @@ export default function PerfilScreen() {
                   <div className="avatar-imagen">
                     <Store size={40} />
                   </div>
-                  <h3 className="avatar-nombre">{comercio.nombreComercio}</h3>
+                  <h3 className="avatar-nombre">{comercio?.nombreComercio || "Mi Comercio"}</h3>
                   <p className="avatar-categoria">
-                    {comercio.eslogan}
+                    {comercio?.eslogan || ""}
                   </p>
                   
                   <div className="info-adicional">
                     <div className="info-item">
                       <Mail size={14} />
-                      <span>{comercio.email || "No especificado"}</span>
+                      <span>{comercio?.email || "No especificado"}</span>
                     </div>
                     <div className="info-item">
                       <Phone size={14} />
-                      <span>{comercio.celular || "No especificado"}</span>
+                      <span>{comercio?.celular || "No especificado"}</span>
                     </div>
                     <div className="info-item">
                       <MapPin size={14} />
-                      <span className="direccion-texto">{obtenerDireccionCompleta() || "Sin dirección"}</span>
+                      <span className="direccion-texto">{obtenerDireccionCompleta()}</span>
                     </div>
-                    {comercio.destacado && (
+                    {comercio?.destacado && (
                       <div className="badge-destacado">
                         ⭐ Comercio Destacado
                       </div>

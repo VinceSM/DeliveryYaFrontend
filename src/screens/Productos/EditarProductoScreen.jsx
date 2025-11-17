@@ -18,7 +18,6 @@ export default function EditarProductoScreen() {
     categoria: '',
     stock: true,
     imagen: '',
-    imagenFile: null,
     unidadMedida: 'unidad',
     oferta: false
   });
@@ -31,61 +30,83 @@ export default function EditarProductoScreen() {
     if (id && productos.length > 0) {
       const producto = productos.find(p => p.idProducto === parseInt(id));
       if (producto) {
-        const precioFormateado = producto.precio 
-          ? formatearPrecio(producto.precio.toString())
-          : '';
+        console.log('📥 Producto encontrado para editar:', producto);
+        
+        // Formatear el precio correctamente
+        const precioNumerico = producto.precio || 0;
+        const precioFormateado = formatearPrecioParaInput(precioNumerico.toString());
         
         setFormData({
           nombre: producto.nombre || '',
           descripcion: producto.descripcion || '',
           precio: precioFormateado,
           categoria: producto.categoria || '',
-          stock: producto.stock !== undefined ? producto.stock > 0 : true,
+          stock: producto.stock !== undefined ? producto.stock : true,
           imagen: producto.imagen || '',
-          imagenFile: null,
           unidadMedida: producto.unidadMedida || 'unidad',
           oferta: producto.oferta || false
         });
+        
+        console.log('📝 FormData inicializado:', {
+          nombre: producto.nombre,
+          precio: precioFormateado,
+          categoria: producto.categoria,
+          stock: producto.stock
+        });
       } else {
         setError('Producto no encontrado');
+        console.error('❌ Producto no encontrado con ID:', id);
       }
     }
   }, [id, productos]);
 
-  const formatearPrecio = (value) => {
-    // Eliminar todo excepto números y coma
-    let cleaned = value.replace(/[^\d,]/g, '');
+  // Función para formatear precio para el input (desde número a string formateado)
+  const formatearPrecioParaInput = (valorNumerico) => {
+    if (!valorNumerico) return "$0,00";
     
-    // Permitir solo una coma
-    const partes = cleaned.split(',');
-    if (partes.length > 2) {
-      cleaned = partes[0] + ',' + partes.slice(1).join('');
-    }
+    // Convertir a número
+    const numero = parseFloat(valorNumerico);
+    if (isNaN(numero)) return "$0,00";
     
-    // Limitar a 2 decimales después de la coma
-    if (partes.length === 2 && partes[1].length > 2) {
-      cleaned = partes[0] + ',' + partes[1].substring(0, 2);
-    }
+    // Formatear con separadores
+    const partes = numero.toFixed(2).split('.');
+    const entero = partes[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    const decimal = partes[1] || '00';
     
-    // Separar parte entera y decimal
-    const [entero, decimal] = cleaned.split(',');
-    
-    // Agregar separadores de miles (puntos)
-    const enteroFormateado = entero.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-    
-    // Construir el resultado
-    let resultado = enteroFormateado;
-    if (decimal !== undefined) {
-      resultado += ',' + decimal;
-    }
-    
-    return resultado ? '$' + resultado : '';
+    return `$${entero},${decimal}`;
   };
+
+  // Función para formatear mientras se escribe
+const formatearPrecio = (value) => {
+  if (value === '' || value === '$') {
+    return '';
+  }
+  
+  // Eliminar todo excepto números
+  let cleaned = value.replace(/[^\d]/g, '');
+  
+  // Si no hay números, retornar vacío
+  if (cleaned === '') {
+    return '';
+  }
+  
+  // ✅ CORREGIDO: NO dividir por 100, mantener el valor real
+  // Convertir a número (ya está en centavos desde el input)
+  const numero = parseInt(cleaned, 10);
+  
+  // Formatear con separadores (parte entera y decimal)
+  const parteEntera = Math.floor(numero / 100);
+  const parteDecimal = numero % 100;
+  
+  const enteroFormateado = parteEntera.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  const decimalFormateado = parteDecimal.toString().padStart(2, '0');
+  
+  return `$${enteroFormateado},${decimalFormateado}`;
+};
 
   const handlePrecioChange = (e) => {
     const value = e.target.value;
     
-    // Si está vacío, permitir
     if (value === '' || value === '$') {
       setFormData(prev => ({ ...prev, precio: '' }));
       return;
@@ -104,52 +125,81 @@ export default function EditarProductoScreen() {
     }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  setError('');
 
-    try {
-      // Validaciones básicas
-      if (!formData.nombre.trim()) {
-        throw new Error('El nombre es requerido');
-      }
+  try {
+    console.log('🔄 Iniciando edición del producto...', { id, formData });
+
+    // Validaciones básicas
+    if (!formData.nombre.trim()) {
+      throw new Error('El nombre es requerido');
+    }
+    
+    // ✅ CORREGIDO: Procesar el precio CORRECTAMENTE
+    let precioNumerico = 0;
+    if (formData.precio) {
+      // Eliminar símbolos y mantener el valor real
+      // Ejemplo: "$11.000,00" -> "11000.00"
+      const precioLimpio = formData.precio
+        .replace('$', '')           // Quitar $
+        .replace(/\./g, '')         // Quitar puntos (separadores de miles)
+        .replace(',', '.');         // Convertir coma decimal a punto
       
-      const precioLimpio = formData.precio.replace(/[$.,]/g, '').replace(',', '.');
-      const precioNumerico = parseFloat(precioLimpio) / 100; // Dividir por 100 porque contamos los centavos
+      precioNumerico = parseFloat(precioLimpio);
       
-      if (!precioLimpio || precioNumerico <= 0) {
+      if (isNaN(precioNumerico) || precioNumerico <= 0) {
         throw new Error('El precio debe ser mayor a 0');
       }
-      if (!formData.categoria) {
-        throw new Error('La categoría es requerida');
-      }
-
-      // Crear FormData para enviar el archivo
-      const formDataToSend = new FormData();
-      formDataToSend.append('nombre', formData.nombre);
-      formDataToSend.append('descripcion', formData.descripcion);
-      formDataToSend.append('precio', precioNumerico);
-      formDataToSend.append('categoria', formData.categoria);
-      formDataToSend.append('stock', formData.stock);
-      formDataToSend.append('unidadMedida', formData.unidadMedida);
-      formDataToSend.append('oferta', formData.oferta);
       
-      if (formData.imagenFile) {
-        formDataToSend.append('imagen', formData.imagenFile);
-      }
-
-      await editarProducto(parseInt(id), formDataToSend);
-
-      navigate('/productos');
-      
-    } catch (error) {
-      console.error('❌ Error editando producto:', error);
-      setError(error.message);
-    } finally {
-      setLoading(false);
+      console.log('💰 Precio procesado:', {
+        original: formData.precio,
+        limpio: precioLimpio,
+        numerico: precioNumerico
+      });
     }
-  };
+    
+    if (!formData.categoria) {
+      throw new Error('La categoría es requerida');
+    }
+
+    console.log('📤 Datos preparados para edición:', {
+      nombre: formData.nombre,
+      precio: precioNumerico,
+      categoria: formData.categoria,
+      stock: formData.stock,
+      descripcion: formData.descripcion,
+      unidadMedida: formData.unidadMedida,
+      oferta: formData.oferta,
+      imagen: formData.imagen
+    });
+
+    // ✅ CORRECTO: Enviar como objeto normal, no como FormData
+    const productoData = {
+      nombre: formData.nombre,
+      descripcion: formData.descripcion,
+      precio: precioNumerico,
+      categoria: formData.categoria,
+      stock: formData.stock,
+      imagen: formData.imagen,
+      unidadMedida: formData.unidadMedida,
+      oferta: formData.oferta
+    };
+
+    await editarProducto(parseInt(id), productoData);
+
+    console.log('✅ Producto editado exitosamente');
+    navigate('/productos');
+    
+  } catch (error) {
+    console.error('❌ Error editando producto:', error);
+    setError(error.message);
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="dashboard-container flex h-screen">
@@ -223,6 +273,9 @@ export default function EditarProductoScreen() {
                     placeholder="$0,00"
                     required
                   />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Formato: $1.000,00
+                  </p>
                 </div>
 
                 {/* Categoría */}
@@ -256,7 +309,6 @@ export default function EditarProductoScreen() {
                       <input
                         type="radio"
                         name="stock"
-                        value="true"
                         checked={formData.stock === true}
                         onChange={() => setFormData(prev => ({ ...prev, stock: true }))}
                         className="text-green-500 focus:ring-green-500"
@@ -270,7 +322,6 @@ export default function EditarProductoScreen() {
                       <input
                         type="radio"
                         name="stock"
-                        value="false"
                         checked={formData.stock === false}
                         onChange={() => setFormData(prev => ({ ...prev, stock: false }))}
                         className="text-red-500 focus:ring-red-500"
@@ -305,7 +356,6 @@ export default function EditarProductoScreen() {
                 <div>
                   <label className="form-label">Imagen del Producto</label>
                   
-                  {/* Input de archivo oculto */}
                   <input
                     type="file"
                     id="imagen-upload"
@@ -314,19 +364,19 @@ export default function EditarProductoScreen() {
                     onChange={(e) => {
                       const file = e.target.files[0];
                       if (file) {
-                        // Crear URL local para la vista previa
-                        const imageUrl = URL.createObjectURL(file);
-                        setFormData(prev => ({
-                          ...prev,
-                          imagen: imageUrl,
-                          imagenFile: file // Guardar el archivo para enviarlo
-                        }));
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                          setFormData(prev => ({
+                            ...prev,
+                            imagen: e.target.result,
+                          }));
+                        };
+                        reader.readAsDataURL(file);
                       }
                     }}
                     className="hidden"
                   />
                   
-                  {/* Área de carga personalizada */}
                   <div className="flex flex-col gap-3">
                     {!formData.imagen ? (
                       <div 
@@ -356,8 +406,7 @@ export default function EditarProductoScreen() {
                           <button
                             type="button"
                             onClick={() => {
-                              setFormData(prev => ({ ...prev, imagen: '', imagenFile: null }));
-                              // Limpiar el input file
+                              setFormData(prev => ({ ...prev, imagen: '' }));
                               document.getElementById('imagen-upload').value = '';
                             }}
                             className="btn-eliminar-imagen"

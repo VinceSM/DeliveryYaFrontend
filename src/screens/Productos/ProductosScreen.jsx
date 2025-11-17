@@ -23,15 +23,19 @@ export default function ProductosScreen() {
     return coincideBusqueda && coincideCategoria;
   });
 
-  const handleEliminarProducto = async (id, nombre) => {
-    if (window.confirm(`¿Estás seguro de eliminar el producto "${nombre}"?`)) {
-      try {
-        await borrarProducto(id);
-      } catch (error) {
-        console.error('Error eliminando producto:', error);
-      }
+const handleEliminarProducto = async (id, nombre) => {
+  if (window.confirm(`¿Estás seguro de eliminar el producto "${nombre}"?`)) {
+    try {
+      console.log('🗑️ Intentando eliminar producto:', { id, nombre });
+      await borrarProducto(id);
+      console.log('✅ Producto eliminado exitosamente');
+    } catch (error) {
+      console.error('❌ Error eliminando producto:', error);
+      // Mostrar alerta al usuario
+      alert(`Error al eliminar el producto: ${error.message}`);
     }
-  };
+  }
+};
 
   if (loading) {
     return (
@@ -183,22 +187,31 @@ export default function ProductosScreen() {
                 {productosFiltrados.map((producto) => (
                   <div key={producto.idProducto} className="producto-item">
                     {/* Imagen del producto */}
-                    <div className="producto-imagen">
-                      {producto.imagen && producto.imagen !== 'default.jpg' ? (
-                        <img
-                          src={producto.imagen}
-                          alt={producto.nombre}
-                          className="w-full h-full object-cover rounded-lg"
-                          onError={(e) => {
-                            e.target.style.display = 'none';
-                            e.target.nextSibling.style.display = 'flex';
-                          }}
-                        />
-                      ) : null}
-                      <div className={`w-full h-full bg-gray-100 rounded-lg flex items-center justify-center ${producto.imagen && producto.imagen !== 'default.jpg' ? 'hidden' : 'flex'}`}>
-                        <Package size={24} className="text-gray-400" />
-                      </div>
+                  <div className="producto-imagen">
+                    {producto.imagen && producto.imagen !== 'default.jpg' && producto.imagen !== 'null' && producto.imagen !== 'undefined' ? (
+                      <img
+                        src={producto.imagen}
+                        alt={producto.nombre}
+                        className="w-full h-full object-cover rounded-lg"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          // Mostrar el placeholder si la imagen falla al cargar
+                          const placeholder = e.target.parentElement.querySelector('.image-placeholder');
+                          if (placeholder) placeholder.style.display = 'flex';
+                        }}
+                      />
+                    ) : null}
+                    <div 
+                      className={`w-full h-full bg-gray-100 rounded-lg flex items-center justify-center image-placeholder ${
+                        producto.imagen && 
+                        producto.imagen !== 'default.jpg' && 
+                        producto.imagen !== 'null' && 
+                        producto.imagen !== 'undefined' ? 'hidden' : 'flex'
+                      }`}
+                    >
+                      <Package size={24} className="text-gray-400" />
                     </div>
+                  </div>
 
                     {/* Información principal */}
                     <div className="producto-info">

@@ -25,11 +25,11 @@ export const API_CONFIG = {
     },
     PRODUCTOS: {
       BASE: "/api/categorias/{idCategoria}/productos",
-      BY_ID: "/api/categorias/products/{idProducto}",
+      BY_ID: "/api/categorias/productos/{idProducto}", 
       CREATE: "/api/categorias/{idCategoria}/productos",
-      UPDATE: "/api/categorias/products/{idProducto}",
-      DELETE: "/api/categorias/products/{idProducto}",
-      SEARCH: "/api/categorias/products/buscar",
+      UPDATE: "/api/categorias/productos/{idProducto}",
+      DELETE: "/api/categorias/productos/{idProducto}",
+      SEARCH: "/api/categorias/productos/buscar", 
       BY_CATEGORIA: "/api/categorias/{idCategoria}/productos"
     },
     STOCK: {

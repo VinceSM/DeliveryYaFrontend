@@ -26,8 +26,8 @@ const handleResponse = async (response) => {
   }
 };
 
-// Función mapearProductoParaBackend CORREGIDA
-const mapearProductoParaBackend = async (productoData) => {
+// Función mapearProductoParaBackend 
+const mapearProductoParaBackend = async (productoData, esEdicion = false) => {
   // Obtener el ID de la categoría seleccionada
   let categoriaId = 1;
   
@@ -50,8 +50,7 @@ const mapearProductoParaBackend = async (productoData) => {
     }
   }
 
-  // ✅ OBTENER EL COMERCIO ID DEL USUARIO AUTENTICADO
-  const comercioId = await obtenerComercioIdAutenticado();
+  const comercioId = esEdicion ? null : await obtenerComercioIdAutenticado();
 
   const productoMapeado = {
     nombre: productoData.nombre,
@@ -60,12 +59,12 @@ const mapearProductoParaBackend = async (productoData) => {
     precioUnitario: parseFloat(productoData.precio),
     oferta: productoData.oferta || false,
     stock: productoData.stock !== undefined ? productoData.stock : true,
-    fotoPortada: productoData.imagen || 'default.jpg',
+    fotoPortada: productoData.imagen || null,
     categoriaId: categoriaId,
-    comercioId: comercioId // ✅ AGREGAR COMERCIO ID
+    ...(comercioId && !esEdicion && { comercioId: comercioId })
   };
 
-  console.log('📤 Producto mapeado para backend:', productoMapeado);
+  console.log('📤 Producto mapeado para backend:', productoMapeado, `(esEdicion: ${esEdicion})`);
   return productoMapeado;
 };
 
@@ -82,10 +81,11 @@ const mapearProductoDesdeBackend = (productoData) => {
     nombre: productoData.nombre || 'Sin nombre',
     descripcion: productoData.descripcion || '',
     precio: productoData.precioUnitario || productoData.precio || 0,
-    imagen: productoData.fotoPortada || productoData.imagen || 'default.jpg',
+    // ✅ CORREGIDO: No usar imagen por defecto, usar null o string vacío
+    imagen: productoData.fotoPortada || productoData.imagen || null,
     categoria: productoData.categoria?.nombre || productoData.categoriaNombre || 'General',
-    stock: productoData.stock !== undefined ? productoData.stock : true, // ✅ AGREGADO
-    estado: productoData.stock ? 'activo' : 'agotado', // ✅ CORREGIDO: usar booleano directamente
+    stock: productoData.stock !== undefined ? productoData.stock : true,
+    estado: productoData.stock ? 'activo' : 'agotado',
     unidadMedida: productoData.unidadMedida || 'unidad',
     oferta: productoData.oferta || false
   };
@@ -162,7 +162,7 @@ export const getProductosComercio = async () => {
   }
 };
 
-// Crear un nuevo producto - CORREGIDO
+// Crear un nuevo producto
 export const crearProducto = async (productoData) => {
   try {
     const token = getToken();
@@ -186,7 +186,8 @@ export const crearProducto = async (productoData) => {
     const categoriaId = categoriaSeleccionada.idCategoria;
     console.log('✅ Usando categoría ID:', categoriaId);
 
-    const requestBody = await mapearProductoParaBackend(productoData);
+    // ✅ SOLUCIÓN: Pasar false como segundo parámetro (o omitir) para creación
+    const requestBody = await mapearProductoParaBackend(productoData, false);
     
     // ✅ USAR ENDPOINT CORRECTO: /api/CategoriaProducto/{idCategoria}/crear
     const url = buildUrl(API_CONFIG.ENDPOINTS.PRODUCTOS.CREATE, { 
@@ -194,7 +195,7 @@ export const crearProducto = async (productoData) => {
     });
     
     console.log('🔗 URL crear producto:', url);
-    console.log('📤 Request body:', requestBody);
+    console.log('📤 Request body para creación:', requestBody);
     
     const response = await fetch(url, {
       method: 'POST',
@@ -221,7 +222,7 @@ export const crearProducto = async (productoData) => {
   }
 };
 
-// Actualizar un producto - CORREGIDO
+// Actualizar un producto
 export const actualizarProducto = async (idProducto, productoData) => {
   try {
     const token = getToken();
@@ -232,14 +233,19 @@ export const actualizarProducto = async (idProducto, productoData) => {
 
     console.log('✏️ Actualizando producto:', idProducto);
     
-    const requestBody = await mapearProductoParaBackend(productoData);
+    // ✅ SOLUCIÓN: Pasar true como segundo parámetro para indicar que es edición
+    const requestBody = await mapearProductoParaBackend(productoData, true);
     
-    // ✅ USAR ENDPOINT CORRECTO: /api/CategoriaProducto/producto/{id}/editar
+    // ✅ AGREGAR EL ID DEL PRODUCTO AL REQUEST BODY (según tu DTO UpdateProductoRequest)
+    requestBody.idProducto = idProducto;
+    
+    // ✅ USAR ENDPOINT CORREGIDO: /api/categorias/productos/{idProducto}
     const url = buildUrl(API_CONFIG.ENDPOINTS.PRODUCTOS.UPDATE, { 
-      id: idProducto 
+      idProducto: idProducto 
     });
     
     console.log('🔗 URL actualizar producto:', url);
+    console.log('📤 Request body para edición:', requestBody);
     
     const response = await fetch(url, {
       method: 'PUT',
@@ -250,10 +256,39 @@ export const actualizarProducto = async (idProducto, productoData) => {
       body: JSON.stringify(requestBody),
     });
 
-    await handleResponse(response);
+    console.log('📥 Status de respuesta actualizar producto:', response.status);
     
-    const data = await response.json();
-    console.log('✅ Producto actualizado:', data);
+    // ✅ CORREGIR: Manejar la respuesta sin leerla múltiples veces
+    if (!response.ok) {
+      // Leer el error una sola vez
+      const errorText = await response.text();
+      let errorMessage = `Error ${response.status}: ${response.statusText}`;
+      
+      try {
+        // Intentar parsear como JSON si es posible
+        const errorData = JSON.parse(errorText);
+        errorMessage = errorData.mensaje || errorData.message || errorMessage;
+      } catch (e) {
+        // Si no es JSON, usar el texto plano
+        errorMessage = errorText || errorMessage;
+      }
+      
+      console.error('❌ Detalles del error:', errorMessage);
+      throw new Error(errorMessage);
+    }
+    
+    // Leer la respuesta exitosa
+    const responseText = await response.text();
+    let data;
+    
+    try {
+      data = JSON.parse(responseText);
+    } catch (e) {
+      console.warn('⚠️ La respuesta no es JSON, usando texto plano');
+      data = { mensaje: responseText };
+    }
+    
+    console.log('✅ Producto actualizado exitosamente:', data);
     
     return mapearProductoDesdeBackend(data.data || data);
     
@@ -263,7 +298,7 @@ export const actualizarProducto = async (idProducto, productoData) => {
   }
 };
 
-// Eliminar un producto - CORREGIDO
+// Eliminar un producto
 export const eliminarProducto = async (idProducto) => {
   try {
     const token = getToken();
@@ -274,9 +309,9 @@ export const eliminarProducto = async (idProducto) => {
 
     console.log('🗑️ Eliminando producto...', { idProducto });
     
-    // ✅ USAR ENDPOINT CORRECTO: /api/CategoriaProducto/producto/{id}/eliminar
+    // ✅ CORREGIDO: Usar el endpoint correcto con idProducto
     const url = buildUrl(API_CONFIG.ENDPOINTS.PRODUCTOS.DELETE, { 
-      id: idProducto 
+      idProducto: idProducto 
     });
     
     console.log('🔗 URL eliminar producto:', url);
@@ -291,9 +326,25 @@ export const eliminarProducto = async (idProducto) => {
 
     console.log('📥 Status de respuesta eliminar producto:', response.status);
     
-    await handleResponse(response);
+    // ✅ MEJORAR: Manejar mejor la respuesta
+    if (!response.ok) {
+      let errorMessage = `Error ${response.status}: ${response.statusText}`;
+      try {
+        const errorText = await response.text();
+        const errorData = JSON.parse(errorText);
+        errorMessage = errorData.mensaje || errorData.message || errorMessage;
+      } catch (e) {
+        // Si no se puede parsear como JSON, usar el texto plano
+        const errorText = await response.text();
+        errorMessage = errorText || errorMessage;
+      }
+      throw new Error(errorMessage);
+    }
 
-    console.log('✅ Producto eliminado del backend');
+    // ✅ El backend retorna un mensaje de éxito
+    const result = await response.json();
+    console.log('✅ Producto eliminado del backend:', result);
+    
     return true;
     
   } catch (error) {

@@ -142,23 +142,23 @@ export const useProductos = () => {
   };
 
   // Eliminar producto
-  const borrarProducto = async (id) => {
-    try {
-      setError(null);
-      console.log('🗑️ Eliminando producto:', id);
-      
-      await eliminarProducto(id);
-      
-      setProductos(prev => prev.filter(p => p.idProducto !== id));
-      
-      console.log('✅ Producto eliminado exitosamente');
-      
-    } catch (err) {
-      console.error('❌ Error eliminando producto:', err);
-      setError(err.message);
-      throw err;
-    }
-  };
+const borrarProducto = async (id) => {
+  try {
+    setError(null);
+    console.log('🗑️ Eliminando producto desde hook:', id);
+    
+    await eliminarProducto(id);
+    
+    setProductos(prev => prev.filter(p => p.idProducto !== id));
+    
+    console.log('✅ Producto eliminado exitosamente desde hook');
+    
+  } catch (err) {
+    console.error('❌ Error eliminando producto desde hook:', err);
+    setError(err.message);
+    throw err;
+  }
+};
 
   // Recargar categorías del comercio
   const recargarCategorias = async () => {
