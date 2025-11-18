@@ -7,6 +7,8 @@ const sections = {
   comercios: 'Comercios',
   repartidores: 'Repartidores',
   categorias: 'Categorías',
+  estadosPedido: 'Estados Pedido', 
+  metodosPago: 'Métodos Pago',
   reportes: 'Reportes'
 };
 

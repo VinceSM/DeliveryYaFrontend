@@ -8,6 +8,8 @@ import GestionComercios from '../../components/Admin/Comercios/GestionComercios'
 import GestionRepartidores from '../../components/Admin/Repartidores/GestionRepartidores';
 import GestionCategorias from '../../components/Admin/Categorias/GestionCategorias';
 import Reportes from '../../components/Admin/Reportes/Reportes';
+import GestionEstadoPedido from '../../components/Admin/EstadoPedido/GestionEstadoPedido';
+import GestionMetodoPago from '../../components/Admin/MetodoPago/GestionMetodoPago';
 import '../../styles/screens/Admin/AdminDashboard.css';
 
 export default function AdminDashboardScreen() {
@@ -44,6 +46,8 @@ export default function AdminDashboardScreen() {
       comercios: <GestionComercios />,
       repartidores: <GestionRepartidores />,
       categorias: <GestionCategorias />,
+      estadosPedido: <GestionEstadoPedido />,
+      metodosPago: <GestionMetodoPago />,  
       reportes: <Reportes />
     };
 

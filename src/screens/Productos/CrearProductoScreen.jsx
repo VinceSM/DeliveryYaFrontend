@@ -36,60 +36,61 @@ export default function CrearProductoScreen() {
   }
 
 const formatearPrecio = (valor) => {
-  if (!valor) return ""
+  if (!valor) return "";
   
-  // Remove all non-numeric characters
-  const numeros = valor.replace(/[^\d]/g, "")
+  // Eliminar todo excepto números
+  const numeros = valor.replace(/[^\d]/g, "");
   
-  if (numeros === '') return ''
+  if (numeros === '') return '';
   
-  // ✅ CORREGIDO: Convertir a formato correcto sin multiplicar
+  // Convertir a formato correcto
   const parteEntera = Math.floor(parseInt(numeros) / 100);
   const parteDecimal = parseInt(numeros) % 100;
   
-  const enteroFormateado = parteEntera.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
-  const decimalFormateado = parteDecimal.toString().padStart(2, '0')
+  const enteroFormateado = parteEntera.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  const decimalFormateado = parteDecimal.toString().padStart(2, '0');
   
-  return `$${enteroFormateado},${decimalFormateado}`
-}
+  return `$${enteroFormateado},${decimalFormateado}`;
+};
+
 
 const handlePrecioChange = (e) => {
-  const inputValue = e.target.value
+  const inputValue = e.target.value;
   
-  // Remove all non-numeric characters
-  const valorLimpio = inputValue.replace(/[^\d]/g, "")
-  
-  // Store clean value in formData
+  // Guardar el valor formateado en el estado (para mostrar al usuario)
+  const precioFormateado = formatearPrecio(inputValue);
   setFormData((prev) => ({
     ...prev,
-    precio: valorLimpio,
-  }))
-}
+    precio: precioFormateado,
+  }));
+};
 
- const handleSubmit = async (e) => {
-  e.preventDefault()
-  setLoading(true)
-  setError("")
+
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  setError("");
 
   try {
     // Validaciones básicas
     if (!formData.nombre.trim()) {
-      throw new Error("El nombre es requerido")
+      throw new Error("El nombre es requerido");
     }
     
     // ✅ CORREGIDO: Procesar precio correctamente
     let precioNumerico = 0;
     if (formData.precio) {
-      // Eliminar símbolos y mantener el valor real
+      // Convertir el precio formateado a número
+      // Ejemplo: "$26.000,00" -> 26000.00
       const precioLimpio = formData.precio
-        .replace('$', '')
-        .replace(/\./g, '')
-        .replace(',', '.');
+        .replace('$', '')           // Quitar $
+        .replace(/\./g, '')         // Quitar puntos (separadores de miles)
+        .replace(',', '.');         // Convertir coma decimal a punto
       
       precioNumerico = parseFloat(precioLimpio);
       
       if (isNaN(precioNumerico) || precioNumerico <= 0) {
-        throw new Error("El precio debe ser mayor a 0")
+        throw new Error("El precio debe ser mayor a 0");
       }
       
       console.log('💰 Precio procesado (creación):', {
@@ -100,28 +101,31 @@ const handlePrecioChange = (e) => {
     }
     
     if (!formData.categoria) {
-      throw new Error("La categoría es requerida")
+      throw new Error("La categoría es requerida");
     }
 
-    console.log("📤 Enviando datos del producto:", formData)
+    console.log("📤 Enviando datos del producto:", {
+      ...formData,
+      precio: precioNumerico
+    });
 
-    const comercioId = await obtenerComercioIdAutenticado()
-    console.log("🏪 ComercioId que se enviará:", comercioId)
+    const comercioId = await obtenerComercioIdAutenticado();
+    console.log("🏪 ComercioId que se enviará:", comercioId);
 
     await agregarProducto({
       ...formData,
-      precio: precioNumerico, // ✅ Usar el precio ya procesado
-    })
+      precio: precioNumerico, 
+    });
 
     // Redirigir a la lista de productos
-    navigate("/productos")
+    navigate("/productos");
   } catch (error) {
-    console.error("❌ Error creando producto:", error)
-    setError(error.message)
+    console.error("❌ Error creando producto:", error);
+    setError(error.message);
   } finally {
-    setLoading(false)
+    setLoading(false);
   }
-}
+};
 
   return (
     <div className="dashboard-container flex h-screen">
@@ -190,12 +194,15 @@ const handlePrecioChange = (e) => {
                   <input
                     type="text"
                     name="precio"
-                    value={formatearPrecio(formData.precio)}
+                    value={formData.precio} 
                     onChange={handlePrecioChange}
                     className="form-input"
                     placeholder="$0,00"
                     required
                   />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Formato: $1.000,00
+                  </p>
                 </div>
 
                 {/* Categoría */}
