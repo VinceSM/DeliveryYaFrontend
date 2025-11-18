@@ -78,6 +78,22 @@ export const API_CONFIG = {
       ADD: "/api/comercios/{comercioId}/categorias/{categoriaId}",
       REMOVE: "/api/comercios/{comercioId}/categorias/{categoriaId}",
       BY_CATEGORIA: "/api/categorias/{categoriaId}/comercios"
+    },
+    ESTADOS_PEDIDO: {
+      GET_ALL: '/api/estados-pedido',
+      GET_BY_ID: '/api/estados-pedido/:id',
+      CREATE: '/api/estados-pedido',
+      UPDATE: '/api/estados-pedido/:id',
+      DELETE: '/api/estados-pedido/:id',
+      GET_BY_TIPO: '/api/estados-pedido/tipo/:tipo'
+    },
+    METODOS_PAGO: {
+      GET_ALL: '/api/metodos-pago-pedido',
+      GET_BY_ID: '/api/metodos-pago-pedido/:id',
+      CREATE: '/api/metodos-pago-pedido',
+      UPDATE: '/api/metodos-pago-pedido/:id',
+      DELETE: '/api/metodos-pago-pedido/:id',
+      GET_BY_METODO: '/api/metodos-pago-pedido/metodo/:metodo'
     }
   }
 };
