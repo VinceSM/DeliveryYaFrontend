@@ -1,260 +1,53 @@
-/* PedidosScreen.css */
-.filtros-pedidos {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 2rem;
-  align-items: center;
-  flex-wrap: wrap;
+/* Estilos para los items del pedido */
+.pedido-items {
+  border-top: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 12px 0;
+  margin: 12px 0;
 }
 
-.search-box {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: white;
-  padding: 0.75rem 1rem;
-  border-radius: 12px;
-  border: 1px solid #e9ecef;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  flex: 1;
-  min-width: 300px;
+.items-title {
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 8px;
+  font-size: 14px;
 }
 
-.search-input {
-  border: none;
-  outline: none;
-  flex: 1;
-  font-size: 0.9rem;
-  color: #333;
-}
-
-.search-input::placeholder {
-  color: #6c757d;
-}
-
-.filtros-estado {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: white;
-  padding: 0.75rem 1rem;
-  border-radius: 12px;
-  border: 1px solid #e9ecef;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-.estado-select {
-  border: none;
-  outline: none;
-  font-size: 0.9rem;
-  color: #333;
-  background: white;
-  cursor: pointer;
-}
-
-.pedidos-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-}
-
-.pedido-card {
-  background: white;
-  border-radius: 16px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  border: 1px solid #f1f3f4;
-  transition: all 0.3s ease;
-}
-
-.pedido-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
-}
-
-.pedido-header {
+.item-detalle {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 1rem;
-}
-
-.pedido-cliente {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #333;
-  margin: 0 0 0.25rem 0;
-}
-
-.pedido-direccion {
-  font-size: 0.85rem;
-  color: #6c757d;
-  margin: 0;
-}
-
-.pedido-estado {
-  display: flex;
   align-items: center;
-  gap: 0.25rem;
-  padding: 0.25rem 0.75rem;
-  border-radius: 20px;
-  color: white;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: capitalize;
+  padding: 4px 0;
+  font-size: 13px;
 }
 
-.pedido-detalles {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.75rem;
-  margin-bottom: 1.5rem;
-  padding: 1rem;
-  background: #f8f9fa;
-  border-radius: 10px;
-}
-
-.detalle-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-
-.detalle-label {
-  font-size: 0.75rem;
-  color: #6c757d;
-  font-weight: 500;
-  margin-bottom: 0.25rem;
-}
-
-.detalle-valor {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #333;
-}
-
-.pedido-acciones {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.btn-accion {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.5rem 0.75rem;
-  border: none;
-  border-radius: 8px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
+.item-nombre {
   flex: 1;
-  justify-content: center;
+  color: #6b7280;
 }
 
-.btn-aceptar {
-  background: rgba(40, 167, 69, 0.1);
-  color: #28a745;
-  border: 1px solid rgba(40, 167, 69, 0.2);
+.item-cantidad {
+  color: #374151;
+  font-weight: 500;
+  margin: 0 8px;
 }
 
-.btn-aceptar:hover {
-  background: #28a745;
-  color: white;
-}
-
-.btn-rechazar {
-  background: rgba(255, 77, 77, 0.1);
-  color: #FF4D4D;
-  border: 1px solid rgba(255, 77, 77, 0.2);
-}
-
-.btn-rechazar:hover {
-  background: #FF4D4D;
-  color: white;
-}
-
-.btn-detalles {
-  background: rgba(108, 117, 125, 0.1);
-  color: #6c757d;
-  border: 1px solid rgba(108, 117, 125, 0.2);
-}
-
-.btn-detalles:hover {
-  background: #6c757d;
-  color: white;
-}
-
-.estadisticas-pedidos {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.5rem;
-  margin-top: 2rem;
-}
-
-.estadistica-card {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  background: white;
-  padding: 1.5rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-  border: 1px solid #f1f3f4;
-}
-
-.estadistica-icon {
-  width: 50px;
-  height: 50px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.estadistica-info h3 {
-  font-size: 0.9rem;
+.item-precio {
+  color: #059669;
   font-weight: 600;
-  color: #333;
-  margin: 0 0 0.25rem 0;
 }
 
-.estadistica-info p {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #333;
-  margin: 0;
+/* Botones de estado */
+.btn-entregado {
+  background-color: #28a745;
+  color: white;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .filtros-pedidos {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  
-  .search-box {
-    min-width: auto;
-  }
-  
-  .pedidos-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .pedido-detalles {
-    grid-template-columns: 1fr;
-  }
-  
-  .estadisticas-pedidos {
-    grid-template-columns: 1fr;
-  }
+.btn-entregado:hover {
+  background-color: #218838;
 }
 
-/* Agrega esto a tu src/styles/screens/PedidosScreen.css */
+/* Indicador de pago mejorado */
 .pago-indicator {
   display: flex;
   align-items: center;
@@ -266,35 +59,51 @@
 }
 
 .pago-indicator.pagado {
-  background-color: rgba(40, 167, 69, 0.1);
-  color: #28a745;
+  background-color: #d1fae5;
+  color: #065f46;
 }
 
 .pago-indicator.no-pagado {
-  background-color: rgba(255, 77, 77, 0.1);
-  color: #FF4D4D;
+  background-color: #fef3c7;
+  color: #92400e;
 }
 
-.pedido-codigo {
-  font-size: 12px;
-  color: #6c757d;
+/* Información de contacto */
+.pedido-telefono {
   margin-top: 2px;
 }
 
-.btn-pagado {
-  background-color: #28a745;
+/* Estados mejorados */
+.pedido-estado {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
   color: white;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
 }
 
-.btn-pagado:hover {
-  background-color: #218838;
-}
-
-.btn-no-pagado {
-  background-color: #6c757d;
-  color: white;
-}
-
-.btn-no-pagado:hover {
-  background-color: #5a6268;
+/* Responsive */
+@media (max-width: 768px) {
+  .pedido-items {
+    padding: 8px 0;
+  }
+  
+  .item-detalle {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+  
+  .pedido-acciones {
+    flex-direction: column;
+  }
+  
+  .btn-accion {
+    width: 100%;
+    justify-content: center;
+  }
 }

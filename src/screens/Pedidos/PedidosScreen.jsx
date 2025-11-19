@@ -1,9 +1,20 @@
-// src/screens/Pedidos/PedidosScreen.jsx
 import { useState, useEffect } from "react";
 import "../../styles/screens/PedidosScreen.css";
 import Sidebar from "../../components/screens/Sidebar";
 import { usePedidos } from "../../hooks/usePedidos";
-import { ShoppingCart, Search, Filter, Plus, Clock, CheckCircle, XCircle, Loader, DollarSign } from "lucide-react";
+import { 
+  ShoppingCart, 
+  Search, 
+  Filter, 
+  Plus, 
+  Clock, 
+  CheckCircle, 
+  XCircle, 
+  Loader, 
+  DollarSign,
+  Truck,
+  Package
+} from "lucide-react";
 
 export default function PedidosScreen() {
   const [active, setActive] = useState("pedidos");
@@ -17,48 +28,57 @@ export default function PedidosScreen() {
     aceptarPedido, 
     rechazarPedido, 
     completarPedido,
+    marcarComoEntregado,
     marcarComoPagado,
-    marcarComoNoPagado
+    marcarComoNoPagado,
+    refrescarPedidos
   } = usePedidos();
 
   // Función para formatear los datos del pedido según tu modelo
   const formatearPedido = (pedido) => {
     // Mapear estados según tu base de datos
     const estadoMapping = {
-      1: { texto: 'pendiente', color: '#FF4D4D' },
-      2: { texto: 'confirmado', color: '#FFC947' },
-      3: { texto: 'preparando', color: '#FFC947' },
-      4: { texto: 'en camino', color: '#4D79FF' },
-      5: { texto: 'entregado', color: '#28a745' },
-      6: { texto: 'cancelado', color: '#6c757d' }
+      1: { texto: 'pendiente', color: '#FFA726', icono: <Clock size={16} /> },
+      2: { texto: 'confirmado', color: '#29B6F6', icono: <CheckCircle size={16} /> },
+      3: { texto: 'preparando', color: '#FFCA28', icono: <Package size={16} /> },
+      4: { texto: 'en camino', color: '#4D79FF', icono: <Truck size={16} /> },
+      5: { texto: 'entregado', color: '#28a745', icono: <CheckCircle size={16} /> },
+      6: { texto: 'cancelado', color: '#6c757d', icono: <XCircle size={16} /> }
     };
 
-    const estadoInfo = estadoMapping[pedido.EstadoPedidoIdEstado] || { texto: 'pendiente', color: '#FF4D4D' };
+    const estadoInfo = estadoMapping[pedido.EstadoPedidoIdEstado] || { 
+      texto: 'pendiente', 
+      color: '#FFA726', 
+      icono: <Clock size={16} /> 
+    };
 
-    // Calcular total si no está en el pedido
-    const total = pedido.subtotalPedido || 
-                 (pedido.ItemsPedido?.reduce((sum, item) => sum + (item.total || 0), 0) || 0);
+    // Calcular total del pedido para este comercio específico
+    const total = pedido.ItemsPedido
+      ?.filter(item => item.ComercioIdComercio === pedido.comercioId) // Filtrar items del comercio actual
+      ?.reduce((sum, item) => sum + (item.total || 0), 0) || 0;
+
+    // Obtener items del comercio actual
+    const itemsDelComercio = pedido.ItemsPedido
+      ?.filter(item => item.ComercioIdComercio === pedido.comercioId) || [];
 
     return {
       id: pedido.idpedido,
       cliente: pedido.Cliente?.nombre || `Cliente ${pedido.ClienteIdCliente}`,
-      items: pedido.ItemsPedido?.length || 0,
+      telefono: pedido.Cliente?.telefono || 'No disponible',
+      items: itemsDelComercio.length,
+      itemsDetalles: itemsDelComercio,
       total: total,
       estado: estadoInfo.texto,
+      estadoId: pedido.EstadoPedidoIdEstado,
       estadoColor: estadoInfo.color,
+      estadoIcono: estadoInfo.icono,
       tiempo: calcularTiempo(pedido.fecha),
-      direccion: obtenerDireccion(pedido),
+      direccion: pedido.DireccionEnvio || 'Dirección no disponible',
       fecha: pedido.fecha,
-      pagado: pedido.pagado,
+      pagado: pedido.pagado || false,
       codigo: pedido.codigo,
       datosOriginales: pedido
     };
-  };
-
-  const obtenerDireccion = (pedido) => {
-    // Aquí deberías obtener la dirección real del cliente
-    // Por ahora usamos un placeholder
-    return pedido.Cliente?.direccion || 'Dirección no disponible';
   };
 
   const calcularTiempo = (fecha) => {
@@ -77,47 +97,48 @@ export default function PedidosScreen() {
     }
   };
 
-  const pedidosFormateados = pedidos.map(formatearPedido);
+  const pedidosFormateados = pedidos.map(pedido => ({
+    ...formatearPedido(pedido),
+    comercioId: pedido.comercioId // Asegurar que tenemos el ID del comercio
+  }));
 
   const pedidosFiltrados = pedidosFormateados.filter(pedido => {
-    const coincideBusqueda = pedido.cliente.toLowerCase().includes(busqueda.toLowerCase()) ||
-                           pedido.direccion.toLowerCase().includes(busqueda.toLowerCase()) ||
-                           pedido.codigo?.toLowerCase().includes(busqueda.toLowerCase());
+    const coincideBusqueda = 
+      pedido.cliente.toLowerCase().includes(busqueda.toLowerCase()) ||
+      pedido.direccion.toLowerCase().includes(busqueda.toLowerCase()) ||
+      pedido.codigo?.toLowerCase().includes(busqueda.toLowerCase()) ||
+      pedido.telefono?.includes(busqueda);
+    
     const coincideEstado = filtroEstado === "todos" || pedido.estado === filtroEstado;
+    
     return coincideBusqueda && coincideEstado;
   });
-
-  const getEstadoIcono = (estado) => {
-    switch (estado) {
-      case "pendiente": return <Clock size={16} />;
-      case "confirmado": return <CheckCircle size={16} />;
-      case "preparando": return <Clock size={16} />;
-      case "en camino": return <Clock size={16} />;
-      case "entregado": return <CheckCircle size={16} />;
-      case "cancelado": return <XCircle size={16} />;
-      default: return <Clock size={16} />;
-    }
-  };
 
   const handleAceptarPedido = async (pedidoId) => {
     const success = await aceptarPedido(pedidoId);
     if (success) {
-      // Puedes agregar una notificación aquí
-      console.log('Pedido aceptado');
+      console.log('✅ Pedido aceptado');
     }
   };
 
   const handleRechazarPedido = async (pedidoId) => {
     const success = await rechazarPedido(pedidoId);
     if (success) {
-      console.log('Pedido rechazado');
+      console.log('❌ Pedido rechazado');
     }
   };
 
   const handleCompletarPedido = async (pedidoId) => {
     const success = await completarPedido(pedidoId);
     if (success) {
-      console.log('Pedido completado');
+      console.log('🚚 Pedido marcado como en camino');
+    }
+  };
+
+  const handleMarcarEntregado = async (pedidoId) => {
+    const success = await marcarComoEntregado(pedidoId);
+    if (success) {
+      console.log('🎉 Pedido marcado como entregado');
     }
   };
 
@@ -127,7 +148,58 @@ export default function PedidosScreen() {
       : await marcarComoPagado(pedidoId);
     
     if (success) {
-      console.log(`Pedido ${actualmentePagado ? 'marcado como no pagado' : 'marcado como pagado'}`);
+      console.log(`💰 Pedido ${actualmentePagado ? 'marcado como no pagado' : 'marcado como pagado'}`);
+    }
+  };
+
+  // Función para renderizar las acciones según el estado
+  const renderAcciones = (pedido) => {
+    switch (pedido.estadoId) {
+      case 1: // PENDIENTE
+        return (
+          <>
+            <button 
+              className="btn-accion btn-aceptar"
+              onClick={() => handleAceptarPedido(pedido.id)}
+            >
+              <CheckCircle size={16} />
+              Aceptar
+            </button>
+            <button 
+              className="btn-accion btn-rechazar"
+              onClick={() => handleRechazarPedido(pedido.id)}
+            >
+              <XCircle size={16} />
+              Rechazar
+            </button>
+          </>
+        );
+      
+      case 2: // CONFIRMADO
+      case 3: // PREPARANDO
+        return (
+          <button 
+            className="btn-accion btn-completar"
+            onClick={() => handleCompletarPedido(pedido.id)}
+          >
+            <Truck size={16} />
+            Marcar como En Camino
+          </button>
+        );
+      
+      case 4: // EN CAMINO
+        return (
+          <button 
+            className="btn-accion btn-entregado"
+            onClick={() => handleMarcarEntregado(pedido.id)}
+          >
+            <CheckCircle size={16} />
+            Marcar como Entregado
+          </button>
+        );
+      
+      default:
+        return null;
     }
   };
 
@@ -153,7 +225,7 @@ export default function PedidosScreen() {
           <div className="text-center">
             <p className="text-red-500 mb-4">Error: {error}</p>
             <button 
-              onClick={() => window.location.reload()}
+              onClick={refrescarPedidos}
               className="btn-primary"
             >
               Reintentar
@@ -179,10 +251,15 @@ export default function PedidosScreen() {
                   {pedidosFormateados.length} pedidos en total • {pedidosFiltrados.length} filtrados
                 </p>
               </div>
-              <button className="btn-primary">
-                <Plus size={18} />
-                Nuevo Pedido
-              </button>
+              <div className="flex gap-2">
+                <button 
+                  onClick={refrescarPedidos}
+                  className="btn-secondary"
+                >
+                  <Loader size={18} />
+                  Actualizar
+                </button>
+              </div>
             </div>
           </div>
 
@@ -192,7 +269,7 @@ export default function PedidosScreen() {
               <Search size={20} />
               <input
                 type="text"
-                placeholder="Buscar por cliente, dirección o código..."
+                placeholder="Buscar por cliente, dirección, teléfono o código..."
                 value={busqueda}
                 onChange={(e) => setBusqueda(e.target.value)}
                 className="search-input"
@@ -234,6 +311,9 @@ export default function PedidosScreen() {
                         <div>
                           <h3 className="pedido-cliente">{pedido.cliente}</h3>
                           <p className="pedido-direccion">{pedido.direccion}</p>
+                          <p className="pedido-telefono text-sm text-gray-600">
+                            📞 {pedido.telefono}
+                          </p>
                           {pedido.codigo && (
                             <p className="pedido-codigo">Código: {pedido.codigo}</p>
                           )}
@@ -251,9 +331,21 @@ export default function PedidosScreen() {
                       className="pedido-estado"
                       style={{ backgroundColor: pedido.estadoColor }}
                     >
-                      {getEstadoIcono(pedido.estado)}
+                      {pedido.estadoIcono}
                       <span>{pedido.estado}</span>
                     </div>
+                  </div>
+                  
+                  {/* Detalles de items del pedido */}
+                  <div className="pedido-items">
+                    <h4 className="items-title">Productos:</h4>
+                    {pedido.itemsDetalles.map((item, index) => (
+                      <div key={index} className="item-detalle">
+                        <span className="item-nombre">{item.nombre || `Producto ${item.ProductoIdProducto}`}</span>
+                        <span className="item-cantidad">{item.cantidad}x</span>
+                        <span className="item-precio">${(item.precioUnitario || 0).toFixed(2)}</span>
+                      </div>
+                    ))}
                   </div>
                   
                   <div className="pedido-detalles">
@@ -272,33 +364,8 @@ export default function PedidosScreen() {
                   </div>
                   
                   <div className="pedido-acciones">
-                    {pedido.estado === 'pendiente' && (
-                      <>
-                        <button 
-                          className="btn-accion btn-aceptar"
-                          onClick={() => handleAceptarPedido(pedido.id)}
-                        >
-                          <CheckCircle size={16} />
-                          Aceptar
-                        </button>
-                        <button 
-                          className="btn-accion btn-rechazar"
-                          onClick={() => handleRechazarPedido(pedido.id)}
-                        >
-                          <XCircle size={16} />
-                          Rechazar
-                        </button>
-                      </>
-                    )}
-                    {pedido.estado === 'preparando' && (
-                      <button 
-                        className="btn-accion btn-completar"
-                        onClick={() => handleCompletarPedido(pedido.id)}
-                      >
-                        <CheckCircle size={16} />
-                        Marcar como Listo
-                      </button>
-                    )}
+                    {renderAcciones(pedido)}
+                    
                     <button 
                       className={`btn-accion ${pedido.pagado ? 'btn-no-pagado' : 'btn-pagado'}`}
                       onClick={() => handleTogglePago(pedido.id, pedido.pagado)}
@@ -306,6 +373,7 @@ export default function PedidosScreen() {
                       <DollarSign size={16} />
                       {pedido.pagado ? 'Marcar No Pagado' : 'Marcar Pagado'}
                     </button>
+                    
                     <button className="btn-accion btn-detalles">
                       Ver Detalles
                     </button>
@@ -318,8 +386,8 @@ export default function PedidosScreen() {
           {/* Estadísticas */}
           <div className="estadisticas-pedidos">
             <div className="estadistica-card">
-              <div className="estadistica-icon" style={{ backgroundColor: 'rgba(255, 77, 77, 0.1)' }}>
-                <Clock size={24} color="#FF4D4D" />
+              <div className="estadistica-icon" style={{ backgroundColor: 'rgba(255, 167, 38, 0.1)' }}>
+                <Clock size={24} color="#FFA726" />
               </div>
               <div className="estadistica-info">
                 <h3>Pendientes</h3>
@@ -328,15 +396,35 @@ export default function PedidosScreen() {
             </div>
             
             <div className="estadistica-card">
-              <div className="estadistica-icon" style={{ backgroundColor: 'rgba(255, 201, 71, 0.1)' }}>
-                <Clock size={24} color="#FFC947" />
+              <div className="estadistica-icon" style={{ backgroundColor: 'rgba(41, 182, 246, 0.1)' }}>
+                <CheckCircle size={24} color="#29B6F6" />
+              </div>
+              <div className="estadistica-info">
+                <h3>Confirmados</h3>
+                <p>{pedidosFormateados.filter(p => p.estado === 'confirmado').length} pedidos</p>
+              </div>
+            </div>
+            
+            <div className="estadistica-card">
+              <div className="estadistica-icon" style={{ backgroundColor: 'rgba(255, 202, 40, 0.1)' }}>
+                <Package size={24} color="#FFCA28" />
               </div>
               <div className="estadistica-info">
                 <h3>En Preparación</h3>
                 <p>{pedidosFormateados.filter(p => p.estado === 'preparando').length} pedidos</p>
               </div>
             </div>
-            
+
+            <div className="estadistica-card">
+              <div className="estadistica-icon" style={{ backgroundColor: 'rgba(77, 121, 255, 0.1)' }}>
+                <Truck size={24} color="#4D79FF" />
+              </div>
+              <div className="estadistica-info">
+                <h3>En Camino</h3>
+                <p>{pedidosFormateados.filter(p => p.estado === 'en camino').length} pedidos</p>
+              </div>
+            </div>
+
             <div className="estadistica-card">
               <div className="estadistica-icon" style={{ backgroundColor: 'rgba(40, 167, 69, 0.1)' }}>
                 <CheckCircle size={24} color="#28a745" />
@@ -348,8 +436,8 @@ export default function PedidosScreen() {
             </div>
 
             <div className="estadistica-card">
-              <div className="estadistica-icon" style={{ backgroundColor: 'rgba(77, 121, 255, 0.1)' }}>
-                <DollarSign size={24} color="#4D79FF" />
+              <div className="estadistica-icon" style={{ backgroundColor: 'rgba(108, 117, 125, 0.1)' }}>
+                <DollarSign size={24} color="#6c757d" />
               </div>
               <div className="estadistica-info">
                 <h3>Pagados</h3>
