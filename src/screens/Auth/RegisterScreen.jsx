@@ -222,411 +222,559 @@ export default function RegisterScreen() {
     return [MIRAMAR_COORDINATES.lat, MIRAMAR_COORDINATES.lng];
   };
 
+  // Datos para las secciones de marketing
+  const features = [
+    {
+      icon: "🚀",
+      title: "Crecé tu negocio",
+      description: "Llegá a más clientes y aumentá tus ventas con nuestra plataforma"
+    },
+    {
+      icon: "📱",
+      title: "App Móvil",
+      description: "Tu comercio disponible 24/7 en la palma de la mano de tus clientes"
+    },
+    {
+      icon: "💳",
+      title: "Múltiples Pagos",
+      description: "Aceptá transferencias, tarjetas y efectivo de forma segura"
+    },
+    {
+      icon: "📊",
+      title: "Panel de Control",
+      description: "Gestioná pedidos, menú y estadísticas desde un solo lugar"
+    }
+  ];
+
+  const stats = [
+    { number: "500+", label: "Comercios asociados" },
+    { number: "50k+", label: "Pedidos entregados" },
+    { number: "98%", label: "Satisfacción del cliente" },
+    { number: "24/7", label: "Soporte activo" }
+  ];
+
   return (
-    <div className="register-container">
-      <div className="register-header">
-        <img src={LogoDeliveryYa} alt="Logo DeliveryYa" className="register-logo" />
-        
-        <div className="register-back-link">
-          <Link to="/auth/login">
-            ← Volver al Login
-          </Link>
+    <div className="landing-register-container">
+      {/* Header de Landing */}
+      <header className="landing-header">
+        <div className="landing-nav">
+          <div className="landing-logo">
+            <img src={LogoDeliveryYa} alt="Delivery Ya" />
+            <span>Delivery Ya</span>
+          </div>
+          <nav className="landing-nav-links">
+            <a href="#beneficios">Beneficios</a>
+            <a href="#como-funciona">Cómo funciona</a>
+            <a href="#contacto">Contacto</a>
+          </nav>
+          <div className="landing-auth-buttons">
+            <Link to="/auth/login" className="btn-login">Ingresar</Link>
+          </div>
         </div>
-        
-        <h1 className="register-title">Registro de Comercio</h1>
-        <p className="register-subtitle">Completa todos los datos de tu comercio en un solo paso</p>
-      </div>
-      
-      <form onSubmit={handleSubmit} className="register-form">
-        <div className="register-sections-container">
+      </header>
+
+      {/* Hero Section */}
+      <section className="hero-section">
+        <div className="hero-content">
+          <div className="hero-text">
+            <h1 className="hero-title">
+              Llevá tu comercio al 
+              <span className="highlight"> siguiente nivel</span>
+            </h1>
+            <p className="hero-description">
+              Unite a la plataforma de delivery más completa de Miramar. 
+              Gestioná pedidos, aceptá múltiples métodos de pago y crecé 
+              junto a nosotros.
+            </p>
+            <div className="hero-features">
+              <div className="feature-badge">✅ Registro gratuito</div>
+              <div className="feature-badge">✅ Sin comisiones ocultas</div>
+              <div className="feature-badge">✅ Soporte 24/7</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Stats Section */}
+      <section className="stats-section">
+        <div className="stats-container">
+          {stats.map((stat, index) => (
+            <div key={index} className="stat-item">
+              <div className="stat-number">{stat.number}</div>
+              <div className="stat-label">{stat.label}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section id="beneficios" className="features-section">
+        <div className="container">
+          <h2 className="section-title">Todo lo que obtenés con Delivery Ya</h2>
+          <div className="features-grid">
+            {features.map((feature, index) => (
+              <div key={index} className="feature-card">
+                <div className="feature-icon">{feature.icon}</div>
+                <h3 className="feature-title">{feature.title}</h3>
+                <p className="feature-description">{feature.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Register Form Section */}
+      <section className="register-form-section">
+        <div className="container">
+          <div className="register-header">
+            <h1 className="register-title">Registrá tu comercio</h1>
+            <p className="register-subtitle">Completá todos los datos de tu comercio en un solo paso</p>
+          </div>
           
-          {/* SECCIÓN INFORMACIÓN BÁSICA */}
-          <div className="register-section">
-            <h2 className="register-section-title">Información Básica</h2>
-            <div className="register-form-grid">
+          <form onSubmit={handleSubmit} className="register-form">
+            <div className="register-sections-container">
               
-              <div className="register-input-group">
-                <label className="register-form-label">Nombre del comercio *</label>
-                <input 
-                  className={`register-form-input ${formErrors.nombreComercio ? 'error' : ''}`}
-                  name="nombreComercio" 
-                  value={form.nombreComercio}
-                  placeholder="Ej: Mi Restaurante" 
-                  onChange={handleChange} 
-                />
-                {formErrors.nombreComercio && <span className="error-message">{formErrors.nombreComercio}</span>}
-              </div>
-
-              <div className="register-input-group">
-                <label className="register-form-label">Eslogan *</label>
-                <input 
-                  className={`register-form-input ${formErrors.eslogan ? 'error' : ''}`}
-                  name="eslogan" 
-                  value={form.eslogan}
-                  placeholder="Tu eslogan comercial" 
-                  onChange={handleChange} 
-                />
-                {formErrors.eslogan && <span className="error-message">{formErrors.eslogan}</span>}
-              </div>
-
-              <div className="register-input-group">
-                <label className="register-form-label">Tipo de Comercio *</label>
-                <select 
-                  className={`register-form-input ${formErrors.tipoComercio ? 'error' : ''}`}
-                  name="tipoComercio" 
-                  value={form.tipoComercio}
-                  onChange={handleChange}
-                >
-                  <option value="">Selecciona el tipo de comercio</option>
-                  <option value="Restaurante">Restaurante</option>
-                  <option value="Cafetería">Cafetería</option>
-                  <option value="Supermercado">Supermercado</option>
-                  <option value="Almacén">Almacén</option>
-                  <option value="Kiosco">Kiosco</option>
-                  <option value="Farmacia">Farmacia</option>
-                  <option value="Verdulería">Verdulería</option>
-                  <option value="Carnicería">Carnicería</option>
-                  <option value="Panadería">Panadería</option>
-                  <option value="Otro">Otro</option>
-                </select>
-                {formErrors.tipoComercio && <span className="error-message">{formErrors.tipoComercio}</span>}
-              </div>
-
-              <div className="register-input-group">
-                <label className="register-form-label">
-                  Número de Sucursales
-                  <div className="info-tooltip">
-                    <span className="info-icon">ℹ️</span>
-                    <div className="tooltip-text">
-                      Podrás registrar tu primera sucursal en este proceso. Al finalizar, un asesor se pondrá en contacto contigo para gestionar el alta de las sucursales restantes.
-                    </div>
-                  </div>
-                </label>
-                <input 
-                  className="register-form-input no-spinner"
-                  name="sucursales" 
-                  value={form.sucursales}
-                  onChange={handleChange}
-                  pattern="[0-9]*"
-                  inputMode="numeric"
-                />
-              </div>
-
-              <div className="register-input-group">
-                <label className="register-form-label">Encargado *</label>
-                <input 
-                  className={`register-form-input ${formErrors.encargado ? 'error' : ''}`}
-                  name="encargado" 
-                  value={form.encargado}
-                  placeholder="Nombre del encargado" 
-                  onChange={handleChange} 
-                />
-                {formErrors.encargado && <span className="error-message">{formErrors.encargado}</span>}
-              </div>
-
-              <div className="register-input-group">
-                <label className="register-form-label">Celular *</label>
-                <input 
-                  className={`register-form-input ${formErrors.celular ? 'error' : ''}`}
-                  name="celular" 
-                  value={form.celular}
-                  placeholder="+54 9 11 1234-5678" 
-                  onChange={handleChange} 
-                />
-                {formErrors.celular && <span className="error-message">{formErrors.celular}</span>}
-              </div>
-
-            </div>
-          </div>
-
-          {/* SECCIÓN CREDENCIALES */}
-          <div className="register-section">
-            <h2 className="register-section-title">Credenciales de Acceso</h2>
-            <div className="register-form-grid">
-              
-              <div className="register-input-group">
-                <label className="register-form-label">Email *</label>
-                <input 
-                  className={`register-form-input ${formErrors.email ? 'error' : ''}`}
-                  name="email" 
-                  type="email" 
-                  value={form.email}
-                  placeholder="ejemplo@correo.com" 
-                  onChange={handleChange} 
-                />
-                {formErrors.email && <span className="error-message">{formErrors.email}</span>}
-              </div>
-              
-              <div className="register-input-group">
-                <label className="register-form-label">Contraseña *</label>
-                <input 
-                  className={`register-form-input ${formErrors.password ? 'error' : ''}`}
-                  name="password" 
-                  type="password" 
-                  value={form.password}
-                  placeholder="Mínimo 6 caracteres" 
-                  onChange={handleChange} 
-                />
-                {formErrors.password && <span className="error-message">{formErrors.password}</span>}
-              </div>
-
-            </div>
-          </div>
-
-          {/* SECCIÓN UBICACIÓN */}
-          <div className="register-section">
-            <h2 className="register-section-title">Ubicación</h2>
-            <div className="register-form-grid">
-              
-              <div className="register-input-group">
-                <label className="register-form-label">Ciudad *</label>
-                <input 
-                  className={`register-form-input ${formErrors.ciudad ? 'error' : ''}`}
-                  name="ciudad" 
-                  value={form.ciudad}
-                  placeholder="Ciudad" 
-                  onChange={handleChange} 
-                />
-                {formErrors.ciudad && <span className="error-message">{formErrors.ciudad}</span>}
-              </div>
-              
-              <div className="register-input-group">
-                <label className="register-form-label">Calle *</label>
-                <input 
-                  className={`register-form-input ${formErrors.calle ? 'error' : ''}`}
-                  name="calle" 
-                  value={form.calle}
-                  placeholder="Calle" 
-                  onChange={handleChange} 
-                />
-                {formErrors.calle && <span className="error-message">{formErrors.calle}</span>}
-              </div>
-              
-              <div className="register-input-group">
-                <label className="register-form-label">Número *</label>
-                <input 
-                  className={`register-form-input ${formErrors.numero ? 'error' : ''}`}
-                  name="numero" 
-                  value={form.numero}
-                  placeholder="Número" 
-                  onChange={handleChange} 
-                />
-                {formErrors.numero && <span className="error-message">{formErrors.numero}</span>}
-              </div>
-
-            </div>
-
-            {/* Mapa de selección de ubicación */}
-            <div className="map-section">
-              <h3 className="map-section-title">Ubicación en el mapa (Opcional)</h3>
-              <p className="map-section-description">
-                Selecciona la ubicación exacta de tu comercio en el mapa para que los clientes te encuentren más fácilmente.
-              </p>
-              
-              <MapSelector 
-                onLocationSelect={handleMapLocationSelect}
-                initialPosition={getInitialMapPosition()}
-              />
-              
-              {/* Campos ocultos para latitud y longitud */}
-              <input 
-                type="hidden"
-                name="latitud" 
-                value={form.latitud}
-                onChange={handleChange} 
-              />
-              <input 
-                type="hidden"
-                name="longitud" 
-                value={form.longitud}
-                onChange={handleChange} 
-              />
-            </div>
-          </div>
-
-          {/* SECCIÓN DATOS BANCARIOS */}
-          <div className="register-section">
-            <h2 className="register-section-title">Datos Bancarios</h2>
-            <div className="register-form-grid">
-              
-              <div className="register-input-group">
-                <label className="register-form-label">CVU (Opcional)</label>
-                <input 
-                  className={`register-form-input ${formErrors.cvu ? 'error' : ''}`}
-                  name="cvu" 
-                  value={form.cvu}
-                  placeholder="CVU bancario (22 dígitos)" 
-                  onChange={handleChange} 
-                />
-                {formErrors.cvu && <span className="error-message">{formErrors.cvu}</span>}
-              </div>
-
-              <div className="register-input-group">
-                <label className="register-form-label">Alias *</label>
-                <input 
-                  className={`register-form-input ${formErrors.alias ? 'error' : ''}`}
-                  name="alias" 
-                  value={form.alias}
-                  placeholder="Alias bancario" 
-                  onChange={handleChange} 
-                />
-                {formErrors.alias && <span className="error-message">{formErrors.alias}</span>}
-              </div>
-
-            </div>
-          </div>
-
-          {/* SECCIÓN CONFIGURACIÓN */}
-          <div className="register-section">
-            <h2 className="register-section-title">Configuración</h2>
-            <div className="register-form-grid">
-              
-              <div className="register-input-group">
-                <label className="register-form-label">Sistema de Delivery</label>
-                <div className="radio-group">
-                  <label className="radio-option">
-                    <input
-                      type="radio"
-                      name="deliveryPropio"
-                      value="true"
-                      checked={form.deliveryPropio === true}
-                      onChange={() => setForm(prev => ({ ...prev, deliveryPropio: true }))}
-                    />
-                    <span className="radio-label">✅ Tengo delivery propio</span>
-                  </label>
+              {/* SECCIÓN INFORMACIÓN BÁSICA */}
+              <div className="register-section">
+                <h2 className="register-section-title">Información Básica</h2>
+                <div className="register-form-grid">
                   
-                  <label className="radio-option">
-                    <input
-                      type="radio"
-                      name="deliveryPropio"
-                      value="false"
-                      checked={form.deliveryPropio === false}
-                      onChange={() => setForm(prev => ({ ...prev, deliveryPropio: false }))}
+                  <div className="register-input-group">
+                    <label className="register-form-label">Nombre del comercio *</label>
+                    <input 
+                      className={`register-form-input ${formErrors.nombreComercio ? 'error' : ''}`}
+                      name="nombreComercio" 
+                      value={form.nombreComercio}
+                      placeholder="Ej: Mi Restaurante" 
+                      onChange={handleChange} 
                     />
-                    <span className="radio-label">❌ No tengo delivery propio</span>
-                  </label>
-                </div>
-              </div>
+                    {formErrors.nombreComercio && <span className="error-message">{formErrors.nombreComercio}</span>}
+                  </div>
 
-              <div className="register-input-group">
-                <label className="register-form-label">Foto de portada</label>
-                <div className="image-upload-container">
-                  {!fileName && !form.fotoPortada ? (
-                    <div className="image-upload-area">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageUpload}
-                        className="image-file-input"
-                        id="fotoPortadaUpload"
-                      />
-                      <label htmlFor="fotoPortadaUpload" className="image-upload-label">
-                        <div className="upload-icon">📸</div>
-                        <span>Seleccionar imagen</span>
-                      </label>
-                    </div>
-                  ) : (
-                    <div className="file-selected-container">
-                      <div className="file-info">
-                        <span className="file-icon">📷</span>
-                        <div className="file-details">
-                          <span className="file-name">{fileName}</span>
-                          <span className="file-status">✅ Imagen seleccionada</span>
+                  <div className="register-input-group">
+                    <label className="register-form-label">Eslogan *</label>
+                    <input 
+                      className={`register-form-input ${formErrors.eslogan ? 'error' : ''}`}
+                      name="eslogan" 
+                      value={form.eslogan}
+                      placeholder="Tu eslogan comercial" 
+                      onChange={handleChange} 
+                    />
+                    {formErrors.eslogan && <span className="error-message">{formErrors.eslogan}</span>}
+                  </div>
+
+                  <div className="register-input-group">
+                    <label className="register-form-label">Tipo de Comercio *</label>
+                    <select 
+                      className={`register-form-input ${formErrors.tipoComercio ? 'error' : ''}`}
+                      name="tipoComercio" 
+                      value={form.tipoComercio}
+                      onChange={handleChange}
+                    >
+                      <option value="">Selecciona el tipo de comercio</option>
+                      <option value="Restaurante">Restaurante</option>
+                      <option value="Cafetería">Cafetería</option>
+                      <option value="Supermercado">Supermercado</option>
+                      <option value="Almacén">Almacén</option>
+                      <option value="Kiosco">Kiosco</option>
+                      <option value="Farmacia">Farmacia</option>
+                      <option value="Verdulería">Verdulería</option>
+                      <option value="Carnicería">Carnicería</option>
+                      <option value="Panadería">Panadería</option>
+                      <option value="Otro">Otro</option>
+                    </select>
+                    {formErrors.tipoComercio && <span className="error-message">{formErrors.tipoComercio}</span>}
+                  </div>
+
+                  <div className="register-input-group">
+                    <label className="register-form-label">
+                      Número de Sucursales
+                      <div className="info-tooltip">
+                        <span className="info-icon">ℹ️</span>
+                        <div className="tooltip-text">
+                          Podrás registrar tu primera sucursal en este proceso. Al finalizar, un asesor se pondrá en contacto contigo para gestionar el alta de las sucursales restantes.
                         </div>
                       </div>
-                      <button 
-                        type="button" 
-                        className="remove-file-btn"
-                        onClick={clearImage}
-                        title="Eliminar imagen"
-                      >
-                        ×
-                      </button>
+                    </label>
+                    <input 
+                      className="register-form-input no-spinner"
+                      name="sucursales" 
+                      value={form.sucursales}
+                      onChange={handleChange}
+                      pattern="[0-9]*"
+                      inputMode="numeric"
+                    />
+                  </div>
+
+                  <div className="register-input-group">
+                    <label className="register-form-label">Encargado *</label>
+                    <input 
+                      className={`register-form-input ${formErrors.encargado ? 'error' : ''}`}
+                      name="encargado" 
+                      value={form.encargado}
+                      placeholder="Nombre del encargado" 
+                      onChange={handleChange} 
+                    />
+                    {formErrors.encargado && <span className="error-message">{formErrors.encargado}</span>}
+                  </div>
+
+                  <div className="register-input-group">
+                    <label className="register-form-label">Celular *</label>
+                    <input 
+                      className={`register-form-input ${formErrors.celular ? 'error' : ''}`}
+                      name="celular" 
+                      value={form.celular}
+                      placeholder="+54 9 11 1234-5678" 
+                      onChange={handleChange} 
+                    />
+                    {formErrors.celular && <span className="error-message">{formErrors.celular}</span>}
+                  </div>
+
+                </div>
+              </div>
+
+              {/* SECCIÓN CREDENCIALES */}
+              <div className="register-section">
+                <h2 className="register-section-title">Credenciales de Acceso</h2>
+                <div className="register-form-grid">
+                  
+                  <div className="register-input-group">
+                    <label className="register-form-label">Email *</label>
+                    <input 
+                      className={`register-form-input ${formErrors.email ? 'error' : ''}`}
+                      name="email" 
+                      type="email" 
+                      value={form.email}
+                      placeholder="ejemplo@correo.com" 
+                      onChange={handleChange} 
+                    />
+                    {formErrors.email && <span className="error-message">{formErrors.email}</span>}
+                  </div>
+                  
+                  <div className="register-input-group">
+                    <label className="register-form-label">Contraseña *</label>
+                    <input 
+                      className={`register-form-input ${formErrors.password ? 'error' : ''}`}
+                      name="password" 
+                      type="password" 
+                      value={form.password}
+                      placeholder="Mínimo 6 caracteres" 
+                      onChange={handleChange} 
+                    />
+                    {formErrors.password && <span className="error-message">{formErrors.password}</span>}
+                  </div>
+
+                </div>
+              </div>
+
+              {/* SECCIÓN UBICACIÓN */}
+              <div className="register-section">
+                <h2 className="register-section-title">Ubicación</h2>
+                <div className="register-form-grid">
+                  
+                  <div className="register-input-group">
+                    <label className="register-form-label">Ciudad *</label>
+                    <input 
+                      className={`register-form-input ${formErrors.ciudad ? 'error' : ''}`}
+                      name="ciudad" 
+                      value={form.ciudad}
+                      placeholder="Ciudad" 
+                      onChange={handleChange} 
+                    />
+                    {formErrors.ciudad && <span className="error-message">{formErrors.ciudad}</span>}
+                  </div>
+                  
+                  <div className="register-input-group">
+                    <label className="register-form-label">Calle *</label>
+                    <input 
+                      className={`register-form-input ${formErrors.calle ? 'error' : ''}`}
+                      name="calle" 
+                      value={form.calle}
+                      placeholder="Calle" 
+                      onChange={handleChange} 
+                    />
+                    {formErrors.calle && <span className="error-message">{formErrors.calle}</span>}
+                  </div>
+                  
+                  <div className="register-input-group">
+                    <label className="register-form-label">Número *</label>
+                    <input 
+                      className={`register-form-input ${formErrors.numero ? 'error' : ''}`}
+                      name="numero" 
+                      value={form.numero}
+                      placeholder="Número" 
+                      onChange={handleChange} 
+                    />
+                    {formErrors.numero && <span className="error-message">{formErrors.numero}</span>}
+                  </div>
+
+                </div>
+
+                {/* Mapa de selección de ubicación */}
+                <div className="map-section">
+                  <h3 className="map-section-title">Ubicación en el mapa (Opcional)</h3>
+                  <p className="map-section-description">
+                    Selecciona la ubicación exacta de tu comercio en el mapa para que los clientes te encuentren más fácilmente.
+                  </p>
+                  
+                  <MapSelector 
+                    onLocationSelect={handleMapLocationSelect}
+                    initialPosition={getInitialMapPosition()}
+                  />
+                  
+                  {/* Campos ocultos para latitud y longitud */}
+                  <input 
+                    type="hidden"
+                    name="latitud" 
+                    value={form.latitud}
+                    onChange={handleChange} 
+                  />
+                  <input 
+                    type="hidden"
+                    name="longitud" 
+                    value={form.longitud}
+                    onChange={handleChange} 
+                  />
+                </div>
+              </div>
+
+              {/* SECCIÓN DATOS BANCARIOS */}
+              <div className="register-section">
+                <h2 className="register-section-title">Datos Bancarios</h2>
+                <div className="register-form-grid">
+                  
+                  <div className="register-input-group">
+                    <label className="register-form-label">CVU (Opcional)</label>
+                    <input 
+                      className={`register-form-input ${formErrors.cvu ? 'error' : ''}`}
+                      name="cvu" 
+                      value={form.cvu}
+                      placeholder="CVU bancario (22 dígitos)" 
+                      onChange={handleChange} 
+                    />
+                    {formErrors.cvu && <span className="error-message">{formErrors.cvu}</span>}
+                  </div>
+
+                  <div className="register-input-group">
+                    <label className="register-form-label">Alias *</label>
+                    <input 
+                      className={`register-form-input ${formErrors.alias ? 'error' : ''}`}
+                      name="alias" 
+                      value={form.alias}
+                      placeholder="Alias bancario" 
+                      onChange={handleChange} 
+                    />
+                    {formErrors.alias && <span className="error-message">{formErrors.alias}</span>}
+                  </div>
+
+                </div>
+              </div>
+
+              {/* SECCIÓN CONFIGURACIÓN */}
+              <div className="register-section">
+                <h2 className="register-section-title">Configuración</h2>
+                <div className="register-form-grid">
+                  
+                  <div className="register-input-group">
+                    <label className="register-form-label">Sistema de Delivery</label>
+                    <div className="radio-group">
+                      <label className="radio-option">
+                        <input
+                          type="radio"
+                          name="deliveryPropio"
+                          value="true"
+                          checked={form.deliveryPropio === true}
+                          onChange={() => setForm(prev => ({ ...prev, deliveryPropio: true }))}
+                        />
+                        <span className="radio-label">✅ Tengo delivery propio</span>
+                      </label>
+                      
+                      <label className="radio-option">
+                        <input
+                          type="radio"
+                          name="deliveryPropio"
+                          value="false"
+                          checked={form.deliveryPropio === false}
+                          onChange={() => setForm(prev => ({ ...prev, deliveryPropio: false }))}
+                        />
+                        <span className="radio-label">❌ No tengo delivery propio</span>
+                      </label>
                     </div>
-                  )}
+                  </div>
+
+                  <div className="register-input-group">
+                    <label className="register-form-label">Foto de portada</label>
+                    <div className="image-upload-container">
+                      {!fileName && !form.fotoPortada ? (
+                        <div className="image-upload-area">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageUpload}
+                            className="image-file-input"
+                            id="fotoPortadaUpload"
+                          />
+                          <label htmlFor="fotoPortadaUpload" className="image-upload-label">
+                            <div className="upload-icon">📸</div>
+                            <span>Seleccionar imagen</span>
+                          </label>
+                        </div>
+                      ) : (
+                        <div className="file-selected-container">
+                          <div className="file-info">
+                            <span className="file-icon">📷</span>
+                            <div className="file-details">
+                              <span className="file-name">{fileName}</span>
+                              <span className="file-status">✅ Imagen seleccionada</span>
+                            </div>
+                          </div>
+                          <button 
+                            type="button" 
+                            className="remove-file-btn"
+                            onClick={clearImage}
+                            title="Eliminar imagen"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+              {/* SECCIÓN PLAN */}
+              <div className="register-section">
+                <h2 className="register-section-title">Selecciona tu Plan</h2>
+                <div className="register-contract-options">
+                  
+                  <div className="register-contract-option">
+                    <div className="register-option-header">
+                      <h3>Plan Básico</h3>
+                      <p className="register-price">$0<span>/mes</span></p>
+                    </div>
+                    <ul className="register-features-list">
+                      <li>✔ 20% de comision por pedido</li>
+                      <li>✔ Gestión de pedidos básica</li>
+                      <li>✔ Soporte por email</li>
+                      <li>✖ Destacado en búsquedas</li>
+                      <li>✖ Promociones destacadas</li>
+                    </ul>
+                    <div className="register-radio-container">
+                      <input 
+                        type="radio" 
+                        name="destacado" 
+                        checked={!form.destacado} 
+                        onChange={() => setForm(prev => ({...prev, destacado: false}))} 
+                        id="plan-basico"
+                      />
+                      <label htmlFor="plan-basico" className="register-radio-label">
+                        Seleccionar Plan Básico
+                      </label>
+                    </div>
+                  </div>
+                  
+                  <div className="register-contract-option register-highlighted">
+                    <div className="register-option-header">
+                      <h3>Plan Destacado</h3>
+                      <p className="register-price">$30.000<span>/mes</span></p>
+                    </div>
+                    <ul className="register-features-list">
+                      <li>✔ 10% de comision por pedido</li>
+                      <li>✔ Destacado en búsquedas</li>
+                      <li>✔ Promociones destacadas</li>
+                      <li>✔ Soporte prioritario 24/7</li>
+                      <li>✔ Estadísticas avanzadas</li>
+                    </ul>
+                    <div className="register-radio-container">
+                      <input 
+                        type="radio" 
+                        name="destacado" 
+                        checked={form.destacado} 
+                        onChange={() => setForm(prev => ({...prev, destacado: true}))} 
+                        id="plan-destacado"
+                      />
+                      <label htmlFor="plan-destacado" className="register-radio-label">
+                        Seleccionar Plan Destacado
+                      </label>
+                    </div>
+                  </div>
+
                 </div>
               </div>
 
             </div>
-          </div>
-
-          {/* SECCIÓN PLAN */}
-          <div className="register-section">
-            <h2 className="register-section-title">Selecciona tu Plan</h2>
-            <div className="register-contract-options">
+            
+            {/* BOTÓN DE REGISTRO */}
+            <div className="register-submit-section">
+              <button 
+                type="submit" 
+                className="register-register-button"
+                disabled={isLoading}
+              >
+                {isLoading ? "Registrando..." : "Registrar Comercio"}
+              </button>
               
-              <div className="register-contract-option">
-                <div className="register-option-header">
-                  <h3>Plan Básico</h3>
-                  <p className="register-price">$0<span>/mes</span></p>
-                </div>
-                <ul className="register-features-list">
-                  <li>✔ 20% de comision por pedido</li>
-                  <li>✔ Gestión de pedidos básica</li>
-                  <li>✔ Soporte por email</li>
-                  <li>✖ Destacado en búsquedas</li>
-                  <li>✖ Promociones destacadas</li>
-                </ul>
-                <div className="register-radio-container">
-                  <input 
-                    type="radio" 
-                    name="destacado" 
-                    checked={!form.destacado} 
-                    onChange={() => setForm(prev => ({...prev, destacado: false}))} 
-                    id="plan-basico"
-                  />
-                  <label htmlFor="plan-basico" className="register-radio-label">
-                    Seleccionar Plan Básico
-                  </label>
-                </div>
+              <div className="register-login-link">
+                ¿Ya tienes una cuenta? <Link to="/auth/login">Inicia sesión aquí</Link>
               </div>
-              
-              <div className="register-contract-option register-highlighted">
-                <div className="register-option-header">
-                  <h3>Plan Destacado</h3>
-                  <p className="register-price">$30.000<span>/mes</span></p>
-                </div>
-                <ul className="register-features-list">
-                  <li>✔ 10% de comision por pedido</li>
-                  <li>✔ Destacado en búsquedas</li>
-                  <li>✔ Promociones destacadas</li>
-                  <li>✔ Soporte prioritario 24/7</li>
-                  <li>✔ Estadísticas avanzadas</li>
-                </ul>
-                <div className="register-radio-container">
-                  <input 
-                    type="radio" 
-                    name="destacado" 
-                    checked={form.destacado} 
-                    onChange={() => setForm(prev => ({...prev, destacado: true}))} 
-                    id="plan-destacado"
-                  />
-                  <label htmlFor="plan-destacado" className="register-radio-label">
-                    Seleccionar Plan Destacado
-                  </label>
-                </div>
-              </div>
+            </div>
+          </form>
+        </div>
+      </section>
 
+      {/* Download App Section */}
+      <section className="download-section">
+        <div className="container">
+          <div className="download-content">
+            <div className="download-text">
+              <h2>Descargá nuestra app móvil</h2>
+              <p>Tu comercio disponible para todos tus clientes. Llegá a más personas con nuestra aplicación.</p>
+              <div className="download-buttons">
+                <a href="#" className="store-btn">
+                  <span>Disponible en</span>
+                  <strong>Google Play</strong>
+                </a>
+                <a href="#" className="store-btn">
+                  <span>Descargar en</span>
+                  <strong>App Store</strong>
+                </a>
+              </div>
             </div>
           </div>
-
         </div>
-        
-        {/* BOTÓN DE REGISTRO */}
-        <div className="register-submit-section">
-          <button 
-            type="submit" 
-            className="register-register-button"
-            disabled={isLoading}
-          >
-            {isLoading ? "Registrando..." : "Registrar Comercio"}
-          </button>
-          
-          <div className="register-login-link">
-            ¿Ya tienes una cuenta? <Link to="/auth/login">Inicia sesión aquí</Link>
+      </section>
+
+      {/* Footer */}
+      <footer className="landing-footer">
+        <div className="container">
+          <div className="footer-content">
+            <div className="footer-brand">
+              <div className="footer-logo">
+                <img src={LogoDeliveryYa} alt="Delivery Ya" />
+                <span>Delivery Ya</span>
+              </div>
+              <p>La plataforma de delivery líder en Miramar</p>
+            </div>
+            <div className="footer-links">
+              <div className="footer-column">
+                <h4>Comercios</h4>
+                <a href="#beneficios">Beneficios</a>
+                <a href="#como-funciona">Cómo funciona</a>
+              </div>
+              <div className="footer-column">
+                <h4>Soporte</h4>
+                <a href="#">Centro de ayuda</a>
+                <a href="#">Contacto</a>
+              </div>
+            </div>
+          </div>
+          <div className="footer-bottom">
+            <p>&copy; 2024 Delivery Ya. Todos los derechos reservados.</p>
           </div>
         </div>
-      </form>
+      </footer>
     </div>
   );
 }
