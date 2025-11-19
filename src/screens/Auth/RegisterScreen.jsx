@@ -37,7 +37,7 @@ export default function RegisterScreen() {
     destacado: false,
     deliveryPropio: true,
     eslogan: "",
-    sucursales: 1,
+    sucursales: 0,
     envio: 0 // ← CAMPO NUEVO AGREGADO
   });
 
@@ -141,7 +141,6 @@ export default function RegisterScreen() {
     if (!form.encargado?.trim()) errors.encargado = "El encargado es requerido";
     if (!form.celular?.trim()) errors.celular = "El celular es requerido";
     if (!form.tipoComercio?.trim()) errors.tipoComercio = "El tipo de comercio es requerido";
-    if (!form.eslogan?.trim()) errors.eslogan = "El eslogan es requerido";
     // CVU ya no es obligatorio - se elimina la validación
     if (!form.alias?.trim()) errors.alias = "El alias es requerido";
     if (!form.ciudad?.trim()) errors.ciudad = "La ciudad es requerida";
@@ -246,13 +245,6 @@ export default function RegisterScreen() {
     }
   ];
 
-  const stats = [
-    { number: "500+", label: "Comercios asociados" },
-    { number: "50k+", label: "Pedidos entregados" },
-    { number: "98%", label: "Satisfacción del cliente" },
-    { number: "24/7", label: "Soporte activo" }
-  ];
-
   return (
     <div className="landing-register-container">
       {/* Header de Landing */}
@@ -278,57 +270,28 @@ export default function RegisterScreen() {
         <div className="hero-content">
           <div className="hero-text">
             <h1 className="hero-title">
-              Llevá tu comercio al 
-              <span className="highlight"> siguiente nivel</span>
+              Empezá a vender online 
+              <span className="highlight"> hoy mismo</span>
             </h1>
             <p className="hero-description">
-              Unite a la plataforma de delivery más completa de Miramar. 
-              Gestioná pedidos, aceptá múltiples métodos de pago y crecé 
-              junto a nosotros.
+              Registrá tu comercio en Delivery Ya y empezá a recibir pedidos en menos de 5 minutos. 
+              Sin costos iniciales, sin complicaciones.
             </p>
             <div className="hero-features">
               <div className="feature-badge">✅ Registro gratuito</div>
-              <div className="feature-badge">✅ Sin comisiones ocultas</div>
+              <div className="feature-badge">✅ Configuración en 5 min</div>
               <div className="feature-badge">✅ Soporte 24/7</div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="stats-section">
-        <div className="stats-container">
-          {stats.map((stat, index) => (
-            <div key={index} className="stat-item">
-              <div className="stat-number">{stat.number}</div>
-              <div className="stat-label">{stat.label}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section id="beneficios" className="features-section">
-        <div className="container">
-          <h2 className="section-title">Todo lo que obtenés con Delivery Ya</h2>
-          <div className="features-grid">
-            {features.map((feature, index) => (
-              <div key={index} className="feature-card">
-                <div className="feature-icon">{feature.icon}</div>
-                <h3 className="feature-title">{feature.title}</h3>
-                <p className="feature-description">{feature.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Register Form Section */}
+      {/* Register Form Section - AHORA ES LO PRIMERO DESPUÉS DEL HERO */}
       <section className="register-form-section">
         <div className="container">
           <div className="register-header">
             <h1 className="register-title">Registrá tu comercio</h1>
-            <p className="register-subtitle">Completá todos los datos de tu comercio en un solo paso</p>
+            <p className="register-subtitle">Completá el formulario y empezá a vender online hoy mismo</p>
           </div>
           
           <form onSubmit={handleSubmit} className="register-form">
@@ -337,8 +300,9 @@ export default function RegisterScreen() {
               {/* SECCIÓN INFORMACIÓN BÁSICA */}
               <div className="register-section">
                 <h2 className="register-section-title">Información Básica</h2>
-                <div className="register-form-grid">
+                <div className="register-form-grid-three">
                   
+                  {/* Fila 1 */}
                   <div className="register-input-group">
                     <label className="register-form-label">Nombre del comercio *</label>
                     <input 
@@ -352,7 +316,7 @@ export default function RegisterScreen() {
                   </div>
 
                   <div className="register-input-group">
-                    <label className="register-form-label">Eslogan *</label>
+                    <label className="register-form-label">Eslogan del Comercio (Opcional)</label>
                     <input 
                       className={`register-form-input ${formErrors.eslogan ? 'error' : ''}`}
                       name="eslogan" 
@@ -371,21 +335,30 @@ export default function RegisterScreen() {
                       value={form.tipoComercio}
                       onChange={handleChange}
                     >
-                      <option value="">Selecciona el tipo de comercio</option>
-                      <option value="Restaurante">Restaurante</option>
-                      <option value="Cafetería">Cafetería</option>
-                      <option value="Supermercado">Supermercado</option>
-                      <option value="Almacén">Almacén</option>
-                      <option value="Kiosco">Kiosco</option>
-                      <option value="Farmacia">Farmacia</option>
-                      <option value="Verdulería">Verdulería</option>
-                      <option value="Carnicería">Carnicería</option>
-                      <option value="Panadería">Panadería</option>
+                      <option value="">Tipo de comercio</option>
+                      <option value="restaurante">Restaurante</option>
+                      <option value="pizzeria">Pizzería</option>
+                      <option value="hamburgueseria">Hamburguesería</option>
+                      <option value="rotiseria">Rotisería</option>
+                      <option value="sandwicheria">Sandwichería</option>
+                      <option value="cafeteria">Cafetería</option>
+                      <option value="pastas">Pastas</option>
+                      <option value="sushi">Sushi</option>
+                      <option value="heladeria">Heladería</option>
+                      <option value="panaderia">Panadería</option>
+                      <option value="supermercado">Supermercado</option>
+                      <option value="kiosco">Kiosco</option>
+                      <option value="verduleria">Verdulería</option>
+                      <option value="carniceria">Carnicería</option>
+                      <option value="polleria">Pollería</option>
+                      <option value="pescaderia">Pescadería</option>
+                      <option value="farmacia">Farmacia</option>
                       <option value="Otro">Otro</option>
                     </select>
                     {formErrors.tipoComercio && <span className="error-message">{formErrors.tipoComercio}</span>}
                   </div>
 
+                  {/* Fila 2 */}
                   <div className="register-input-group">
                     <label className="register-form-label">
                       Número de Sucursales
@@ -403,11 +376,12 @@ export default function RegisterScreen() {
                       onChange={handleChange}
                       pattern="[0-9]*"
                       inputMode="numeric"
+                      min={0}
                     />
                   </div>
 
                   <div className="register-input-group">
-                    <label className="register-form-label">Encargado *</label>
+                    <label className="register-form-label">Encargado del Comercio *</label>
                     <input 
                       className={`register-form-input ${formErrors.encargado ? 'error' : ''}`}
                       name="encargado" 
@@ -419,7 +393,7 @@ export default function RegisterScreen() {
                   </div>
 
                   <div className="register-input-group">
-                    <label className="register-form-label">Celular *</label>
+                    <label className="register-form-label">Celular del Comercio *</label>
                     <input 
                       className={`register-form-input ${formErrors.celular ? 'error' : ''}`}
                       name="celular" 
@@ -435,8 +409,8 @@ export default function RegisterScreen() {
 
               {/* SECCIÓN CREDENCIALES */}
               <div className="register-section">
-                <h2 className="register-section-title">Credenciales de Acceso</h2>
-                <div className="register-form-grid">
+                <h2 className="register-section-title">Credenciales de Acceso al Panel</h2>
+                <div className="register-form-grid-two">
                   
                   <div className="register-input-group">
                     <label className="register-form-label">Email *</label>
@@ -470,7 +444,7 @@ export default function RegisterScreen() {
               {/* SECCIÓN UBICACIÓN */}
               <div className="register-section">
                 <h2 className="register-section-title">Ubicación</h2>
-                <div className="register-form-grid">
+                <div className="register-form-grid-three">
                   
                   <div className="register-input-group">
                     <label className="register-form-label">Ciudad *</label>
@@ -507,35 +481,56 @@ export default function RegisterScreen() {
                     />
                     {formErrors.numero && <span className="error-message">{formErrors.numero}</span>}
                   </div>
-
                 </div>
 
                 {/* Mapa de selección de ubicación */}
                 <div className="map-section">
-                  <h3 className="map-section-title">Ubicación en el mapa (Opcional)</h3>
+                <div className="map-header">
+                  <h3 className="map-section-title">
+                    📍 Ubicación en el mapa 
+                    <span className="optional-badge">(Opcional)</span>
+                  </h3>
                   <p className="map-section-description">
-                    Selecciona la ubicación exacta de tu comercio en el mapa para que los clientes te encuentren más fácilmente.
+                    Haz clic en el mapa para seleccionar la ubicación exacta de tu comercio. 
+                    Esto ayudará a los clientes a encontrarte más fácilmente.
                   </p>
-                  
+                </div>
+                
+                <div className="map-container">
                   <MapSelector 
                     onLocationSelect={handleMapLocationSelect}
                     initialPosition={getInitialMapPosition()}
                   />
-                  
-                  {/* Campos ocultos para latitud y longitud */}
-                  <input 
-                    type="hidden"
-                    name="latitud" 
-                    value={form.latitud}
-                    onChange={handleChange} 
-                  />
-                  <input 
-                    type="hidden"
-                    name="longitud" 
-                    value={form.longitud}
-                    onChange={handleChange} 
-                  />
                 </div>
+                
+                {/* Campos visibles para mejor control */}
+                <div className="coordinates-fields">
+                  <div className="coordinate-input-group">
+                    <label className="coordinate-label">Latitud</label>
+                    <input 
+                      type="text"
+                      className="coordinate-input"
+                      name="latitud" 
+                      value={form.latitud}
+                      onChange={handleChange}
+                      placeholder="Ej: -38.270510"
+                      readOnly
+                    />
+                  </div>
+                  <div className="coordinate-input-group">
+                    <label className="coordinate-label">Longitud</label>
+                    <input 
+                      type="text"
+                      className="coordinate-input"
+                      name="longitud" 
+                      value={form.longitud}
+                      onChange={handleChange}
+                      placeholder="Ej: -57.839651"
+                      readOnly
+                    />
+                  </div>
+                </div>
+              </div>
               </div>
 
               {/* SECCIÓN DATOS BANCARIOS */}
@@ -546,7 +541,7 @@ export default function RegisterScreen() {
                   <div className="register-input-group">
                     <label className="register-form-label">CVU (Opcional)</label>
                     <input 
-                      className={`register-form-input ${formErrors.cvu ? 'error' : ''}`}
+                      className={`register-form-input-bancario ${formErrors.cvu ? 'error' : ''}`}
                       name="cvu" 
                       value={form.cvu}
                       placeholder="CVU bancario (22 dígitos)" 
@@ -558,7 +553,7 @@ export default function RegisterScreen() {
                   <div className="register-input-group">
                     <label className="register-form-label">Alias *</label>
                     <input 
-                      className={`register-form-input ${formErrors.alias ? 'error' : ''}`}
+                      className={`register-form-input-bancario ${formErrors.alias ? 'error' : ''}`}
                       name="alias" 
                       value={form.alias}
                       placeholder="Alias bancario" 
@@ -713,7 +708,7 @@ export default function RegisterScreen() {
                 className="register-register-button"
                 disabled={isLoading}
               >
-                {isLoading ? "Registrando..." : "Registrar Comercio"}
+                {isLoading ? "Registrando..." : "🚀 Empezar a vender ahora"}
               </button>
               
               <div className="register-login-link">
@@ -721,6 +716,22 @@ export default function RegisterScreen() {
               </div>
             </div>
           </form>
+        </div>
+      </section>
+
+      {/* Features Section - DESPUÉS DEL FORMULARIO */}
+      <section id="beneficios" className="features-section">
+        <div className="container">
+          <h2 className="section-title">Todo lo que obtenés con Delivery Ya</h2>
+          <div className="features-grid">
+            {features.map((feature, index) => (
+              <div key={index} className="feature-card">
+                <div className="feature-icon">{feature.icon}</div>
+                <h3 className="feature-title">{feature.title}</h3>
+                <p className="feature-description">{feature.description}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -771,7 +782,7 @@ export default function RegisterScreen() {
             </div>
           </div>
           <div className="footer-bottom">
-            <p>&copy; 2024 Delivery Ya. Todos los derechos reservados.</p>
+            <p>&copy; 2026 Delivery Ya. Todos los derechos reservados.</p>
           </div>
         </div>
       </footer>

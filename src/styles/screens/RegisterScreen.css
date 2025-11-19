@@ -1,59 +1,231 @@
-/* src/styles/screens/RegisterScreen.css */
-.register-container {
+/* ===== LANDING PAGE STYLES ===== */
+.landing-register-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #FF4D4D 0%, #FFC947 100%);
-  padding: 20px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
 }
 
-.register-header {
-  text-align: center;
-  margin-bottom: 30px;
+/* Header */
+.landing-header {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  position: fixed;
+  top: 0;
   width: 100%;
-  max-width: 800px;
+  z-index: 1000;
+  border-bottom: 1px solid #e5e5e5;
 }
 
-.register-logo {
-  max-width: 150px;
-  height: auto;
-  margin-bottom: 15px;
+.landing-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-.register-back-link {
-  text-align: right;
-  margin-bottom: 15px;
+.landing-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: bold;
+  font-size: 1.5rem;
+  color: #2563eb;
 }
 
-.register-back-link a {
-  color: #fff;
+.landing-logo img {
+  height: 40px;
+}
+
+.landing-nav-links {
+  display: flex;
+  gap: 2rem;
+}
+
+.landing-nav-links a {
   text-decoration: none;
-  font-size: 13px;
-  padding: 8px 16px;
+  color: #4b5563;
+  font-weight: 500;
+  transition: color 0.3s;
+}
+
+.landing-nav-links a:hover {
+  color: #2563eb;
+}
+
+.landing-auth-buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+.btn-login {
+  padding: 0.5rem 1.5rem;
+  border: 2px solid #2563eb;
+  color: #2563eb;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+.btn-login:hover {
+  background: #2563eb;
+  color: white;
+}
+
+/* Hero Section */
+.hero-section {
+  padding: 120px 2rem 40px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.hero-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.hero-title {
+  font-size: 2.8rem;
+  font-weight: 700;
+  line-height: 1.1;
+  margin-bottom: 1.5rem;
+}
+
+.highlight {
+  color: #fbbf24;
+}
+
+.hero-description {
+  font-size: 1.25rem;
+  margin-bottom: 2rem;
+  opacity: 0.9;
+  line-height: 1.6;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hero-features {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.feature-badge {
   background: rgba(255, 255, 255, 0.2);
+  padding: 0.5rem 1rem;
   border-radius: 20px;
-  transition: background 0.3s ease;
+  font-size: 0.9rem;
+  backdrop-filter: blur(10px);
+}
+
+/* Stats Section */
+.stats-section {
+  background: white;
+  padding: 4rem 2rem;
+}
+
+.stats-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2rem;
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-number {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #2563eb;
+  margin-bottom: 0.5rem;
+}
+
+.stat-label {
+  color: #6b7280;
   font-weight: 500;
 }
 
-.register-back-link a:hover {
-  background: rgba(255, 255, 255, 0.3);
+/* Features Section */
+.features-section {
+  padding: 6rem 2rem;
+  background: #f8fafc;
 }
 
-.register-title {
-  color: #fff;
-  font-size: 24px;
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.section-title {
+  text-align: center;
+  font-size: 2.5rem;
   font-weight: 700;
-  margin-bottom: 8px;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+  color: #1f2937;
+  margin-bottom: 3rem;
 }
 
-.register-subtitle {
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 14px;
-  margin: 0;
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem;
+}
+
+.feature-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  text-align: center;
+  transition: transform 0.3s;
+}
+
+.feature-card:hover {
+  transform: translateY(-5px);
+}
+
+.feature-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.feature-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 1rem;
+}
+
+.feature-description {
+  color: #6b7280;
+  line-height: 1.6;
+}
+
+/* ===== FORM STYLES ===== */
+.register-form-section {
+  padding: 2rem 2rem;
+  background: white;
+}
+
+.register-form-section .register-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.register-form-section .register-title {
+  font-size: 2.2rem;
+  color: #1f2937;
+  margin-bottom: 0.5rem;
+}
+
+.register-form-section .register-subtitle {
+  font-size: 1.1rem;
+  color: #6b7280;
 }
 
 .register-form {
@@ -75,7 +247,6 @@
 
 .register-section {
   border-bottom: 1px solid #f0f0f0;
-  padding-bottom: 25px;
 }
 
 .register-section:last-of-type {
@@ -92,6 +263,21 @@
   display: inline-block;
 }
 
+/* Grid Systems */
+.register-form-grid-three {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.register-form-grid-two {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
 .register-form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -99,6 +285,7 @@
   align-items: start;
 }
 
+/* Input Groups */
 .register-input-group {
   display: flex;
   flex-direction: column;
@@ -109,12 +296,15 @@
 }
 
 .register-form-label {
+  display: flex;
+  align-items: center;
   font-weight: 600;
   color: #333;
   margin-bottom: 6px;
   font-size: 13px;
 }
 
+/* Input Styles */
 .register-form-input {
   width: 100%;
   padding: 12px;
@@ -126,6 +316,192 @@
   box-sizing: border-box;
   font-family: inherit;
   color: #333;
+}
+
+.register-form-input-bancario {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  background: #fff;
+  box-sizing: border-box;
+  font-family: inherit;
+  color: #333;
+}
+
+/* ===== MAP SECTION STYLES ===== */
+.map-section {
+  margin-top: 25px;
+  padding: 25px;
+  border: 2px dashed #e0e0e0;
+  border-radius: 12px;
+  background: #fafafa;
+  transition: all 0.3s ease;
+}
+
+.map-section:hover {
+  border-color: #FF4D4D;
+  background: #fffaf5;
+}
+
+.map-header {
+  margin-bottom: 20px;
+}
+
+.map-section-title {
+  color: #333;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.optional-badge {
+  background: #6b7280;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.map-section-description {
+  color: #666;
+  margin-bottom: 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Coordinates Info */
+.map-coordinates-info {
+  margin-bottom: 20px;
+}
+
+.coordinates-selected {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: #f0fff4;
+  border: 2px solid #4CAF50;
+  border-radius: 8px;
+  animation: slideIn 0.3s ease;
+}
+
+.coordinates-empty {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: #f8f9fa;
+  border: 2px dashed #d1d5db;
+  border-radius: 8px;
+  color: #6b7280;
+}
+
+.coordinates-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.coordinates-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.coordinates-text strong {
+  color: #1f2937;
+  font-size: 14px;
+}
+
+.coordinates-text span {
+  color: #6b7280;
+  font-size: 12px;
+  font-family: 'Courier New', monospace;
+}
+
+.clear-coordinates-btn {
+  background: #ff4444;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s ease;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.clear-coordinates-btn:hover {
+  background: #cc0000;
+}
+
+/* Map Container */
+.map-container {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+  border: 2px solid #e5e7eb;
+}
+
+/* Coordinates Fields */
+.coordinates-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.coordinate-input-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.coordinate-label {
+  font-weight: 600;
+  color: #4b5563;
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+
+.coordinate-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 2px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 14px;
+  background: #f9fafb;
+  color: #6b7280;
+  font-family: 'Courier New', monospace;
+  cursor: not-allowed;
+}
+
+.coordinate-input:focus {
+  outline: none;
+  border-color: #2563eb;
+}
+
+/* Animation */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .register-form-input:focus {
@@ -149,6 +525,7 @@
   font-size: 12px;
   margin-top: 4px;
   font-weight: 500;
+  min-height: 1rem;
 }
 
 /* Radio Group */
@@ -413,25 +790,29 @@
 
 .register-register-button {
   width: 100%;
-  padding: 14px;
-  background-color: #FF4D4D;
-  color: #FFFFFF;
+  padding: 1.2rem 3rem;
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  color: #1f2937;
   border: none;
-  border-radius: 6px;
-  font-size: 16px;
-  font-weight: 600;
+  border-radius: 12px;
+  font-size: 1.3rem;
+  font-weight: 700;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: all 0.3s;
+  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
   margin-bottom: 15px;
 }
 
 .register-register-button:hover:not(:disabled) {
-  background-color: #FF3333;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4);
 }
 
 .register-register-button:disabled {
-  background-color: #ccc;
+  background: #ccc;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .register-login-link {
@@ -452,9 +833,7 @@
   text-decoration: underline;
 }
 
-/* src/styles/screens/RegisterScreen.css */
-/* ... (mantener todos los estilos anteriores) ... */
-
+/* ===== UTILITY STYLES ===== */
 /* Tooltip de información */
 .info-tooltip {
   position: relative;
@@ -521,244 +900,50 @@
   margin: 0;
 }
 
-/* Ajustes para el label con tooltip */
-.register-form-label {
-  display: flex;
-  align-items: center;
-  font-weight: 600;
-  color: #333;
-  margin-bottom: 6px;
-  font-size: 13px;
+/* ===== RESPONSIVE STYLES ===== */
+@media (max-width: 1024px) {
+  .register-form-grid-three {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
-/* Landing Page Styles */
-.landing-register-container {
-  min-height: 100vh;
-}
-
-/* Header */
-.landing-header {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  position: fixed;
-  top: 0;
-  width: 100%;
-  z-index: 1000;
-  border-bottom: 1px solid #e5e5e5;
-}
-
-.landing-nav {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.landing-logo {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: bold;
-  font-size: 1.5rem;
-  color: #2563eb;
-}
-
-.landing-logo img {
-  height: 40px;
-}
-
-.landing-nav-links {
-  display: flex;
-  gap: 2rem;
-}
-
-.landing-nav-links a {
-  text-decoration: none;
-  color: #4b5563;
-  font-weight: 500;
-  transition: color 0.3s;
-}
-
-.landing-nav-links a:hover {
-  color: #2563eb;
-}
-
-.landing-auth-buttons {
-  display: flex;
-  gap: 1rem;
-}
-
-.btn-login {
-  padding: 0.5rem 1.5rem;
-  border: 2px solid #2563eb;
-  color: #2563eb;
-  text-decoration: none;
-  border-radius: 8px;
-  font-weight: 600;
-  transition: all 0.3s;
-}
-
-.btn-login:hover {
-  background: #2563eb;
-  color: white;
-}
-
-/* Hero Section */
-.hero-section {
-  padding: 140px 2rem 80px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-}
-
-.hero-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  text-align: center;
-}
-
-.hero-title {
-  font-size: 3.5rem;
-  font-weight: 700;
-  line-height: 1.1;
-  margin-bottom: 1.5rem;
-}
-
-.highlight {
-  color: #fbbf24;
-}
-
-.hero-description {
-  font-size: 1.25rem;
-  margin-bottom: 2rem;
-  opacity: 0.9;
-  line-height: 1.6;
-  max-width: 600px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.hero-features {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.feature-badge {
-  background: rgba(255, 255, 255, 0.2);
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
-  font-size: 0.9rem;
-  backdrop-filter: blur(10px);
-}
-
-/* Stats Section */
-.stats-section {
-  background: white;
-  padding: 4rem 2rem;
-}
-
-.stats-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 2rem;
-}
-
-.stat-item {
-  text-align: center;
-}
-
-.stat-number {
-  font-size: 3rem;
-  font-weight: 700;
-  color: #2563eb;
-  margin-bottom: 0.5rem;
-}
-
-.stat-label {
-  color: #6b7280;
-  font-weight: 500;
-}
-
-/* Features Section */
-.features-section {
-  padding: 6rem 2rem;
-  background: #f8fafc;
-}
-
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.section-title {
-  text-align: center;
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #1f2937;
-  margin-bottom: 3rem;
-}
-
-.features-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 2rem;
-}
-
-.feature-card {
-  background: white;
-  padding: 2rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-  text-align: center;
-  transition: transform 0.3s;
-}
-
-.feature-card:hover {
-  transform: translateY(-5px);
-}
-
-.feature-icon {
-  font-size: 3rem;
-  margin-bottom: 1rem;
-}
-
-.feature-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #1f2937;
-  margin-bottom: 1rem;
-}
-
-.feature-description {
-  color: #6b7280;
-  line-height: 1.6;
-}
-
-/* Register Form Section */
-.register-form-section {
-  padding: 4rem 2rem;
-  background: white;
-}
-
-.register-form-section .register-header {
-  text-align: center;
-  margin-bottom: 3rem;
-}
-
-.register-form-section .register-title {
-  font-size: 2.5rem;
-  color: #1f2937;
-  margin-bottom: 1rem;
-}
-
-.register-form-section .register-subtitle {
-  font-size: 1.25rem;
-  color: #6b7280;
+@media (max-width: 768px) {
+  .landing-nav {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .hero-title {
+    font-size: 2.5rem;
+  }
+  
+  .stats-container,
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .register-form-grid-three,
+  .register-form-grid-two,
+  .register-form-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .register-contract-options {
+    grid-template-columns: 1fr;
+  }
+  
+  .footer-content {
+    grid-template-columns: 1fr;
+  }
+  
+  .footer-links {
+    grid-template-columns: 1fr;
+  }
+  
+  .download-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
 }
 
 /* Download Section */
