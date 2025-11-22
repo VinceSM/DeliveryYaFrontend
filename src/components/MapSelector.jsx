@@ -30,18 +30,17 @@ const MapSelector = ({ onLocationSelect, initialPosition }) => {
       click: (e) => {
         const newPosition = [e.latlng.lat, e.latlng.lng];
         setPosition(newPosition);
-        onLocationSelect(newPosition[0], newPosition[1]);
+        onLocationSelect(
+          Number(newPosition[0].toFixed(6)),
+          Number(newPosition[1].toFixed(6))
+        );
       },
     });
     return null;
   }
 
   return (
-    <div className="map-selector-container">
-      <p className="map-instructions">
-        📍 Haz clic en el mapa para seleccionar la ubicación exacta de tu comercio
-      </p>
-      
+    <div className="map-selector-container">     
       <MapContainer
         center={position}
         zoom={15}

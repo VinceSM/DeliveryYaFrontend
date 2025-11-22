@@ -1,6 +1,7 @@
 // src/screens/Auth/RegisterScreen.jsx
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { FaInstagram } from "react-icons/fa";
 import { registerComercio } from "../../api/auth";
 import LogoDeliveryYa from "../../assets/Logo.png";
 import "../../styles/screens/RegisterScreen.css";
@@ -255,6 +256,8 @@ export default function RegisterScreen() {
             <span>Delivery Ya</span>
           </div>
           <nav className="landing-nav-links">
+            <a href="#registro">Registrarme</a>
+            <a href="#nuestra-empresa">Nuestra Empresa</a>
             <a href="#beneficios">Beneficios</a>
             <a href="#como-funciona">Cómo funciona</a>
             <a href="#contacto">Contacto</a>
@@ -274,20 +277,22 @@ export default function RegisterScreen() {
               <span className="highlight"> hoy mismo</span>
             </h1>
             <p className="hero-description">
-              Registrá tu comercio en Delivery Ya y empezá a recibir pedidos en menos de 5 minutos. 
-              Sin costos iniciales, sin complicaciones.
+              Registrá tu comercio en DeliveryYa y empezá a recibir pedidos en menos de 5 minutos. 
+              Sin complicaciones.
             </p>
             <div className="hero-features">
-              <div className="feature-badge">✅ Registro gratuito</div>
-              <div className="feature-badge">✅ Configuración en 5 min</div>
-              <div className="feature-badge">✅ Soporte 24/7</div>
+              <div className="feature-badge">📈 Más visibilidad</div>
+              <div className="feature-badge">📍 Ubicación exacta en el mapa</div>
+              <div className="feature-badge">🔥 Activación inmediata</div>
+              <div className="feature-badge">💳 Pagos seguros</div>
+              <div className="feature-badge">📞 Soporte 24/7</div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Register Form Section - AHORA ES LO PRIMERO DESPUÉS DEL HERO */}
-      <section className="register-form-section">
+      <section id="registro" className="register-form-section">
         <div className="container">
           <div className="register-header">
             <h1 className="register-title">Registrá tu comercio</h1>
@@ -513,7 +518,6 @@ export default function RegisterScreen() {
                       name="latitud" 
                       value={form.latitud}
                       onChange={handleChange}
-                      placeholder="Ej: -38.270510"
                       readOnly
                     />
                   </div>
@@ -525,7 +529,6 @@ export default function RegisterScreen() {
                       name="longitud" 
                       value={form.longitud}
                       onChange={handleChange}
-                      placeholder="Ej: -57.839651"
                       readOnly
                     />
                   </div>
@@ -765,6 +768,36 @@ export default function RegisterScreen() {
         </div>
       </section>
 
+      <section id="nuestra-empresa" className="empresa-section">
+        <div className="container">
+          <h2 className="section-title">Nuestra Empresa</h2>
+
+          <p className="empresa-text">
+            DeliveryYa nació con un objetivo simple: ayudar a los comercios locales a crecer 
+            y digitalizarse sin complicaciones. Creemos en un sistema accesible, transparente 
+            y pensado para emprendedores, negocios familiares y cadenas en expansión.
+          </p>
+
+          <p className="empresa-text">
+            Nuestro compromiso es brindar una plataforma rápida, estable y fácil de usar que 
+            conecte a los comercios con miles de clientes a través de una experiencia de compra 
+            moderna.
+          </p>
+
+          <p className="empresa-text">
+            Trabajamos todos los días para ofrecer tecnología confiable, soporte real y 
+            herramientas que potencian la visibilidad, las ventas y la gestión integral 
+            del comercio.
+          </p>
+
+          <p className="empresa-text">
+            Somos una empresa local que apuesta al crecimiento de cada negocio, trayendo 
+            soluciones innovadoras y cercanas, construidas para la realidad de Miramar 
+            y la región.
+          </p>
+        </div>
+      </section>
+
       {/* Download App Section */}
       <section className="download-section">
         <div className="container">
@@ -791,28 +824,78 @@ export default function RegisterScreen() {
       <footer className="landing-footer">
         <div className="container">
           <div className="footer-content">
+
+            {/* Marca */}
             <div className="footer-brand">
               <div className="footer-logo">
-                <img src={LogoDeliveryYa} alt="Delivery Ya" />
-                <span>Delivery Ya</span>
+                <img src={LogoDeliveryYa} alt="DeliveryYa" />
+                <span>DeliveryYa</span>
               </div>
-              <p>La plataforma de delivery líder en Miramar</p>
+              <p>La plataforma de delivery líder en Miramar.</p>
             </div>
+
+            {/* Links */}
             <div className="footer-links">
               <div className="footer-column">
+                <h4>Nosotros</h4>
+                <a href="#nuestra-empresa">Nuestra Empresa</a>
+              </div>
+
+              <div className="footer-column">
                 <h4>Comercios</h4>
+                <a href="#registro">Registrar Mi Comercio</a>
                 <a href="#beneficios">Beneficios</a>
                 <a href="#como-funciona">Cómo funciona</a>
               </div>
+
               <div className="footer-column">
                 <h4>Soporte</h4>
                 <a href="#">Centro de ayuda</a>
                 <a href="#">Contacto</a>
               </div>
             </div>
+
+            {/* Logos a la derecha */}
+            <div className="footer-right">
+              <div className="dev-card">
+                <a
+                  href="https://www.instagram.com/msmdevteam/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="dev-card-content"
+                >
+                  <img
+                    src="/assets/logomsmdevteam.png"
+                    alt="MSMDevTeam"
+                    className="dev-logo"
+                  />
+                  <div className="dev-info">
+                    <span className="dev-by">Desarrollo Digital por</span>
+                    <span className="dev-name">MSMDev</span>
+                    <div className="social-hint">
+                      <FaInstagram className="instagram-icon" />
+                      <span>Seguinos</span>
+                    </div>
+                  </div>
+                </a>
+              </div>
+              <div className="footer-afip">
+                <a
+                  href="https://servicios.afip.gov.ar"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <img src="/assets/DATAWEB.jpg" alt="AFIP Data Fiscal" />
+                </a>
+              </div>
+
+              
+            </div>
           </div>
+
+          {/* Footer inferior */}
           <div className="footer-bottom">
-            <p>&copy; 2026 Delivery Ya. Todos los derechos reservados.</p>
+            <p>&copy; 2026 DeliveryYa. Todos los derechos reservados.</p>
           </div>
         </div>
       </footer>
