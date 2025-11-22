@@ -19,6 +19,12 @@ const MapSelector = ({ onLocationSelect, initialPosition }) => {
     setPosition(initialPosition);
   }, [initialPosition]);
 
+  // 📌 Límite recomendado para Miramar (General Alvarado)
+  const bounds = [
+    [-38.33, -57.92], // suroeste
+    [-38.20, -57.77]  // noreste
+  ];
+
   function MapClickHandler() {
     useMapEvents({
       click: (e) => {
@@ -39,6 +45,10 @@ const MapSelector = ({ onLocationSelect, initialPosition }) => {
       <MapContainer
         center={position}
         zoom={15}
+        minZoom={13}
+        maxZoom={18}
+        maxBounds={bounds}
+        maxBoundsViscosity={1.0}
         style={{ height: '400px', width: '100%', borderRadius: '8px' }}
         className="map-container"
       >
@@ -48,10 +58,8 @@ const MapSelector = ({ onLocationSelect, initialPosition }) => {
         />
         
         <MapClickHandler />
-        
-        {position && (
-          <Marker position={position} />
-        )}
+
+        {position && <Marker position={position} />}
       </MapContainer>
     </div>
   );

@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { registerComercio } from "../../api/auth";
-import LogoDeliveryYa from "../../assets/LogoDeliveryYa.png";
+import LogoDeliveryYa from "../../assets/Logo.png";
 import "../../styles/screens/RegisterScreen.css";
 import MapSelector from "../../components/MapSelector.jsx";
 
@@ -643,25 +643,27 @@ export default function RegisterScreen() {
               <div className="register-section">
                 <h2 className="register-section-title">Selecciona tu Plan</h2>
                 <div className="register-contract-options">
-                  
+
+                  {/* PLAN BÁSICO */}
                   <div className="register-contract-option">
                     <div className="register-option-header">
                       <h3>Plan Básico</h3>
-                      <p className="register-price">$0<span>/mes</span></p>
+                      <p className="register-price">$30.000<span>/mes</span></p>
                     </div>
                     <ul className="register-features-list">
-                      <li>✔ 20% de comision por pedido</li>
-                      <li>✔ Gestión de pedidos básica</li>
-                      <li>✔ Soporte por email</li>
-                      <li>✖ Destacado en búsquedas</li>
-                      <li>✖ Promociones destacadas</li>
+                      <li>✅ Hasta 50 pedidos mensuales</li>
+                      <li>✅ 0% de comision por pedido</li>
+                      <li>❌ Soporte prioritario</li>
+                      <li>❌ Destacado en resultados</li>
+                      <li>❌ Promociones destacadas</li>
+                      <li>❌ Primera posición en resultados</li>
                     </ul>
                     <div className="register-radio-container">
                       <input 
                         type="radio" 
-                        name="destacado" 
-                        checked={!form.destacado} 
-                        onChange={() => setForm(prev => ({...prev, destacado: false}))} 
+                        name="plan" 
+                        checked={form.plan === "basico"} 
+                        onChange={() => setForm(prev => ({ ...prev, plan: "basico" }))} 
                         id="plan-basico"
                       />
                       <label htmlFor="plan-basico" className="register-radio-label">
@@ -669,25 +671,27 @@ export default function RegisterScreen() {
                       </label>
                     </div>
                   </div>
-                  
+
+                  {/* PLAN DESTACADO */}
                   <div className="register-contract-option register-highlighted">
                     <div className="register-option-header">
                       <h3>Plan Destacado</h3>
-                      <p className="register-price">$30.000<span>/mes</span></p>
+                      <p className="register-price">$60.000<span>/mes</span></p>
                     </div>
                     <ul className="register-features-list">
-                      <li>✔ 10% de comision por pedido</li>
-                      <li>✔ Destacado en búsquedas</li>
-                      <li>✔ Promociones destacadas</li>
-                      <li>✔ Soporte prioritario 24/7</li>
-                      <li>✔ Estadísticas avanzadas</li>
+                      <li>✅ Hasta 100 pedidos mensuales</li>
+                      <li>✅ Destacado en resultados</li>
+                      <li>✅ 0% comision por pedido</li>
+                      <li>✅ Soporte prioritario 24/7</li>
+                      <li>❌ Promociones destacadas</li>
+                      <li>❌ Primera posición en resultados</li>
                     </ul>
                     <div className="register-radio-container">
                       <input 
                         type="radio" 
-                        name="destacado" 
-                        checked={form.destacado} 
-                        onChange={() => setForm(prev => ({...prev, destacado: true}))} 
+                        name="plan" 
+                        checked={form.plan === "destacado"} 
+                        onChange={() => setForm(prev => ({ ...prev, plan: "destacado" }))} 
                         id="plan-destacado"
                       />
                       <label htmlFor="plan-destacado" className="register-radio-label">
@@ -696,9 +700,35 @@ export default function RegisterScreen() {
                     </div>
                   </div>
 
+                  {/* PLAN PREMIUM */}
+                  <div className="register-contract-option register-premium">
+                    <div className="register-option-header">
+                      <h3>Plan Premium</h3>
+                      <p className="register-price">$90.000<span>/mes</span></p>
+                    </div>
+                    <ul className="register-features-list">
+                      <li>✅ Pedidos ilimitados</li>
+                      <li>✅ 0% comision por pedido</li>
+                      <li>✅ Primera posición en resultados</li>
+                      <li>✅ Destacado Premium</li>
+                      <li>✅ Comercio promocionable</li>
+                      <li>✅ Soporte prioritario 24/7</li>
+                    </ul>
+                    <div className="register-radio-container">
+                      <input 
+                        type="radio" 
+                        name="plan" 
+                        checked={form.plan === "premium"} 
+                        onChange={() => setForm(prev => ({ ...prev, plan: "premium" }))} 
+                        id="plan-premium"
+                      />
+                      <label htmlFor="plan-premium" className="register-radio-label">
+                        Seleccionar Plan Premium
+                      </label>
+                    </div>
+                  </div>
                 </div>
               </div>
-
             </div>
             
             {/* BOTÓN DE REGISTRO */}
