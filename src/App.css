@@ -4,4 +4,8 @@
   min-height: 100vh;
 }
 
+html{
+  scroll-behavior: smooth;
+}
+
 /* Estilos específicos para elementos dentro de App.jsx */

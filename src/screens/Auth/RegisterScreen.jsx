@@ -771,7 +771,6 @@ export default function RegisterScreen() {
       <section id="nuestra-empresa" className="empresa-section">
         <div className="container">
           <h2 className="section-title">Nuestra Empresa</h2>
-
           <p className="empresa-text">
             DeliveryYa nació con un objetivo simple: ayudar a los comercios locales a crecer 
             y digitalizarse sin complicaciones. Creemos en un sistema accesible, transparente 
@@ -779,21 +778,22 @@ export default function RegisterScreen() {
           </p>
 
           <p className="empresa-text">
-            Nuestro compromiso es brindar una plataforma rápida, estable y fácil de usar que 
-            conecte a los comercios con miles de clientes a través de una experiencia de compra 
-            moderna.
+            A la hora de decidir qué comer, todos nos hacemos la misma pregunta: 
+            <strong>“¿A dónde pedimos?”</strong>. Ese fue el punto de partida que nos impulsó a 
+            crear una aplicación de delivery pensada especialmente para Miramar, para que la 
+            ciudad también tenga su propia plataforma moderna y confiable.
           </p>
 
           <p className="empresa-text">
-            Trabajamos todos los días para ofrecer tecnología confiable, soporte real y 
+            Trabajamos todos los días para brindar tecnología confiable, soporte real y 
             herramientas que potencian la visibilidad, las ventas y la gestión integral 
-            del comercio.
+            de cada comercio.
           </p>
 
           <p className="empresa-text">
-            Somos una empresa local que apuesta al crecimiento de cada negocio, trayendo 
-            soluciones innovadoras y cercanas, construidas para la realidad de Miramar 
-            y la región.
+            Somos una empresa local que apuesta al crecimiento de los negocios de Miramar y la 
+            región, acercando soluciones innovadoras, accesibles y alineadas a las necesidades 
+            reales de nuestra comunidad.
           </p>
         </div>
       </section>
@@ -831,7 +831,7 @@ export default function RegisterScreen() {
                 <img src={LogoDeliveryYa} alt="DeliveryYa" />
                 <span>DeliveryYa</span>
               </div>
-              <p>La plataforma de delivery líder en Miramar.</p>
+              <p>La plataforma de delivery en Miramar.</p>
             </div>
 
             {/* Links */}
