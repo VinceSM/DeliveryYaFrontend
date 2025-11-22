@@ -768,6 +768,30 @@ export default function RegisterScreen() {
         </div>
       </section>
 
+      
+
+      {/* Download App Section */}
+      <section className="download-section">
+        <div className="container">
+          <div className="download-content">
+            <div className="download-text">
+              <h2>Descargá nuestra app móvil</h2>
+              <p>Tu comercio disponible para todos tus clientes. Llegá a más personas con nuestra aplicación.</p>
+              <div className="download-buttons">
+                <a href="#" className="store-btn">
+                  <span>Disponible en</span>
+                  <strong>Google Play</strong>
+                </a>
+                <a href="#" className="store-btn">
+                  <span>Descargar en</span>
+                  <strong>App Store</strong>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      
       <section id="nuestra-empresa" className="empresa-section">
         <div className="container">
           <h2 className="section-title">Nuestra Empresa</h2>
@@ -798,24 +822,19 @@ export default function RegisterScreen() {
         </div>
       </section>
 
-      {/* Download App Section */}
-      <section className="download-section">
-        <div className="container">
-          <div className="download-content">
-            <div className="download-text">
-              <h2>Descargá nuestra app móvil</h2>
-              <p>Tu comercio disponible para todos tus clientes. Llegá a más personas con nuestra aplicación.</p>
-              <div className="download-buttons">
-                <a href="#" className="store-btn">
-                  <span>Disponible en</span>
-                  <strong>Google Play</strong>
-                </a>
-                <a href="#" className="store-btn">
-                  <span>Descargar en</span>
-                  <strong>App Store</strong>
-                </a>
-              </div>
-            </div>
+      <section id="contacto" className="contact-section">
+        <h2 className="section-title">Contacto</h2>
+        <p className="contact-description">
+          ¿Tenés dudas, consultas o querés comunicarte con nuestro equipo? 
+          Estamos para ayudarte todos los días.
+        </p>
+
+        <div className="contact-grid">
+          {/* Información */}
+          <div className="contact-info-box">
+            <h3>Información de contacto</h3>
+            <p>📩 deliveryyamiramar@gmail.com</p>
+            <p>📍 Miramar, Buenos Aires</p>
           </div>
         </div>
       </section>
@@ -888,8 +907,6 @@ export default function RegisterScreen() {
                   <img src="/assets/DATAWEB.jpg" alt="AFIP Data Fiscal" />
                 </a>
               </div>
-
-              
             </div>
           </div>
 
